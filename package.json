@@ -20,6 +20,10 @@
   ],
   "author": "Falco Nogatz <fnogatz@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/fnogatz/CHR.js"
+  },
   "devDependencies": {
     "colors": "^1.0.3",
     "pegjs": "^0.8.0",
