@@ -72,7 +72,7 @@ More example CHR scripts are provided in the project's `/examples` directory.
 
 ## Background
 
-The implementation is based on the compilation schema presented in the paper [CHR for imperative host languages](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.149.8471) (2208; Peter Van Weert, Pieter Wuille, Tom Schrijvers, Bart Demoen). As of yet basically none of the mentioned optimizations have been implemented.
+The implementation is based on the compilation schema presented in the paper [CHR for imperative host languages](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.149.8471) (2008; Peter Van Weert, Pieter Wuille, Tom Schrijvers, Bart Demoen). As of yet basically none of the mentioned optimizations have been implemented.
 
 ## Todo
 
