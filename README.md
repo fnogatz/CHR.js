@@ -78,3 +78,4 @@ The implementation is based on the compilation schema presented in the paper [CH
 
 * Provide an option to bundle the `chr/runtime` references to get a single-file package executable for example in browsers.
 * Add event emitters for rule application etc to provide an easy logging and debugging mechanism.
+* Allow arithmetic patterns in the rule's head, for example `upto(Max), fib(N-1,V1), fib(N,V2) ==> N < Max | fib(N+1,V1+V2);`
