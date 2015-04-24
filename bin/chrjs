@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+
+var program = require('commander')
+var concat = require('concat-stream')
+var chrjs = require('../index')
+
+function onFinish(err, code) {
+  if (err) {
+    throw err;
+  }
+
+  console.log(code)
+}
+
+program
+  .usage('[options] <file>')
+  .option('--es6', 'Generate ES6 code')
+  .parse(process.argv)
+
+var file = program.args[0]
+
+var opts = {
+  es6: program.es6 || false
+}
+
+if (file) {
+  chrjs.transformFile(file, opts, onFinish)
+} else {
+  process.stdin.pipe(concat({ encoding: 'string' }, function (source) {
+    var code = chrjs.transform(source, opts)
+    onFinish(null, code)
+  }))
+}

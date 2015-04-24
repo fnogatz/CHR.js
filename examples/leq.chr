@@ -1,0 +1,4 @@
+reflexivity  @ leq(A,A) <=> true;
+antisymmetry @ leq(A,B), leq(B,A) <=> A === B;
+idempotence  @ leq(A,B) \ leq(A,B) <=> true;
+transitivity @ leq(A,B), leq(B,C) ==> leq(A,C);

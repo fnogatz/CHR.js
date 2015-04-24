@@ -1,0 +1,39 @@
+{
+  "name": "chr",
+  "version": "0.0.1",
+  "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
+  "main": "index.js",
+  "scripts": {
+    "peg": "pegjs compiler/parser.pegjs",
+    "prepublish": "npm run-script peg",
+    "test": "standard"
+  },
+  "bin": {
+    "chrjs": "./bin/chrjs"
+  },
+  "keywords": [
+    "CHR",
+    "Constraint Handling Rules",
+    "constraints",
+    "CLP",
+    "compiler"
+  ],
+  "author": "Falco Nogatz <fnogatz@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "colors": "^1.0.3",
+    "pegjs": "^0.8.0",
+    "standard": "^3.7.1",
+    "tconsole": "^0.4.0"
+  },
+  "dependencies": {
+    "babel": "^5.1.11",
+    "commander": "^2.8.0",
+    "concat-stream": "^1.4.8"
+  },
+  "standard": {
+    "ignore": [
+      "compiler/parser.js"
+    ]
+  }
+}
