@@ -67,6 +67,8 @@ The generated JavaScript code has references to `chr/runtime` components, so mak
     ├────────────┤
     │ fib(5,5)   │
     └────────────┘
+    > CHR.fib(6,8).fib(7,13)               // constraints allow chaining
+    > CHR.Store.reset()                    // clear the constraint store
 
 More example CHR scripts are provided in the project's `/examples` directory.    
 

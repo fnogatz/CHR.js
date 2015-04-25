@@ -86,6 +86,7 @@ function generateConstraintProperty (opts, name) {
     '  var constraint = new Constraint("' + name + '", arity, args)',
     '  this.Store.add(constraint)',
     '  this["_' + name + '_"+arity+"_activate"](constraint)',
+    '  return this',
     '}'
   ].join('\n')
 }
