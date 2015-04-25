@@ -83,3 +83,4 @@ The implementation is based on the compilation schema presented in the paper [CH
 * Allow arithmetic patterns in the rule's head, for example `upto(Max), fib(N-1,V1), fib(N,V2) ==> N < Max | fib(N+1,V1+V2);`
 * Add rules on the fly, for example `CHR.Rules.add('b ==> c')`.
 * Add logical variables, i.e. support calling `CHR.leq($.A, $.B); CHR.leq($.B, $.A); console.log($.A === $.B)` in the `/examples/leq.chr` snippet.
+* JIT-Compilation, i.e. support calling `var CHR = require('./fib.chr')`.
