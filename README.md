@@ -76,11 +76,4 @@ More example CHR scripts are provided in the project's `/examples` directory.
 
 The implementation is based on the compilation schema presented in the paper [CHR for imperative host languages](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.149.8471) (2008; Peter Van Weert, Pieter Wuille, Tom Schrijvers, Bart Demoen). As of yet basically none of the mentioned optimizations have been implemented.
 
-## Todo
-
-* Provide an option to bundle the `chr/runtime` references to get a single-file package executable for example in browsers.
-* Add event emitters for rule application etc to provide an easy logging and debugging mechanism.
-* Allow arithmetic patterns in the rule's head, for example `upto(Max), fib(N-1,V1), fib(N,V2) ==> N < Max | fib(N+1,V1+V2);`
-* Add rules on the fly, for example `CHR.Rules.add('b ==> c')`.
-* Add logical variables, i.e. support calling `CHR.leq($.A, $.B); CHR.leq($.B, $.A); console.log($.A === $.B)` in the `/examples/leq.chr` snippet.
-* JIT-Compilation, i.e. support calling `var CHR = require('./fib.chr')`.
+A list of open points for improving can be found in the [wiki](https://github.com/fnogatz/CHR.js/wiki/Todo).
