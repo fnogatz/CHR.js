@@ -10,6 +10,7 @@ function compile (code, opts) {
   parts.push('')
 
   parts.push(generateStatic(opts))
+  parts.push('')
 
   var constraints = {}
   var ruleNo = 1
@@ -61,33 +62,38 @@ function generateHeader (opts) {
 
 function generateStatic (opts) {
   return [
-    'function allDifferent(arr) {',
-    '  return arr.every(function(el1, ix) {',
-    '    return arr.slice(ix+1).every(function(el2) {',
-    '      return el1 != el2',
-    '    })',
-    '  })',
-    '}',
-    '',
-    'function CHR() {',
-    '  this.Store = new Store()',
-    '  this.History = new History()',
-    '}',
-    ''
+    indent(0)+'function allDifferent(arr) {',
+    indent(1)+  'return arr.every(function(el1, ix) {',
+    indent(2)+    'return arr.slice(ix+1).every(function(el2) {',
+    indent(3)+      'return el1 != el2',
+    indent(2)+    '})',
+    indent(1)+  '})',
+    indent(0)+'}',
+    indent(0),
+    indent(0)+'function CHR() {',
+    indent(1)+  'this.Store = new Store()',
+    indent(2)+  'this.History = new History()',
+    indent(0)+'}'
   ].join('\n')
 }
 
 function generateConstraintProperty (opts, name) {
   return [
-    'CHR.prototype.' + name + ' = function ' + name + '() {',
-    '  var args = Array.prototype.slice.call(arguments)',
-    '  var arity = arguments.length',
-    '  ',
-    '  var constraint = new Constraint("' + name + '", arity, args)',
-    '  this.Store.add(constraint)',
-    '  this["_' + name + '_"+arity+"_activate"](constraint)',
-    '  return this',
-    '}'
+    indent(0)+'CHR.prototype.' + name + ' = function ' + name + '() {',
+    indent(1)+  'var args = Array.prototype.slice.call(arguments)',
+    indent(1)+  'var arity = arguments.length',
+    indent(1),
+    indent(1)+  'var callConstraint = "_' + name + '_"+arity+"_activate"',
+    indent(1)+  'if (!this[callConstraint]) {',
+    indent(2)+    'throw new Error("Constraint '+name+'/"+arity+" not defined.")',
+    indent(1)+  '}',
+    indent(1),
+    indent(1)+  'var constraint = new Constraint("' + name + '", arity, args)',
+    indent(1)+  'this.Store.add(constraint)',
+    indent(1)+  'this[callConstraint](constraint)',
+    indent(1),
+    indent(1)+  'return this',
+    indent(0)+'}'
   ].join('\n')
 }
 
