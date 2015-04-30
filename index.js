@@ -3,7 +3,7 @@ module.exports.transform = transform
 module.exports.transformFile = transformFile
 
 var fs = require('fs')
-var babel = require('babel')
+var es6toes5 = require('es6-destructuring').compile
 var compile = require('./compiler/compile')
 
 function transform (code, opts) {
@@ -13,7 +13,7 @@ function transform (code, opts) {
   var result = compile(code, opts)
 
   if (!opts.es6) {
-    result = babel.transform(result, opts.babel).code
+    result = es6toes5(result, opts.babel).code
   }
 
   return result
