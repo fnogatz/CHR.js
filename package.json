@@ -6,6 +6,7 @@
   "scripts": {
     "peg": "pegjs compiler/parser.pegjs",
     "prepublish": "npm run-script peg",
+    "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
     "test": "standard"
   },
   "bin": {
@@ -25,10 +26,12 @@
     "url": "git://github.com/fnogatz/CHR.js"
   },
   "devDependencies": {
+    "browserify": "^10.0.0",
     "colors": "^1.0.3",
     "pegjs": "^0.8.0",
     "standard": "^3.7.1",
-    "tconsole": "^0.4.0"
+    "tconsole": "^0.4.0",
+    "uglify-js": "^2.4.20"
   },
   "dependencies": {
     "commander": "^2.8.0",
@@ -37,7 +40,8 @@
   },
   "standard": {
     "ignore": [
-      "compiler/parser.js"
+      "compiler/parser.js",
+      "dist/chr.js"
     ]
   }
 }

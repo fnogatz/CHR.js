@@ -4,11 +4,18 @@ var parse = require('./parser').parse
 var es6toes5 = require('es6-destructuring').compile
 
 function compile (code, opts) {
+  opts = opts || {}
+  opts.runtime = opts.runtime || 'Runtime'
+  opts.exports = opts.exports || 'module.exports'
+
   var program = parse(code)
 
   var parts = []
-  parts.push(generateHeader(opts))
-  parts.push('')
+
+  if (!opts.withoutHeader) {
+    parts.push(generateHeader(opts))
+    parts.push('')
+  }
 
   parts.push(generateStatic(opts))
   parts.push('')
@@ -28,7 +35,7 @@ function compile (code, opts) {
 
   parts.push(generateActivateProperties(opts, constraints))
 
-  parts.push('module.exports = new CHR()')
+  parts.push(opts.exports + ' = new CHR()')
 
   var generatedCode = parts.join('\n')
 
@@ -61,25 +68,15 @@ function translateRule (rule, opts, constraints) {
 
 function generateHeader (opts) {
   return [
-    'var Store = require("chr/runtime/store")',
-    'var History = require("chr/runtime/history")',
-    'var Constraint = require("chr/runtime/constraint")'
+    'var ' + opts.runtime + ' = require("chr/runtime")'
   ].join('\n')
 }
 
 function generateStatic (opts) {
   return [
-    indent(0) + 'function allDifferent(arr) {',
-    indent(1) + 'return arr.every(function(el1, ix) {',
-    indent(2) + 'return arr.slice(ix+1).every(function(el2) {',
-    indent(3) + 'return el1 != el2',
-    indent(2) + '})',
-    indent(1) + '})',
-    indent(0) + '}',
-    indent(0),
-    indent(0) + 'function CHR() {',
-    indent(1) + 'this.Store = new Store()',
-    indent(2) + 'this.History = new History()',
+    indent(0) + 'function CHR(store, history) {',
+    indent(1) + 'this.Store = store || new ' + opts.runtime + '.Store()',
+    indent(2) + 'this.History = history || new ' + opts.runtime + '.History()',
     indent(0) + '}'
   ].join('\n')
 }
@@ -95,7 +92,7 @@ function generateConstraintProperty (opts, name) {
     indent(2) + 'throw new Error("Constraint ' + name + '/"+arity+" not defined.")',
     indent(1) + '}',
     indent(1),
-    indent(1) + 'var constraint = new Constraint("' + name + '", arity, args)',
+    indent(1) + 'var constraint = new ' + opts.runtime + '.Constraint("' + name + '", arity, args)',
     indent(1) + 'this.Store.add(constraint)',
     indent(1) + 'this[callConstraint](constraint)',
     indent(1),
@@ -184,7 +181,7 @@ function generateOccurenceProperties (opts, rule, constraints) {
     parts.push([
       'var ids = [ ' + ids.join(', ') + ' ]',
       'if (ids.every(function(id) { return self.Store.alive(id) })) {',
-      indent(1) + 'if (allDifferent(ids)) {'
+      indent(1) + 'if (' + opts.runtime + '.helper.allDifferent(ids)) {'
     ].map(indentBy(level)).join('\n'))
     level += 2
 
