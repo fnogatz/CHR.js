@@ -3,7 +3,6 @@ module.exports.transform = transform
 module.exports.transformFile = transformFile
 
 var fs = require('fs')
-var es6toes5 = require('es6-destructuring').compile
 var compile = require('./compiler/compile')
 
 function transform (code, opts) {
@@ -11,10 +10,6 @@ function transform (code, opts) {
   opts.babel = opts.babel || {}
 
   var result = compile(code, opts)
-
-  if (!opts.es6) {
-    result = es6toes5(result, opts.babel).code
-  }
 
   return result
 }

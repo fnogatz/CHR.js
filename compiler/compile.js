@@ -1,6 +1,7 @@
 module.exports = compile
 
 var parse = require('./parser').parse
+var es6toes5 = require('es6-destructuring').compile
 
 function compile (code, opts) {
   var program = parse(code)
@@ -29,7 +30,13 @@ function compile (code, opts) {
 
   parts.push('module.exports = new CHR()')
 
-  return parts.join('\n')
+  var code = parts.join('\n')
+
+  if (!opts.es6) {
+    code = es6toes5(code, opts).code
+  }
+
+  return code
 }
 
 function translateRule (rule, opts, constraints) {
