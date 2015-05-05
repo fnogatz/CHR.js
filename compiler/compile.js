@@ -1,7 +1,6 @@
 module.exports = compile
 
 var parse = require('./parser').parse
-var es6toes5 = require('es6-destructuring').compile
 
 function compile (code, opts) {
   opts = opts || {}
@@ -40,10 +39,6 @@ function compile (code, opts) {
   }
 
   var generatedCode = parts.join('\n')
-
-  if (!opts.es6) {
-    generatedCode = es6toes5(generatedCode, opts).code
-  }
 
   return generatedCode
 }
@@ -149,7 +144,7 @@ function generateOccurenceProperties (opts, rule, constraints) {
     if (curr.arity > 0) {
       // destructuring variables
       parts.push([
-        indent(1) + destructuring(curr, 'constraint.args'),
+        indent(1, destructuring(curr, 'constraint.args')).join('\n'),
         indent(1)
       ].join('\n'))
     }
@@ -175,7 +170,7 @@ function generateOccurenceProperties (opts, rule, constraints) {
       ].map(indentBy(level)).join('\n'))
 
       if (rule.head[j].arity > 0) {
-        parts.push(indent(level) + destructuring(rule.head[j], 'self.Store.args(id' + (j + 1) + ')'))
+        parts.push(indent(level, destructuring(rule.head[j], 'self.Store.args(id' + (j + 1) + ')')).join('\n'))
       }
 
       parts.push(indent(level))
@@ -307,9 +302,22 @@ function generateExpression (opts, parameter) {
   }
 }
 
-function indent (level, spaces) {
+function indent (level, text, spaces) {
   level = level || 0
+  if (typeof text === 'number') {
+    spaces = text
+    text = null
+  }
   spaces = spaces || 2
+  text = text || null
+
+  if (text && typeof text === 'string') {
+    return text.split('\n').map(function (row) {
+      return indent(level, spaces) + row
+    }).join('\n')
+  } else if (text && text instanceof Array) {
+    return text.map(indentBy(level, spaces))
+  }
 
   return Array(level * spaces + 1).join(' ')
 }
@@ -321,11 +329,9 @@ function indentBy (level, spaces) {
 }
 
 function destructuring (constraint, to) {
-  var expr = 'var [ '
-  expr += constraint.parameters.map(function (parameter) {
-    return parameter.name
-  }).join(', ')
-  expr += ' ] = ' + to
-
-  return expr
+  var parts = []
+  constraint.parameters.forEach(function (parameter, i) {
+    parts.push('var ' + parameter.name + ' = ' + to + '[' + i + ']')
+  })
+  return parts
 }

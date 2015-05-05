@@ -14,14 +14,10 @@ function onFinish(err, code) {
 
 program
   .usage('[options] <file>')
-  .option('--es6', 'Generate ES6 code')
   .parse(process.argv)
 
 var file = program.args[0]
-
-var opts = {
-  es6: program.es6 || false
-}
+var opts = program
 
 if (file) {
   chrjs.transformFile(file, opts, onFinish)

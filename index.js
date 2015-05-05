@@ -7,7 +7,6 @@ var compile = require('./compiler/compile')
 
 function transform (code, opts) {
   opts = opts || {}
-  opts.babel = opts.babel || {}
 
   var result = compile(code, opts)
 

@@ -37,9 +37,10 @@ Store.prototype.add = function add (constraint) {
 
 Store.prototype.kill = function kill (id) {
   var constraint = this._store[id]
-  if (!constraint)
+  if (!constraint) {
     return
-  
+  }
+
   constraint.alive = false
   delete this._store[id]
   delete this._index[constraint.name][constraint.arity][constraint.id]
@@ -92,7 +93,7 @@ Store.prototype.invalidate = function invalidate () {
   this.invalid = true
 }
 
-Store.prototype.forEach = function(cb) {
+Store.prototype.forEach = function (cb) {
   for (var id in this._store) {
     cb(this._store[id], id)
   }
