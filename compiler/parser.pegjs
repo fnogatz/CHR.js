@@ -68,6 +68,22 @@
     return Object.keys(constraints);
   }
 
+  function addConstraints(program) {
+    var constraints = {};
+
+    program.body.forEach(function (body) {
+      if (body.type === 'PropagationRule' || body.type === 'SimplificationRule' || body.type === 'SimpagationRule') {
+        body.constraints.forEach(function (constraint) {
+          constraints[constraint] = true
+        })
+      }
+    })
+
+    program.constraints = Object.keys(constraints)
+
+    return program
+  }
+
   function addProperties(ruleDescriptor) {
     ruleDescriptor.r = ruleDescriptor.kept.length;
     ruleDescriptor.head = ruleDescriptor.kept.concat(ruleDescriptor.removed);
@@ -1559,10 +1575,14 @@ FunctionBody
 
 Program
   = body:SourceElements? {
-      return {
+      var res = {
         type: "Program",
         body: optionalList(body)
       };
+
+      addConstraints(res);
+
+      return res;
     }
 
 SourceElements

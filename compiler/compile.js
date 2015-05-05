@@ -17,7 +17,7 @@ function compile (code, opts) {
     parts.push('')
   }
 
-  parts.push(generateStatic(opts))
+  parts.push(generateStatic(opts, program))
   parts.push('')
 
   var constraints = {}
@@ -35,7 +35,9 @@ function compile (code, opts) {
 
   parts.push(generateActivateProperties(opts, constraints))
 
-  parts.push(opts.exports + ' = new CHR()')
+  if (!opts.withoutExport) {
+    parts.push(opts.exports + ' = new CHR()')
+  }
 
   var generatedCode = parts.join('\n')
 
@@ -72,11 +74,12 @@ function generateHeader (opts) {
   ].join('\n')
 }
 
-function generateStatic (opts) {
+function generateStatic (opts, program) {
   return [
     indent(0) + 'function CHR(store, history) {',
     indent(1) + 'this.Store = store || new ' + opts.runtime + '.Store()',
-    indent(2) + 'this.History = history || new ' + opts.runtime + '.History()',
+    indent(1) + 'this.History = history || new ' + opts.runtime + '.History()',
+    indent(1) + 'this.constraints = ' + (program.constraints.length === 0 ? '[]' : '[ "' + program.constraints.join('", "') + '" ]'),
     indent(0) + '}'
   ].join('\n')
 }

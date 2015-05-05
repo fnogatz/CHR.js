@@ -1,13 +1,19 @@
 module.exports = Store
 
+var util = require('util')
+var events = require('events')
+
 function Store () {
   this.reset()
 }
+
+util.inherits(Store, events.EventEmitter)
 
 Store.prototype.reset = function reset () {
   this._lastId = 0
   this._store = {}
   this._index = {}
+  this.length = 0
 
   this.invalid = false
 }
@@ -22,15 +28,24 @@ Store.prototype.add = function add (constraint) {
   constraint.id = id
   this._store[id] = constraint
   this._addToIndex(constraint)
+  this.length += 1
+
+  this.emit('add', constraint)
 
   return id
 }
 
 Store.prototype.kill = function kill (id) {
   var constraint = this._store[id]
+  if (!constraint)
+    return
+  
   constraint.alive = false
   delete this._store[id]
   delete this._index[constraint.name][constraint.arity][constraint.id]
+  this.length -= 1
+
+  this.emit('remove', constraint)
 }
 
 Store.prototype._getNewConstraintId = function _getNewConstraintId () {
@@ -75,4 +90,10 @@ Store.prototype.lookup = function lookup (name, arity) {
 Store.prototype.invalidate = function invalidate () {
   this.reset()
   this.invalid = true
+}
+
+Store.prototype.forEach = function(cb) {
+  for (var id in this._store) {
+    cb(this._store[id], id)
+  }
 }
