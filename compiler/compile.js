@@ -332,9 +332,9 @@ function destructuring (constraint, to) {
   var parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
-      parts.push(indent(0)+'if ('+to+'['+i+'] !== '+escape(parameter.value)+') {')
-      parts.push(indent(1)+  'return')
-      parts.push(indent(0)+'}')
+      parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
+      parts.push(indent(1) + 'return')
+      parts.push(indent(0) + '}')
       return
     }
 
@@ -343,9 +343,9 @@ function destructuring (constraint, to) {
   return parts
 }
 
-function escape(val) {
+function escape (val) {
   if (typeof val === 'string') {
-    return '"'+val+'"'
+    return '"' + val + '"'
   }
 
   return val
