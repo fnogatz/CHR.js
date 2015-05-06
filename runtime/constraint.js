@@ -15,8 +15,16 @@ Constraint.prototype.toString = function toString () {
   var res = this.name
   if (this.arity > 0) {
     res += '('
-    res += this.args.join(',')
+    res += this.args.map(escape).join(',')
     res += ')'
   }
   return res
+}
+
+function escape(val) {
+  if (typeof val === 'string') {
+    return '"'+val+'"'
+  }
+
+  return val
 }
