@@ -1,12 +1,3 @@
-facts <=>
-    gender('lucille','f'), gender('michael','m'), gender('lindsay','f'),
-    gender('george_michael','m'), gender('maeby','f'), gender('buster','m'),
-    parent('lucille', 'michael'),
-    parent('lucille', 'lindsay'),
-    parent('lucille', 'buster'),
-    parent('michael', 'george_michael'), 
-    parent('lindsay', 'maeby');
-
 sibling(X,Y) \ sibling(X,Y) <=> true;
 cousin(X,Y) \ cousin(X,Y) <=> true;
 
@@ -28,5 +19,11 @@ grandparent(G,X), grandparent(G,Y) ==> X !== Y | cousin(X,Y);
 gender(A,'f'), sibling(A,P), parent(P,C) ==> aunt(A,C);
 gender(U,'m'), sibling(U,P), parent(P,C) ==> uncle(U,C);
 
-aunt(A,B) ==> true;
-uncle(A,B) ==> true;
+facts <=>
+    gender('lucille','f'), gender('michael','m'), gender('lindsay','f'),
+    gender('george_michael','m'), gender('maeby','f'), gender('buster','m'),
+    parent('lucille', 'michael'),
+    parent('lucille', 'lindsay'),
+    parent('lucille', 'buster'),
+    parent('michael', 'george_michael'), 
+    parent('lindsay', 'maeby');

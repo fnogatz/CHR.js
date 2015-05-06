@@ -33,6 +33,7 @@ function compile (code, opts) {
   })
 
   parts.push(generateActivateProperties(opts, constraints))
+  parts.push(generateDummyActivateProperties(opts, constraints))
 
   if (!opts.withoutExport) {
     parts.push(opts.exports + ' = new CHR()')
@@ -50,7 +51,8 @@ function translateRule (rule, opts, constraints) {
     var name = functor.replace(/^(.+)\/.+$/, '$1')
     if (!constraints.hasOwnProperty(name)) {
       constraints[name] = {
-        occurences: {}
+        occurences: {},
+        tell: {}
       }
 
       parts.push(generateConstraintProperty(opts, name))
@@ -112,6 +114,21 @@ function generateActivateProperties (opts, constraints) {
         '}',
         ''
       ].join('\n'))
+    }
+  }
+
+  return parts.join('\n')
+}
+
+function generateDummyActivateProperties (opts, constraints) {
+  var parts = []
+
+  for (var constraintName in constraints) {
+    for (var arity in constraints[constraintName].tell) {
+      if (!constraints[constraintName].occurences.hasOwnProperty(arity)) {
+        // dummy activator function needed
+        parts.push('CHR.prototype._' + constraintName + '_' + arity + '_activate = function (constraint) {}')
+      }
     }
   }
 
@@ -203,7 +220,7 @@ function generateOccurenceProperties (opts, rule, constraints) {
 
     if (rule.body.length > 0) {
       parts.push(rule.body.map(function (body) {
-        return generateTell(opts, body)
+        return generateTell(opts, body, constraints)
       }).map(indentBy(level)).join('\n'))
     }
 
@@ -273,7 +290,7 @@ function generateBinaryExpression (opts, expr) {
   }).join(' ' + expr.operator + ' ')
 }
 
-function generateTell (opts, body) {
+function generateTell (opts, body, constraints) {
   var expr = ''
   if (body.type === 'Constraint') {
     expr += 'self.' + body.name + '('
@@ -281,6 +298,9 @@ function generateTell (opts, body) {
       return generateExpression(opts, parameter)
     }).join(', ')
     expr += ')'
+
+    setTell(constraints, body)
+
     return expr
   }
 
@@ -291,6 +311,17 @@ function generateTell (opts, body) {
     '}'
   ].join('\n')
   return expr
+}
+
+function setTell(constraints, c) {
+  if (!constraints[c.name]) {
+    constraints[c.name] = {
+      occurences: {},
+      tell: {}
+    }
+  }
+
+  constraints[c.name].tell[c.arity] = true
 }
 
 function generateExpression (opts, parameter) {
