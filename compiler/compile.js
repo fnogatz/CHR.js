@@ -300,6 +300,9 @@ function generateExpression (opts, parameter) {
   if (parameter.type === 'BinaryExpression') {
     return generateBinaryExpression(opts, parameter)
   }
+  if (parameter.type === 'Literal') {
+    return escape(parameter.value)
+  }
 }
 
 function indent (level, text, spaces) {

@@ -21,9 +21,9 @@ Constraint.prototype.toString = function toString () {
   return res
 }
 
-function escape(val) {
+function escape (val) {
   if (typeof val === 'string') {
-    return '"'+val+'"'
+    return '"' + val + '"'
   }
 
   return val
