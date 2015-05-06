@@ -310,13 +310,13 @@ CHRConstraintExpr
     }
 
 Parameters
-  = parameter:Parameter "," parameters:Parameters
+  = parameter:Parameter __ "," __ parameters:Parameters
     { return [ parameter].concat(parameters) }
   / parameter:Parameter
     { return [ parameter ] }
 
 ParametersExpr
-  = parameter:ParameterExpr "," parameters:ParametersExpr
+  = parameter:ParameterExpr __ "," __ parameters:ParametersExpr
     { return [ parameter].concat(parameters) }
   / parameter:ParameterExpr
     { return [ parameter ] }
