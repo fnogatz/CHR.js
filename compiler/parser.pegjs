@@ -1574,7 +1574,7 @@ FunctionBody
     }
 
 Program
-  = body:SourceElements? {
+  = __ body:SourceElements? {
       var res = {
         type: "Program",
         body: optionalList(body)
