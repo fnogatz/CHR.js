@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
   "main": "index.js",
   "scripts": {
