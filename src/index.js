@@ -1,3 +1,26 @@
+module.exports = CHR
+
+var Store = require('./store')
+
+function CHR(store) {
+  /**
+   * Adds a number of rules given as arguments.
+   */
+  function tag(program) {
+    // TODO
+  }
+
+  /**
+   * Constraint store for this handler.
+   * @type {Runtime.Store}
+   */
+  tag.Store = store || new Store()
+
+  return tag
+}
+
+/*
+
 module.exports = {}
 module.exports.transform = transform
 module.exports.transformFile = transformFile
@@ -29,3 +52,4 @@ function transformFile (filename, opts, callback) {
     return callback(null, result)
   })
 }
+*/
