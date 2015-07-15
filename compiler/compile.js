@@ -313,7 +313,7 @@ function generateTell (opts, body, constraints) {
   return expr
 }
 
-function setTell(constraints, c) {
+function setTell (constraints, c) {
   if (!constraints[c.name]) {
     constraints[c.name] = {
       occurences: {},
