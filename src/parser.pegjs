@@ -1,100 +1,4 @@
 {
-  function headNormalForm(ruleDescriptor) {
-    var variableNames = {};
-
-    function renameParameters(constraint) {
-      if (constraint.type !== 'Constraint') {
-        return;
-      }
-
-      constraint.parameters.forEach(function(parameter) {
-        if (parameter.type !== 'Identifier') {
-          return;
-        }
-
-        var name = parameter.name;
-        if (!variableNames[name]) {
-          variableNames[name] = true;
-          return;
-        }
-
-        if (variableNames[name]) {
-          // rename
-          var i = 0;
-          var newName = name+'_'+i;
-          while (variableNames[newName]) {
-            i++;
-            var newName = name+'_'+i;
-          }
-          parameter.name = newName
-          variableNames[newName] = true;
-
-          // add equality to guard
-          ruleDescriptor.guard.push({
-            "type": "BinaryExpression",
-            "operator": "===",
-            "left": {
-               "type": "Identifier",
-               "name": name
-            },
-            "right": {
-               "type": "Identifier",
-               "name": newName
-            }
-         });
-        }
-      });
-    }
-
-    ruleDescriptor.kept.forEach(renameParameters);
-    ruleDescriptor.removed.forEach(renameParameters);
-
-    return ruleDescriptor;
-  }
-
-  function getConstraints(ruleDescriptor) {
-    var constraints = {};
-
-    function extractConstraints(constraint) {
-      if (constraint.type === 'Constraint') {
-        constraints[constraint.name+'/'+constraint.parameters.length] = true;
-      }
-    }
-
-    ruleDescriptor.kept.forEach(extractConstraints);
-    ruleDescriptor.removed.forEach(extractConstraints);
-    ruleDescriptor.body.forEach(extractConstraints);
-
-    return Object.keys(constraints);
-  }
-
-  function addConstraints(program) {
-    var constraints = {};
-
-    program.body.forEach(function (body) {
-      if (body.type === 'PropagationRule' || body.type === 'SimplificationRule' || body.type === 'SimpagationRule') {
-        body.constraints.forEach(function (constraint) {
-          constraints[constraint] = true
-        })
-      }
-    })
-
-    program.constraints = Object.keys(constraints)
-
-    return program
-  }
-
-  function addProperties(ruleDescriptor) {
-    ruleDescriptor.r = ruleDescriptor.kept.length;
-    ruleDescriptor.head = ruleDescriptor.kept.concat(ruleDescriptor.removed);
-
-    return ruleDescriptor;
-  }
-
-  /**
-   * Rest for JavaScript PEG
-   */
-
   var TYPES_TO_PROPERTY_NAMES = {
     CallExpression:   "callee",
     MemberExpression: "object",
@@ -166,15 +70,26 @@
 }
 
 Start
-  = Program
+  = Rule
 
-CHRRule
+Rule
+  = name:RuleName?
+    rule:RuleWithoutName {
+      if (name) {
+        rule.name = name;
+      }
+      return rule;
+    }
+
+RuleWithoutName
   = PropagationRule
   / SimplificationRule
-  / SimpagationRule
 
 PropagationRule
-  = name:RuleName? headConstraints:CHRConstraints __ "==>" __ guard:Guard? bodyConstraints:Body {
+  = headConstraints:Constraints __
+    "==>" __
+    guard:Guard?
+    bodyConstraints:Body {
       var desc = {
         type: 'PropagationRule',
         kept: headConstraints,
@@ -182,17 +97,14 @@ PropagationRule
         body: bodyConstraints,
         guard: guard || []
       };
-      if (name) {
-        desc.name = name.name;
-      }
-      desc.constraints = getConstraints(desc);
-      desc = headNormalForm(desc);
-      desc = addProperties(desc);
       return desc;
     }
 
 SimplificationRule
-  = name:RuleName? headConstraints:CHRConstraints __ "<=>" __ guard:Guard? bodyConstraints:Body {
+  = headConstraints:Constraints __
+    "<=>" __ 
+    guard:Guard? 
+    bodyConstraints:Body {
       var desc = {
         type: 'SimplificationRule',
         kept: [],
@@ -200,144 +112,192 @@ SimplificationRule
         body: bodyConstraints,
         guard: guard || []
       };
-      if (name) {
-        desc.name = name.name;
-      }
-      desc.constraints = getConstraints(desc);
-      desc = headNormalForm(desc);
-      desc = addProperties(desc);
-      return desc;
-    }
-
-SimpagationRule
-  = name:RuleName? keptConstraints:CHRConstraints __ "\\" __ removedConstraints:CHRConstraints __ "<=>" __ guard:Guard? bodyConstraints:Body {
-      var desc = {
-        type: 'SimpagationRule',
-        kept: keptConstraints,
-        removed: removedConstraints,
-        body: bodyConstraints,
-        guard: guard || []
-      };
-      if (name) {
-        desc.name = name.name;
-      }
-      desc.constraints = getConstraints(desc);
-      desc = headNormalForm(desc);
-      desc = addProperties(desc);
       return desc;
     }
 
 RuleName
-  = identifier:Identifier __ "@" __ {
+  = identifier:RuleIdentifier __ "@" __ {
       return identifier;
     }
 
-Guard
-  = guard: BuiltInConstraints __ "|" __ {
-      return guard;
+RuleIdentifier
+  = chars:[^@]+ {
+      return chars.join('').trim();
     }
 
-BuiltInConstraints
-  = first:BuiltInConstraint __ "," __ following:BuiltInConstraints {
-      return [ first ].concat(following);
-    }
-  / constraint:BuiltInConstraint {
-      return [ constraint ];
-    }
-
-BuiltInConstraint
-  = expression:AssignmentExpression {
-      return expression;
-    }
-
-CHRConstraints
-  = first:CHRConstraint __ "," __ following:CHRConstraints {
-      return [ first ].concat(following);
-    }
-  / constraint:CHRConstraint {
-      return [ constraint ];
-    }
-
-Body
-  = first:Constraint __ "," __ following:Body {
-      return [ first ].concat(following);
-    }
-  / constraint:Constraint {
-      if (constraint.name === 'true') {
-        return []
-      }
-      return [ constraint ];
+Constraints
+  = first:Constraint rest:(__ "," __ Constraint)* {
+      return buildList(first, rest, 3);
     }
 
 Constraint
-  = CHRConstraintExpr
-  / AssignmentExpression
-
-CHRConstraint
-  = constraintName:ConstraintName "(" __ parameters:Parameters __ ")" {
-      return { 
+  = constraintName:ConstraintName
+    parameters:("(" __ Parameters __ ")")? {
+      var desc = { 
         type: 'Constraint',
         name: constraintName,
-        parameters: parameters,
-        arity: parameters.length
+        parameters: extractOptional(parameters, 2, []),
+        original: text()
       };
-    }
-  / constraintName:ConstraintName {
-      return {
-        type: 'Constraint',
-        name: constraintName,
-        parameters: [],
-        arity: 0
-      };
+      if (desc.parameters === null) {
+        desc.parameters = [];
+      }
+      return desc;
     }
 
-CHRConstraintExpr
-  = constraintName:ConstraintName "(" __ parameters:ParametersExpr __ ")" {
-      return { 
-        type: 'Constraint',
-        name: constraintName,
-        parameters: parameters,
-        arity: parameters.length
-      };
-    }
-  / constraintName:ConstraintName {
-      return {
-        type: 'Constraint',
-        name: constraintName,
-        parameters: [],
-        arity: 0
-      };
+ConstraintName
+  = first:[a-z] following:[A-z0-9_]* {
+      return first+following.join('');
     }
 
 Parameters
-  = parameter:Parameter __ "," __ parameters:Parameters
-    { return [ parameter].concat(parameters) }
-  / parameter:Parameter
-    { return [ parameter ] }
-
-ParametersExpr
-  = parameter:ParameterExpr __ "," __ parameters:ParametersExpr
-    { return [ parameter].concat(parameters) }
-  / parameter:ParameterExpr
-    { return [ parameter ] }
+  = first:Parameter rest:(__ "," __ Parameter)* {
+      return buildList(first, rest, 3);
+    }
 
 Parameter
-  = NumericLiteral
-  / StringLiteral
-  / Identifier
-  / FunctionExpression
+  = expression:SimplePrimaryExpression {
+      expression.original = text();
+      return expression;
+    }
 
-ParameterExpr
-  = AssignmentExpression
-  / NumericLiteral
-  / StringLiteral
-  / Identifier
-  / FunctionExpression
+Guard
+  = guard:BuiltInsNoBitwiseOR __ "|" !"|" __ {
+      return guard;
+    }
 
-ConstraintName
-  = first:[a-z] following:[A-z0-9_]*
-    { return first+following.join('') }
+BuiltInsNoBitwiseOR
+  = expression:ExpressionNoBitwiseOR {
+      if (expression.type === 'SequenceExpression') {
+        return expression.expressions;
+      }
+      if (!(expression instanceof Array)) {
+        return [ expression ]
+      }
+      return expression
+    }
 
+Body
+  = first:BodyConstraint rest:(__ "," __ BodyConstraint)* {
+      return buildList(first, rest, 3);
+    }
+
+BodyConstraint
+  = Constraint
+
+SimpleArrayLiteral
+  = "[" __ elision:(Elision __)? "]" {
+      return {
+        type:     "ArrayExpression",
+        elements: optionalList(extractOptional(elision, 0))
+      };
+    }
+  / "[" __ elements:SimpleElementList __ "]" {
+      return {
+        type:     "ArrayExpression",
+        elements: elements
+      };
+    }
+  / "[" __ elements:SimpleElementList __ "," __ elision:(Elision __)? "]" {
+      return {
+        type:     "ArrayExpression",
+        elements: elements.concat(optionalList(extractOptional(elision, 0)))
+      };
+    }
+
+SimpleElementList
+  = first:(
+      elision:(Elision __)? element:SimplePrimaryExpression {
+        return optionalList(extractOptional(elision, 0)).concat(element);
+      }
+    )
+    rest:(
+      __ "," __ elision:(Elision __)? element:SimplePrimaryExpression {
+        return optionalList(extractOptional(elision, 0)).concat(element);
+      }
+    )*
+    { return Array.prototype.concat.apply(first, rest); }
+
+SimplePrimaryExpression
+  = Identifier
+  / Literal
+  / SimpleArrayLiteral
+  / SimpleObjectLiteral
+
+SimpleObjectLiteral
+  = "{" __ "}" { return { type: "ObjectExpression", properties: [] }; }
+  / "{" __ properties:SimplePropertyNameAndValueList __ "}" {
+       return { type: "ObjectExpression", properties: properties };
+     }
+  / "{" __ properties:SimplePropertyNameAndValueList __ "," __ "}" {
+       return { type: "ObjectExpression", properties: properties };
+     }
+
+SimplePropertyNameAndValueList
+  = first:SimplePropertyAssignment rest:(__ "," __ SimplePropertyAssignment)* {
+      return buildList(first, rest, 3);
+    }
+
+SimplePropertyAssignment
+  = key:PropertyName __ ":" __ value:AssignmentExpression {
+      return { key: key, value: value, kind: "init" };
+    }
+
+ExpressionNoBitwiseOR
+  = first:AssignmentExpressionNoBitwiseOR rest:(__ "," __ AssignmentExpressionNoBitwiseOR)* {
+      return rest.length > 0
+        ? { type: "SequenceExpression", expressions: buildList(first, rest, 3) }
+        : first;
+    }
+
+AssignmentExpressionNoBitwiseOR
+  = left:LeftHandSideExpression __
+    "=" !"=" __
+    right:AssignmentExpressionNoBitwiseOR
+    {
+      return {
+        type:     "AssignmentExpression",
+        operator: "=",
+        left:     left,
+        right:    right
+      };
+    }
+  / left:LeftHandSideExpression __
+    operator:AssignmentOperator __
+    right:AssignmentExpressionNoBitwiseOR
+    {
+      return {
+        type:     "AssignmentExpression",
+        operator: operator,
+        left:     left,
+        right:    right
+      };
+    }
+  / ConditionalExpressionNoBitwiseOR
+
+ConditionalExpressionNoBitwiseOR
+  = test:LogicalORExpressionNoBitwiseOR __
+    "?" __ consequent:AssignmentExpressionNoBitwiseOR __
+    ":" __ alternate:AssignmentExpressionNoBitwiseOR
+    {
+      return {
+        type:       "ConditionalExpression",
+        test:       test,
+        consequent: consequent,
+        alternate:  alternate
+      };
+    }
+  / LogicalORExpressionNoBitwiseOR
+
+LogicalORExpressionNoBitwiseOR
+  = first:LogicalANDExpressionNoBitwiseOR
+    rest:(__ "LogicalOROperator" __ LogicalANDExpressionNoBitwiseOR)*
+    { return buildBinaryExpression(first, rest); }
+
+LogicalANDExpressionNoBitwiseOR
+  = first:BitwiseXORExpression
+    rest:(__ LogicalANDOperator __ BitwiseXORExpression)*
+    { return buildBinaryExpression(first, rest); }
 
 
 /**
@@ -1085,12 +1045,8 @@ BitwiseORExpressionNoIn
     rest:(__ BitwiseOROperator __ BitwiseXORExpressionNoIn)*
     { return buildBinaryExpression(first, rest); }
 
-/* TODO
 BitwiseOROperator
   = $("|" ![|=])
-*/
-BitwiseOROperator
-  = $(![|=])
 
 LogicalANDExpression
   = first:BitwiseORExpression
@@ -1574,23 +1530,39 @@ FunctionBody
     }
 
 Program
-  = __ body:SourceElements? {
-      var res = {
+  = body:CHRSourceElements? {
+      return {
         type: "Program",
         body: optionalList(body)
       };
-
-      addConstraints(res);
-
-      return res;
     }
 
 SourceElements
-  = first:SourceElement __ rest:(__ SourceElement __)* {
+  = first:SourceElement rest:(__ SourceElement)* {
       return buildList(first, rest, 1);
     }
 
 SourceElement
   = Statement
   / FunctionDeclaration
-  / CHRRule
+
+CHRSourceElements
+  = first:CHRSourceElement rest:(__ CHRSourceElement)* {
+      return buildList(first, rest, 1);
+    }
+
+CHRSourceElement
+  = Rule
+  / __
+
+/* ----- A.6 Universal Resource Identifier Character Classes ----- */
+
+/* Irrelevant. */
+
+/* ----- A.7 Regular Expressions ----- */
+
+/* Irrelevant. */
+
+/* ----- A.8 JSON ----- */
+
+/* Irrelevant. */
