@@ -1,13 +1,16 @@
 module.exports = CHR
+module.exports.parse = require('./parser').parse
 
 var Store = require('./store')
+var parse = require('./parser').parse
 
-function CHR(store) {
+function CHR (store) {
   /**
    * Adds a number of rules given as arguments.
    */
-  function tag(program) {
+  function tag (program) {
     // TODO
+    return parse
   }
 
   /**
