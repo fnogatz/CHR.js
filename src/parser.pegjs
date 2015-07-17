@@ -84,6 +84,7 @@ Rule
 RuleWithoutName
   = PropagationRule
   / SimplificationRule
+  / SimpagationRule
 
 PropagationRule
   = headConstraints:Constraints __
@@ -109,6 +110,23 @@ SimplificationRule
         type: 'SimplificationRule',
         kept: [],
         removed: headConstraints,
+        body: bodyConstraints,
+        guard: guard || []
+      };
+      return desc;
+    }
+
+SimpagationRule
+  = keptConstraints:Constraints __
+    ("\\" / "/") __
+    removedConstraints:Constraints __
+    "<=>" __
+    guard:Guard?
+    bodyConstraints:Body {
+      var desc = {
+        type: 'SimpagationRule',
+        kept: keptConstraints,
+        removed: removedConstraints,
         body: bodyConstraints,
         guard: guard || []
       };
