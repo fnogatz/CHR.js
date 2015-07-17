@@ -69,8 +69,8 @@
   }
 }
 
-Start
-  = Rule
+Program
+  = __ program:Program __ { return program; }
 
 Rule
   = name:RuleName?
@@ -139,7 +139,7 @@ RuleName
     }
 
 RuleIdentifier
-  = chars:[^@]+ {
+  = chars:($(!"@" DoubleStringCharacter))+ {
       return chars.join('').trim();
     }
 
@@ -1548,7 +1548,7 @@ FunctionBody
     }
 
 Program
-  = body:CHRSourceElements? {
+  = __ body:CHRSourceElements? __ {
       return {
         type: "Program",
         body: optionalList(body)
@@ -1571,7 +1571,6 @@ CHRSourceElements
 
 CHRSourceElement
   = Rule
-  / __
 
 /* ----- A.6 Universal Resource Identifier Character Classes ----- */
 

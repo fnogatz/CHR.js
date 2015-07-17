@@ -21,14 +21,23 @@ test('name @ a <=> b', function (t) {
 
   t.end()
 })
-/*
-test('name @ a \ b <=> c', function (t) {
-  var res = parse('name @ a \ b <=> c')
+
+test('name @ a \\ b <=> c', function (t) {
+  var res = parse('name @ a \\ b <=> c')
 
   t.equal(typeof res, 'object')
-  t.equal(res.type, 'SimplificationRule')
+  t.equal(res.type, 'SimpagationRule')
   t.equal(res.name, 'name')
 
   t.end()
 })
-*/
+
+test('name @ a / b <=> c', function (t) {
+  var res = parse('name @ a / b <=> c')
+
+  t.equal(typeof res, 'object')
+  t.equal(res.type, 'SimpagationRule')
+  t.equal(res.name, 'name')
+
+  t.end()
+})
