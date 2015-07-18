@@ -1,3 +1,8 @@
+module.exports = {
+  head: compileHead
+}
+
+/*
 module.exports = compile
 
 var parse = require('./parser').parse
@@ -134,129 +139,119 @@ function generateDummyActivateProperties (opts, constraints) {
 
   return parts.join('\n')
 }
+*/
 
-function generateOccurenceProperties (opts, rule, constraints) {
+function compileHead (rule, headNo, opts) {
+  headNo = headNo || 0
+  opts = opts || {}
+  opts.this = opts.this || 'this'
+
+  if (!rule.head[headNo]) {
+    throw new Error('No constraint with number ' + headNo + ' in this rule head')
+  }
+
+  var constraint = rule.head[headNo]
+  if (constraint.type !== 'Constraint') {
+    throw new Error('No constraint at number ' + headNo)
+  }
+
   var parts = []
+  parts.push(
+    'var self = ' + opts.this,
+    ''
+  )
 
-  var curr
-  for (var i = rule.head.length - 1; i >= 0; i--) {
-    // loop from right to left
+  if (constraint.arity > 0) {
+    parts.push(
+      indent(0, destructuring(constraint, 'constraint.args')).join('\n'),
+      indent(0)
+    )
+  }
 
-    curr = rule.head[i]
-    if (curr.type !== 'Constraint') {
+  var j
+  var level = 0
+  var ids = []
+  for (j = 0; j < rule.head.length; j++) {
+    if (j === headNo) {
+      ids.push('constraint.id')
       continue
     }
 
-    var occurenceNumber = 1
-    if (constraints[curr.name].occurences.hasOwnProperty(curr.arity)) {
-      occurenceNumber = constraints[curr.name].occurences[curr.arity]
+    ids.push('id' + (j + 1))
+
+    parts.push(indent(level) + 'self.Store.lookup("' + rule.head[j].name + '", ' + rule.head[j].arity + ').forEach(function (id' + (j + 1) + ') {')
+    level++
+
+    parts.push(
+      indent(level, 'if (!self.Store.alive(id' + (j + 1) + ')) {'),
+      indent(level + 1) + 'return',
+      indent(level, '}')
+    )
+
+    if (rule.head[j].arity > 0) {
+      parts.push(
+        indent(level, destructuring(rule.head[j], 'self.Store.args(id' + (j + 1) + ')')).join('\n')
+      )
     }
 
-    parts.push([
-      'CHR.prototype._' + curr.name + '_' + curr.arity + '_occurence_' + occurenceNumber + ' = function (constraint) {',
-      '  var self = this',
-      '  '
-    ].join('\n'))
-
-    if (curr.arity > 0) {
-      // destructuring variables
-      parts.push([
-        indent(1, destructuring(curr, 'constraint.args')).join('\n'),
-        indent(1)
-      ].join('\n'))
-    }
-
-    var j
-    var level = 1
-    var ids = []
-    for (j = 0; j < rule.head.length; j++) {
-      if (j === i) {
-        ids.push('constraint.id')
-        continue
-      }
-
-      ids.push('id' + (j + 1))
-
-      parts.push(indent(level) + 'self.Store.lookup("' + rule.head[j].name + '", ' + rule.head[j].arity + ').forEach(function (id' + (j + 1) + ') {')
-      level++
-
-      parts.push([
-        'if (!self.Store.alive(id' + (j + 1) + ')) {',
-        indent(1) + 'return',
-        '}'
-      ].map(indentBy(level)).join('\n'))
-
-      if (rule.head[j].arity > 0) {
-        parts.push(indent(level, destructuring(rule.head[j], 'self.Store.args(id' + (j + 1) + ')')).join('\n'))
-      }
-
-      parts.push(indent(level))
-    }
-
-    parts.push([
-      'var ids = [ ' + ids.join(', ') + ' ]',
-      'if (ids.every(function(id) { return self.Store.alive(id) })) {',
-      indent(1) + 'if (' + opts.runtime + '.helper.allDifferent(ids)) {'
-    ].map(indentBy(level)).join('\n'))
-    level += 2
-
-    if (rule.guard.length > 0) {
-      parts.push(indent(level) + generateGuards(opts, rule))
-      level += 1
-    }
-
-    parts.push([
-      'if (self.History.notIn("' + rule.name + '", ids)) {',
-      indent(1) + 'self.History.add("' + rule.name + '", ids)',
-      ''
-    ].map(indentBy(level)).join('\n'))
-
-    level += 1
-
-    for (var k = rule.r + 1; k <= rule.head.length; k++) {
-      // remove constraints
-      parts.push(indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])')
-    }
-
-    if (rule.body.length > 0) {
-      parts.push(rule.body.map(function (body) {
-        return generateTell(opts, body, constraints)
-      }).map(indentBy(level)).join('\n'))
-    }
-
-    level -= 1
-
-    parts.push(indent(level) + '}')
-
-    if (rule.guard.length > 0) {
-      level -= 1
-      parts.push(indent(level) + '}')
-    }
-
-    level -= 2
-    parts.push([
-      indent(1) + '}',
-      '}'
-    ].map(indentBy(level)).join('\n'))
-
-    for (j = rule.head.length - 1; j >= 0; j--) {
-      if (j === i) {
-        continue
-      }
-
-      level--
-      parts.push(indent(level) + '})')
-    }
-
-    parts.push([
-      '}',
-      ''
-    ].join('\n'))
-
-    constraints[curr.name].occurences[curr.arity] = occurenceNumber + 1
+    parts.push(indent(level))
   }
 
-  return parts.join('\n')
+  parts.push(
+    indent(level + 0) + 'var ids = [ ' + ids.join(', ') + ' ]',
+    indent(level + 0) + 'if (ids.every(function(id) { return self.Store.alive(id) })) {',
+    indent(level + 1) + 'if (self.AllDifferent(ids)) {'
+  )
+  level += 2
+
+  if (rule.guard.length > 0) {
+    parts.push(indent(level) + generateGuards(opts, rule))
+    level += 1
+  }
+
+  parts.push(
+    indent(level + 0) + 'if (self.History.notIn("' + rule.name + '", ids)) {',
+    indent(level + 1) + 'self.History.add("' + rule.name + '", ids)'
+  )
+
+  level += 1
+
+  for (var k = rule.r + 1; k <= rule.head.length; k++) {
+    // remove constraints
+    parts.push(indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])')
+  }
+
+  if (rule.body.length > 0) {
+    rule.body.forEach(function (body) {
+      parts.push(indent(level) + generateTell(opts, body))
+    })
+  }
+
+  level -= 1
+
+  parts.push(indent(level) + '}')
+
+  if (rule.guard.length > 0) {
+    level -= 1
+    parts.push(indent(level) + '}')
+  }
+
+  level -= 2
+  parts.push(
+    indent(1) + '}',
+    indent(0) + '}'
+  )
+
+  for (j = rule.head.length - 1; j >= 0; j--) {
+    if (j === headNo) {
+      continue
+    }
+
+    level--
+    parts.push(indent(level) + '})')
+  }
+
+  return parts
 }
 
 function generateGuards (opts, rule) {
@@ -299,7 +294,7 @@ function generateTell (opts, body, constraints) {
     }).join(', ')
     expr += ')'
 
-    setTell(constraints, body)
+    // setTell(constraints, body)
 
     return expr
   }
@@ -312,7 +307,7 @@ function generateTell (opts, body, constraints) {
   ].join('\n')
   return expr
 }
-
+/*
 function setTell (constraints, c) {
   if (!constraints[c.name]) {
     constraints[c.name] = {
@@ -323,7 +318,7 @@ function setTell (constraints, c) {
 
   constraints[c.name].tell[c.arity] = true
 }
-
+*/
 function generateExpression (opts, parameter) {
   if (parameter.type === 'Identifier') {
     return parameter.name

@@ -1,6 +1,6 @@
 module.exports = {
-  History: require('./runtime/history'),
-  Store: require('./runtime/store'),
-  Constraint: require('./runtime/constraint'),
-  helper: require('./runtime/helper')
+  History: require('./src/history'),
+  Store: require('./src/store'),
+  Constraint: require('./src/constraint'),
+  helper: require('./src/helper')
 }
