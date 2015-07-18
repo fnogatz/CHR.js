@@ -41,3 +41,12 @@ test('name @ a / b <=> c', function (t) {
 
   t.end()
 })
+
+test('Set "constraints" property', function (t) {
+  var res = parse('name @ a ==> b')
+
+  t.ok(res.constraints)
+  t.deepEqual(res.constraints, ['a/0', 'b/0'])
+
+  t.end()
+})

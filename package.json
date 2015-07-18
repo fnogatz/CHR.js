@@ -8,7 +8,7 @@
     "prepublish": "npm run-script peg",
     "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
     "standard": "standard",
-    "tape": "babel-tape-runner test/*.js",
+    "tape": "babel-tape-runner test/*.js test/**/**.js",
     "test": "npm run standard && npm run peg && npm run tape"
   },
   "bin": {
