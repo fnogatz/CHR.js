@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "peg": "pegjs src/parser.pegjs",
-    "prepublish": "npm run-script peg",
+    "prepublish": "npm run peg",
     "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
     "standard": "standard",
     "tape": "babel-tape-runner test/*.js test/**/**.js",
