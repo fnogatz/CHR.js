@@ -16,6 +16,31 @@ function CHR (opts) {
    * Adds a number of rules given as argument string.
    */
   function tag (chrSource) {
+    var replacements = []
+
+    if (typeof chrSource === 'object' && chrSource instanceof Array) {
+      // Called as template string
+      var taggedChrSource = chrSource[0]
+
+      replacements = Array.prototype.slice.call(arguments, 1)
+      replacements.forEach(function (expr, ix) {
+        var pred
+        if (typeof expr !== 'function') {
+          console.warn('Expressions should be functions, #' + (ix + 1) + ' is not. Therefore it is evaluated only once on compilation time, but not for each rule application.')
+          pred = function () {
+            return expr
+          }
+        } else {
+          pred = expr
+        }
+
+        var replacementId = tag.Replacements.push(pred) - 1
+        taggedChrSource += '${' + replacementId + '}' + chrSource[ix + 1]
+      })
+
+      chrSource = taggedChrSource
+    }
+
     var program = parse(chrSource)
     var rules = program.body
 
@@ -56,6 +81,7 @@ function CHR (opts) {
   tag.Store = opts.Store
   tag.History = opts.History
   tag.Constraints = {}
+  tag.Replacements = []
 
   return tag
 }

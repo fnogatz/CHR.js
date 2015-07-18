@@ -268,6 +268,10 @@ function generateGuard (opts, guard) {
     return generateBinaryExpression(opts, guard)
   }
 
+  if (guard.type === 'Replacement') {
+    return 'self.Replacements[' + guard.num + '].call(self)'
+  }
+
   return 'false'
 }
 

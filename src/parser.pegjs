@@ -291,6 +291,14 @@ Guard
       return guard;
     }
 
+Replacement
+  = "${" num:$(DecimalIntegerLiteral) "}" {
+      return {
+        type: 'Replacement',
+        num: parseInt(num)
+      }
+    }
+
 BuiltInsNoBitwiseOR
   = expression:ExpressionNoBitwiseOR {
       if (expression.type === 'SequenceExpression') {
@@ -376,7 +384,8 @@ ExpressionNoBitwiseOR
     }
 
 AssignmentExpressionNoBitwiseOR
-  = left:LeftHandSideExpression __
+  = Replacement
+  / left:LeftHandSideExpression __
     "=" !"=" __
     right:AssignmentExpressionNoBitwiseOR
     {

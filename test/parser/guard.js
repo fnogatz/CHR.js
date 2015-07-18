@@ -56,3 +56,14 @@ test('f([1,2]), X = { a: 2, b: 4 } |', function (t) {
 
   t.end()
 })
+
+test('${0}, ${1} |', function (t) {
+  var res = parse('${0}, ${1} |')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+
+  t.equal(res.length, 2)
+
+  t.end()
+})
