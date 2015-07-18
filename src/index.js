@@ -1,58 +1,90 @@
 module.exports = CHR
-module.exports.parse = require('./parser').parse
+module.exports.generateCaller = generateCaller
 
 var Store = require('./store')
+var History = require('./history')
+var Constraint = require('./constraint')
 var parse = require('./parser').parse
+var compile = require('./compile')
 
-function CHR (store) {
+function CHR (opts) {
+  opts = opts || {}
+  opts.Store = opts.Store || new Store()
+  opts.History = opts.History || new History()
+
   /**
-   * Adds a number of rules given as arguments.
+   * Adds a number of rules given as argument string.
    */
-  function tag (program) {
-    // TODO
-    return parse
+  function tag (chrSource) {
+    var program = parse(chrSource)
+    var rules = program.body
+
+    rules.forEach(function (rule) {
+      var head
+      var functor
+      var compiled
+      var compiledFunction
+
+      rule.constraints.forEach(function (functor) {
+        var name = functor.split('/')[0]
+
+        // Add caller if not present
+        if (!tag[name]) {
+          tag[name] = generateCaller(name).bind(tag)
+          tag.Constraints[functor] = []
+        }
+      })
+
+      for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {
+        head = rule.head[headNo]
+        functor = head.name + '/' + head.arity
+
+        compiled = compile.head(rule, headNo)
+        compiledFunction = new Function('constraint', compiled.join('\n')) // eslint-disable-line
+
+        tag.Constraints[functor].push(compiledFunction)
+      }
+    })
   }
+
+  tag.AllDifferent = allDifferent
 
   /**
    * Constraint store for this handler.
    * @type {Runtime.Store}
    */
-  tag.Store = store || new Store()
+  tag.Store = opts.Store
+  tag.History = opts.History
+  tag.Constraints = {}
 
   return tag
 }
 
-/*
+function generateCaller (name) {
+  return function () {
+    var self = this
 
-module.exports = {}
-module.exports.transform = transform
-module.exports.transformFile = transformFile
+    var args = Array.prototype.slice.call(arguments)
+    var arity = arguments.length
+    var functor = name + '/' + arity
 
-var fs = require('fs')
-var compile = require('./compiler/compile')
+    if (!self.Constraints[functor]) {
+      throw new Error('Constraint ' + name + '/' + arity + ' not defined.')
+    }
 
-function transform (code, opts) {
-  opts = opts || {}
+    var constraint = new Constraint(name, arity, args)
+    self.Store.add(constraint)
 
-  var result = compile(code, opts)
-
-  return result
+    self.Constraints[functor].forEach(function (occurence) {
+      occurence.call(self, constraint)
+    })
+  }
 }
 
-function transformFile (filename, opts, callback) {
-  fs.readFile(filename, 'utf8', function (err, code) {
-    if (err) {
-      return callback(err)
-    }
-
-    var result
-    try {
-      result = transform(code, opts)
-    } catch (err) {
-      return callback(err)
-    }
-
-    return callback(null, result)
+function allDifferent (arr) {
+  return arr.every(function (el1, ix) {
+    return arr.slice(ix + 1).every(function (el2) {
+      return el1 != el2 // eslint-disable-line eqeqeq
+    })
   })
 }
-*/
