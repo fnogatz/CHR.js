@@ -1,4 +1,107 @@
 {
+  function formatRule(desc) {
+    desc.constraints = getConstraints(desc);
+    desc = headNormalForm(desc);
+    desc = addProperties(desc);
+    return desc;
+  }
+
+  function headNormalForm(ruleDescriptor) {
+    var variableNames = {};
+
+    function renameParameters(constraint) {
+      if (constraint.type !== 'Constraint') {
+        return;
+      }
+
+      constraint.parameters.forEach(function(parameter) {
+        if (parameter.type !== 'Identifier') {
+          return;
+        }
+
+        var name = parameter.name;
+        if (!variableNames[name]) {
+          variableNames[name] = true;
+          return;
+        }
+
+        if (variableNames[name]) {
+          // rename
+          var i = 0;
+          var newName = name+'_'+i;
+          while (variableNames[newName]) {
+            i++;
+            var newName = name+'_'+i;
+          }
+          parameter.name = newName
+          variableNames[newName] = true;
+
+          // add equality to guard
+          ruleDescriptor.guard.push({
+            "type": "BinaryExpression",
+            "operator": "===",
+            "left": {
+               "type": "Identifier",
+               "name": name
+            },
+            "right": {
+               "type": "Identifier",
+               "name": newName
+            }
+         });
+        }
+      });
+    }
+
+    ruleDescriptor.kept.forEach(renameParameters);
+    ruleDescriptor.removed.forEach(renameParameters);
+
+    return ruleDescriptor;
+  }
+
+  function getConstraints(ruleDescriptor) {
+    var constraints = {};
+
+    function extractConstraints(constraint) {
+      if (constraint.type === 'Constraint') {
+        constraints[constraint.name+'/'+constraint.parameters.length] = true;
+      }
+    }
+
+    ruleDescriptor.kept.forEach(extractConstraints);
+    ruleDescriptor.removed.forEach(extractConstraints);
+    ruleDescriptor.body.forEach(extractConstraints);
+
+    return Object.keys(constraints);
+  }
+
+  function addConstraints(program) {
+    var constraints = {};
+
+    program.body.forEach(function (body) {
+      if (body.type === 'PropagationRule' || body.type === 'SimplificationRule' || body.type === 'SimpagationRule') {
+        body.constraints.forEach(function (constraint) {
+          constraints[constraint] = true
+        })
+      }
+    })
+
+    program.constraints = Object.keys(constraints)
+
+    return program
+  }
+
+  function addProperties(ruleDescriptor) {
+    ruleDescriptor.r = ruleDescriptor.kept.length;
+    ruleDescriptor.head = ruleDescriptor.kept.concat(ruleDescriptor.removed);
+
+    return ruleDescriptor;
+  }
+
+  /**
+   * Rest for JavaScript PEG
+   */
+  
   var TYPES_TO_PROPERTY_NAMES = {
     CallExpression:   "callee",
     MemberExpression: "object",
@@ -69,8 +172,8 @@
   }
 }
 
-Program
-  = __ program:Program __ { return program; }
+Start
+  = Program
 
 Rule
   = name:RuleName?
@@ -98,6 +201,7 @@ PropagationRule
         body: bodyConstraints,
         guard: guard || []
       };
+      desc = formatRule(desc);
       return desc;
     }
 
@@ -113,6 +217,7 @@ SimplificationRule
         body: bodyConstraints,
         guard: guard || []
       };
+      desc = formatRule(desc);
       return desc;
     }
 
@@ -130,6 +235,7 @@ SimpagationRule
         body: bodyConstraints,
         guard: guard || []
       };
+      desc = formatRule(desc);
       return desc;
     }
 
@@ -160,6 +266,7 @@ Constraint
       if (desc.parameters === null) {
         desc.parameters = [];
       }
+      desc.arity = desc.parameters.length
       return desc;
     }
 
