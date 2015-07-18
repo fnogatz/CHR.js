@@ -303,6 +303,10 @@ function generateTell (opts, body, constraints) {
     return expr
   }
 
+  if (body.type === 'Replacement') {
+    return 'self.Replacements[' + body.num + '].call(self)'
+  }
+
   expr += [
     'if (!(' + generateBinaryExpression(opts, body) + ')) {',
     indent(1) + 'self.Store.invalidate()',

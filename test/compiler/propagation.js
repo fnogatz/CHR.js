@@ -37,3 +37,14 @@ test('a, b ==> c', function (t) {
 
   t.end()
 })
+
+test('a ==> b', function (t) {
+  var chr = new CHR()
+  chr('a ==> b')
+
+  chr.a()
+  chr.a()
+  t.equal(chr.Store.length, 4)
+
+  t.end()
+})

@@ -49,3 +49,49 @@ test('a ==> ${ false } | b', function (t) {
 
   t.end()
 })
+
+test('a ==> ${ () => fire("Rule fired") }', function (t) {
+  function fire (string) {
+    t.equal(string, 'Rule fired')
+
+    t.end()
+  }
+
+  var chr = new CHR()
+  chr`
+    a ==> ${ () => fire('Rule fired') }
+  `
+
+  chr.a()
+})
+
+test('a ==> ${ fire }', function (t) {
+  function fire () {
+    t.end()
+  }
+
+  var chr = new CHR()
+  chr`
+    a ==> ${ fire }
+  `
+
+  chr.a()
+})
+
+test('Scope', function (t) {
+  var chr = new CHR()
+  chr`
+    a ==> ${ () => i !== 0 } | b
+  `
+
+  var i = 0
+  chr.a()
+
+  t.equal(chr.Store.length, 1, 'b not propagated')
+
+  i = 1
+  chr.a()
+  t.equal(chr.Store.length, 3, 'b propagated')
+
+  t.end()
+})

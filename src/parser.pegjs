@@ -316,7 +316,8 @@ Body
     }
 
 BodyConstraint
-  = Constraint
+  = Replacement
+  / Constraint
 
 SimpleArrayLiteral
   = "[" __ elision:(Elision __)? "]" {
