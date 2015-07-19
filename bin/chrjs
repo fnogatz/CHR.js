@@ -20,7 +20,7 @@ var file = program.args[0]
 var opts = program
 
 if (file) {
-  compile.file(file, opts, onFinish)
+  compile.fromFile(file, opts, onFinish)
 } else {
   process.stdin.pipe(concat({ encoding: 'string' }, function (source) {
     var code = compile(source, opts)

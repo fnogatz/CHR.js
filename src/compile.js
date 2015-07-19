@@ -1,147 +1,215 @@
-module.exports = {
-  head: compileHead,
-  indent: indent,
-  indentBy: indentBy
-}
+module.exports = transform
+module.exports.fromFile = transformFile
+module.exports.head = compileHead
+module.exports.indent = indent
+module.exports.indentBy = indentBy
 
-/*
-module.exports = compile
+var fs = require('fs')
 
 var parse = require('./parser').parse
 
-function compile (code, opts) {
+function transform (program, opts) {
   opts = opts || {}
-  opts.runtime = opts.runtime || 'Runtime'
   opts.exports = opts.exports || 'module.exports'
+  opts.runtime = opts.runtime || 'require("chr/runtime")'
 
-  var program = parse(code)
+  var parsed = parse(program, {
+    startRule: 'ProgramWithPreamble'
+  })
 
   var parts = []
 
-  if (!opts.withoutHeader) {
-    parts.push(generateHeader(opts))
-    parts.push('')
-  }
+  parts.push(
+    'var Runtime = ' + opts.runtime,
+    ''
+  )
 
-  parts.push(generateStatic(opts, program))
-  parts.push('')
+  parts.push(opts.exports + ' = (function() {')
+  var level = 1
+
+  if (parsed.preamble) {
+    parts.push(indent(level) + parsed.preamble)
+    parts.push(indent(level))
+  }
 
   var constraints = {}
-  var ruleNo = 1
-  program.body.forEach(function (body) {
-    if (body.type === 'PropagationRule' || body.type === 'SimplificationRule' || body.type === 'SimpagationRule') {
-      if (!body.name) {
-        body.name = '__rule_' + ruleNo
-      }
-      ruleNo++
+  var constraintNames = {}
+  var replacements = []
 
-      parts.push(translateRule(body, opts, constraints))
+  var rules = parsed.body
+  rules.forEach(function (rule) {
+    var head
+    var functor
+    var compiled
+
+    rule.constraints.forEach(function (functor) {
+      var name = functor.split('/')[0]
+      constraintNames[name] = true
+
+      if (!constraints[functor]) {
+        constraints[functor] = []
+      }
+    })
+
+    // replace replacements
+    ;['guard', 'body'].forEach(function (location) {
+      rule[location] = rule[location].map(function (element) {
+        if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
+          return element
+        }
+
+        var src = element.original
+        if (location === 'guard') {
+          src = 'return ' + src
+        }
+
+        var replacementId = replacements.push(src) - 1
+        var newElement = {
+          type: 'Replacement',
+          num: replacementId
+        }
+        return newElement
+      })
+    })
+
+    for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {
+      head = rule.head[headNo]
+      functor = head.name + '/' + head.arity
+
+      compiled = compileHead(rule, headNo, {
+        helper: 'Runtime.Helper'
+      })
+      constraints[functor].push(compiled)
     }
   })
 
-  parts.push(generateActivateProperties(opts, constraints))
-  parts.push(generateDummyActivateProperties(opts, constraints))
+  parts.push(
+    indent(level) + 'var _activators = {}',
+    indent(level)
+  )
 
-  if (!opts.withoutExport) {
-    parts.push(opts.exports + ' = new CHR()')
+  var activates
+  for (var functor in constraints) {
+    activates = []
+
+    constraints[functor].forEach(function (occurenceFunctionSource, occurence) {
+      var functionName = '_' + functor.replace('/', '_') + '_' + occurence
+      activates.push(functionName)
+
+      parts.push(indent(level) + 'function ' + functionName + ' (constraint) {')
+      parts = parts.concat(occurenceFunctionSource.map(indentBy(level + 1)))
+      parts.push(
+        indent(level) + '}',
+        indent(level)
+      )
+    })
+
+    parts.push(indent(level) + '_activators.' + functor.replace('/', '_') + ' = function (constraint) {')
+    activates.map(function (activatorName) {
+      parts.push(indent(level + 1) + activatorName + '.call(chr, constraint)')
+    })
+    parts.push(
+      indent(level) + '}',
+      indent(level)
+    )
   }
 
-  var generatedCode = parts.join('\n')
+  parts = parts.concat(generateObject(opts, constraints, replacements).map(indentBy(level)))
+  parts.push(indent(level))
 
-  return generatedCode
-}
+  for (var constraintName in constraintNames) {
+    parts = parts.concat(generateCaller(opts, constraintName).map(indentBy(level)))
+    parts.push(indent(level))
+  }
 
-function translateRule (rule, opts, constraints) {
-  var parts = []
-
-  rule.constraints.forEach(function (functor) {
-    var name = functor.replace(/^(.+)\/.+$/, '$1')
-    if (!constraints.hasOwnProperty(name)) {
-      constraints[name] = {
-        occurences: {},
-        tell: {}
-      }
-
-      parts.push(generateConstraintProperty(opts, name))
-      parts.push('')
-    }
-  })
-
-  parts.push(generateOccurenceProperties(opts, rule, constraints))
+  parts.push(
+    indent(level) + 'return chr',
+    '})()'
+  )
 
   return parts.join('\n')
 }
 
-function generateHeader (opts) {
-  return [
-    'var ' + opts.runtime + ' = require("chr/runtime")'
-  ].join('\n')
-}
+function generateObject (opts, constraints, replacements) {
+  var parts = []
 
-function generateStatic (opts, program) {
-  return [
-    indent(0) + 'function CHR(store, history) {',
-    indent(1) + 'this.Store = store || new ' + opts.runtime + '.Store()',
-    indent(1) + 'this.History = history || new ' + opts.runtime + '.History()',
-    indent(1) + 'this.constraints = ' + (program.constraints.length === 0 ? '[]' : '[ "' + program.constraints.join('", "') + '" ]'),
+  parts.push(
+    indent(0) + 'var chr = {',
+    indent(1) + 'Store: new Runtime.Store(),',
+    indent(1) + 'History: new Runtime.History(),',
+    indent(1) + 'Constraints: {'
+  )
+
+  var functorNo = 0
+  for (var functor in constraints) {
+    parts.push((functorNo++ > 0 ? indent(1) + ', ' : indent(2)) + '"' + functor + '": [')
+    constraints[functor].forEach(function (o, occurence) {
+      parts.push((occurence > 0 ? indent(2) + ', ' : indent(3)) + '_' + functor.replace('/', '_') + '_' + occurence + '.bind(chr)')
+    })
+    parts.push(indent(2) + ']')
+  }
+
+  parts.push(
+    indent(1) + '},',
+    indent(1) + 'Replacements: ['
+  )
+
+  replacements.forEach(function (replacement, ix) {
+    parts.push(
+      (ix > 0 ? ', ' + indent(1) : indent(2)) + 'function () {',
+      indent(3) + replacement,
+      indent(2) + '}'
+    )
+  })
+
+  parts.push(
+    indent(1) + ']',
     indent(0) + '}'
-  ].join('\n')
+  )
+
+  return parts
 }
 
-function generateConstraintProperty (opts, name) {
-  return [
-    indent(0) + 'CHR.prototype.' + name + ' = function ' + name + '() {',
+function generateCaller (opts, name) {
+  var parts = []
+
+  parts.push(
+    indent(0) + 'chr.' + name + ' = function() {',
+    indent(1) + 'var self = this',
+    indent(1),
     indent(1) + 'var args = Array.prototype.slice.call(arguments)',
     indent(1) + 'var arity = arguments.length',
+    indent(1) + 'var functor = "' + name + '/" + arity',
     indent(1),
-    indent(1) + 'var callConstraint = "_' + name + '_"+arity+"_activate"',
-    indent(1) + 'if (!this[callConstraint]) {',
-    indent(2) + 'throw new Error("Constraint ' + name + '/"+arity+" not defined.")',
+    indent(1) + 'if (!self.Constraints[functor]) {',
+    indent(2) + 'throw new Error("Constraint "+functor+" not defined.")',
     indent(1) + '}',
     indent(1),
-    indent(1) + 'var constraint = new ' + opts.runtime + '.Constraint("' + name + '", arity, args)',
-    indent(1) + 'this.Store.add(constraint)',
-    indent(1) + 'this[callConstraint](constraint)',
-    indent(1),
-    indent(1) + 'return this',
+    indent(1) + 'var constraint = new Runtime.Constraint("' + name + ' ", arity, args)',
+    indent(1) + 'self.Store.add(constraint)',
+    indent(1) + '_activators[functor.replace("/","_")].call(chr, constraint)',
     indent(0) + '}'
-  ].join('\n')
+  )
+
+  return parts
 }
 
-function generateActivateProperties (opts, constraints) {
-  var parts = []
-
-  for (var constraintName in constraints) {
-    for (var arity in constraints[constraintName].occurences) {
-      parts.push('CHR.prototype._' + constraintName + '_' + arity + '_activate = function (constraint) {')
-      for (var i = 1; i < constraints[constraintName].occurences[arity]; i++) {
-        parts.push(indent(1) + 'this._' + constraintName + '_' + arity + '_occurence_' + i + '(constraint)')
-      }
-      parts.push([
-        '}',
-        ''
-      ].join('\n'))
+function transformFile (filename, opts, callback) {
+  fs.readFile(filename, 'utf8', function (err, code) {
+    if (err) {
+      return callback(err)
     }
-  }
 
-  return parts.join('\n')
-}
-
-function generateDummyActivateProperties (opts, constraints) {
-  var parts = []
-
-  for (var constraintName in constraints) {
-    for (var arity in constraints[constraintName].tell) {
-      if (!constraints[constraintName].occurences.hasOwnProperty(arity)) {
-        // dummy activator function needed
-        parts.push('CHR.prototype._' + constraintName + '_' + arity + '_activate = function (constraint) {}')
-      }
+    var result
+    try {
+      result = transform(code, opts)
+    } catch (err) {
+      return callback(err)
     }
-  }
 
-  return parts.join('\n')
+    return callback(null, result)
+  })
 }
-*/
 
 function compileHead (rule, headNo, opts) {
   headNo = headNo || 0
