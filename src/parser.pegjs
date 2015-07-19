@@ -175,6 +175,25 @@
 Start
   = Program
 
+ProgramWithPreamble
+  = __ preamble:Preamble? __ program:Program {
+      program.preamble = preamble
+      return program
+    }
+
+Preamble
+  = "$"? "{" __ source:PreambleSource __ "}" {
+      return source
+    }
+
+PreambleSource
+  = source:SourceElements {
+      return text()
+    }
+  / __ {
+      return ''
+    }
+
 Rule
   = name:RuleName?
     rule:RuleWithoutName {

@@ -4,12 +4,13 @@
   "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
   "main": "index.js",
   "scripts": {
-    "peg": "pegjs src/parser.pegjs",
+    "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
     "prepublish": "npm run peg",
     "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
     "standard": "standard",
     "tape": "babel-tape-runner test/*.js test/**/**.js",
-    "test": "npm run standard && npm run peg && npm run tape"
+    "pretest": "npm run peg",
+    "test": "npm run standard && npm run tape"
   },
   "bin": {
     "chrjs": "./bin/chrjs"
