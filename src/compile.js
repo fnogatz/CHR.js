@@ -1,5 +1,7 @@
 module.exports = {
-  head: compileHead
+  head: compileHead,
+  indent: indent,
+  indentBy: indentBy
 }
 
 /*

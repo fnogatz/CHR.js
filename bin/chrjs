@@ -2,7 +2,7 @@
 
 var program = require('commander')
 var concat = require('concat-stream')
-var chrjs = require('../index')
+var compile = require('../compile')
 
 function onFinish(err, code) {
   if (err) {
@@ -20,10 +20,10 @@ var file = program.args[0]
 var opts = program
 
 if (file) {
-  chrjs.transformFile(file, opts, onFinish)
+  compile.file(file, opts, onFinish)
 } else {
   process.stdin.pipe(concat({ encoding: 'string' }, function (source) {
-    var code = chrjs.transform(source, opts)
+    var code = compile(source, opts)
     onFinish(null, code)
   }))
 }
