@@ -26,17 +26,15 @@ test('Preamble', function (t) {
 
   t.end()
 })
-/*
+
 test('Local variable', function (t) {
   var program = `
     {
       var x = 0
     }
 
-    a ==> \${ x !== 0 } | b
-    c ==> \${ x === 0 } | d
-          ^^^^^^^^^^^^^
-              TODO
+    a ==> x !== 0 | b
+    c ==> x === 0 | d
   `
   var source = compile(program)
 
@@ -51,4 +49,26 @@ test('Local variable', function (t) {
 
   t.end()
 })
-*/
+
+test('Local variable with Replacements', function (t) {
+  var program = `
+    {
+      var x = 0
+    }
+
+    a ==> \${ x !== 0 } | b
+    c ==> \${ x === 0 } | d
+  `
+  var source = compile(program)
+
+  var chr
+  eval(source) // eslint-disable-line no-eval
+
+  chr.a()
+  t.equal(chr.Store.length, 1)
+
+  chr.c()
+  t.equal(chr.Store.length, 3)
+
+  t.end()
+})

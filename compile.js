@@ -34,6 +34,7 @@ function transform (program, opts) {
 
   var constraints = {}
   var constraintNames = {}
+  var replacements = []
 
   var rules = parsed.body
   rules.forEach(function (rule) {
@@ -48,6 +49,27 @@ function transform (program, opts) {
       if (!constraints[functor]) {
         constraints[functor] = []
       }
+    })
+
+    // replace replacements
+    ;['guard', 'body'].forEach(function (location) {
+      rule[location] = rule[location].map(function (element) {
+        if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
+          return element
+        }
+
+        var src = element.original
+        if (location === 'guard') {
+          src = 'return ' + src
+        }
+
+        var replacementId = replacements.push(src) - 1
+        var newElement = {
+          type: 'Replacement',
+          num: replacementId
+        }
+        return newElement
+      })
     })
 
     for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {
@@ -90,7 +112,7 @@ function transform (program, opts) {
     )
   }
 
-  parts = parts.concat(generateObject(opts, constraints).map(indentBy(level)))
+  parts = parts.concat(generateObject(opts, constraints, replacements).map(indentBy(level)))
   parts.push(indent(level))
 
   for (var constraintName in constraintNames) {
@@ -106,7 +128,7 @@ function transform (program, opts) {
   return parts.join('\n')
 }
 
-function generateObject (opts, constraints) {
+function generateObject (opts, constraints, replacements) {
   var parts = []
 
   parts.push(
@@ -127,6 +149,19 @@ function generateObject (opts, constraints) {
 
   parts.push(
     indent(1) + '},',
+    indent(1) + 'Replacements: ['
+  )
+
+  replacements.forEach(function (replacement, ix) {
+    parts.push(
+      (ix > 0 ? ', ' + indent(1) : indent(2)) + 'function () {',
+      indent(3) + replacement,
+      indent(2) + '}'
+    )
+  })
+
+  parts.push(
+    indent(1) + '],',
     indent(1) + 'AllDifferent: function (arr) {'
   )
   parts = parts.concat(allDifferent.toString().split('\n').slice(1).map(indentBy(1)))

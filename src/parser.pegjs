@@ -3,6 +3,7 @@
     desc.constraints = getConstraints(desc);
     desc = headNormalForm(desc);
     desc = addProperties(desc);
+    desc = addReplacements(desc);
     return desc;
   }
 
@@ -94,6 +95,31 @@
   function addProperties(ruleDescriptor) {
     ruleDescriptor.r = ruleDescriptor.kept.length;
     ruleDescriptor.head = ruleDescriptor.kept.concat(ruleDescriptor.removed);
+
+    return ruleDescriptor;
+  }
+
+  function addReplacements(ruleDescriptor) {
+    ruleDescriptor.replacements = [];
+
+    ['guard', 'body'].forEach(function (location) {
+      ruleDescriptor[location].forEach(function (c) {
+        if (c.type === 'Replacement') {
+          var entry = {
+            loc: location
+          }
+
+          if (c.hasOwnProperty('num')) {
+            entry.num = c.num
+          }
+          else if (c.hasOwnProperty('original')) {
+            entry.original = c.original
+          }
+
+          ruleDescriptor.replacements.push(entry)
+        }
+      })
+    })
 
     return ruleDescriptor;
   }
@@ -315,7 +341,24 @@ Replacement
       return {
         type: 'Replacement',
         num: parseInt(num)
-      }
+      };
+    }
+  / "${" __ source:PreambleSource __ "}" {
+      return {
+        type: 'Replacement',
+        original: source
+      };
+    }
+  / "${" __ source:ArrowFunction __ "}" {
+      return {
+        type: 'Replacement',
+        original: source
+      };
+    }
+
+ArrowFunction
+  = "()" __ "=>" __ source:PreambleSource {
+      return source;
     }
 
 BuiltInsNoBitwiseOR
