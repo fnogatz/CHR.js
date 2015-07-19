@@ -33,7 +33,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) {
 
   t.end()
 })
-/*
+
 test('a ==> ${ () => 1 > 2 } | b', function (t) {
   var chr = new CHR()
   chr`
@@ -45,4 +45,3 @@ test('a ==> ${ () => 1 > 2 } | b', function (t) {
 
   t.end()
 })
-*/
