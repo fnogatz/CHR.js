@@ -1,8 +1,6 @@
 module.exports = transform
 module.exports.fromFile = transformFile
 module.exports.head = compileHead
-module.exports.indent = indent
-module.exports.indentBy = indentBy
 
 var fs = require('fs')
 
