@@ -147,6 +147,7 @@ function compileHead (rule, headNo, opts) {
   headNo = headNo || 0
   opts = opts || {}
   opts.this = opts.this || 'this'
+  opts.helper = opts.helper || 'self.Helper'
 
   if (!rule.head[headNo]) {
     throw new Error('No constraint with number ' + headNo + ' in this rule head')
@@ -202,7 +203,7 @@ function compileHead (rule, headNo, opts) {
   parts.push(
     indent(level + 0) + 'var ids = [ ' + ids.join(', ') + ' ]',
     indent(level + 0) + 'if (ids.every(function(id) { return self.Store.alive(id) })) {',
-    indent(level + 1) + 'if (self.AllDifferent(ids)) {'
+    indent(level + 1) + 'if (' + opts.helper + '.allDifferent(ids)) {'
   )
   level += 2
 

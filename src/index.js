@@ -1,16 +1,14 @@
 module.exports = CHR
 module.exports.generateCaller = generateCaller
 
-var Store = require('./store')
-var History = require('./history')
-var Constraint = require('./constraint')
+var Runtime = require('../runtime')
 var parse = require('./parser').parse
 var compile = require('./compile')
 
 function CHR (opts) {
   opts = opts || {}
-  opts.Store = opts.Store || new Store()
-  opts.History = opts.History || new History()
+  opts.Store = opts.Store || new Runtime.Store()
+  opts.History = opts.History || new Runtime.History()
 
   /**
    * Adds a number of rules given as argument string.
@@ -72,16 +70,11 @@ function CHR (opts) {
     })
   }
 
-  tag.AllDifferent = allDifferent
-
-  /**
-   * Constraint store for this handler.
-   * @type {Runtime.Store}
-   */
   tag.Store = opts.Store
   tag.History = opts.History
   tag.Constraints = {}
   tag.Replacements = []
+  tag.Helper = Runtime.Helper
 
   return tag
 }
@@ -98,19 +91,11 @@ function generateCaller (name) {
       throw new Error('Constraint ' + name + '/' + arity + ' not defined.')
     }
 
-    var constraint = new Constraint(name, arity, args)
+    var constraint = new Runtime.Constraint(name, arity, args)
     self.Store.add(constraint)
 
     self.Constraints[functor].forEach(function (occurence) {
       occurence.call(self, constraint)
     })
   }
-}
-
-function allDifferent (arr) {
-  return arr.every(function (el1, ix) {
-    return arr.slice(ix + 1).every(function (el2) {
-      return el1 != el2 // eslint-disable-line eqeqeq
-    })
-  })
 }

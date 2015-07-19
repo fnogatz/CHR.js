@@ -76,7 +76,9 @@ function transform (program, opts) {
       head = rule.head[headNo]
       functor = head.name + '/' + head.arity
 
-      compiled = compile.head(rule, headNo)
+      compiled = compile.head(rule, headNo, {
+        helper: 'Runtime.Helper'
+      })
       constraints[functor].push(compiled)
     }
   })
@@ -161,11 +163,7 @@ function generateObject (opts, constraints, replacements) {
   })
 
   parts.push(
-    indent(1) + '],',
-    indent(1) + 'AllDifferent: function (arr) {'
-  )
-  parts = parts.concat(allDifferent.toString().split('\n').slice(1).map(indentBy(1)))
-  parts.push(
+    indent(1) + ']',
     indent(0) + '}'
   )
 
@@ -212,13 +210,3 @@ function transformFile (filename, opts, callback) {
     return callback(null, result)
   })
 }
-
-/* eslint-disable eqeqeq */
-function allDifferent (arr) {
-  return arr.every(function (el1, ix) {
-    return arr.slice(ix + 1).every(function (el2) {
-      return el1 != el2
-    })
-  })
-}
-/* eslint-enable eqeqeq */
