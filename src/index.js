@@ -1,5 +1,4 @@
 module.exports = CHR
-module.exports.generateCaller = generateCaller
 
 var Runtime = require('../runtime')
 var parse = require('./parser').parse
@@ -53,7 +52,7 @@ function CHR (opts) {
 
         // Add caller if not present
         if (!tag[name]) {
-          tag[name] = generateCaller(name).bind(tag)
+          tag[name] = Runtime.Helper.dynamicCaller(name).bind(tag)
           tag.Constraints[functor] = []
         }
       })
@@ -77,25 +76,4 @@ function CHR (opts) {
   tag.Helper = Runtime.Helper
 
   return tag
-}
-
-function generateCaller (name) {
-  return function () {
-    var self = this
-
-    var args = Array.prototype.slice.call(arguments)
-    var arity = arguments.length
-    var functor = name + '/' + arity
-
-    if (!self.Constraints[functor]) {
-      throw new Error('Constraint ' + name + '/' + arity + ' not defined.')
-    }
-
-    var constraint = new Runtime.Constraint(name, arity, args)
-    self.Store.add(constraint)
-
-    self.Constraints[functor].forEach(function (occurence) {
-      occurence.call(self, constraint)
-    })
-  }
 }
