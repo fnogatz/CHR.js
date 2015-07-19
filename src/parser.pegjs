@@ -208,7 +208,7 @@ ProgramWithPreamble
     }
 
 Preamble
-  = "$"? "{" __ source:PreambleSource __ "}" {
+  = ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
       return source
     }
 
@@ -226,6 +226,7 @@ Rule
       if (name) {
         rule.name = name;
       }
+      rule.original = text()
       return rule;
     }
 
@@ -337,24 +338,31 @@ Guard
     }
 
 Replacement
-  = "${" num:$(DecimalIntegerLiteral) "}" {
+  = ReplacementOpeningSymbol num:$(DecimalIntegerLiteral) ReplacementClosingSymbol {
       return {
         type: 'Replacement',
         num: parseInt(num)
       };
     }
-  / "${" __ source:PreambleSource __ "}" {
+  / ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
         original: source
       };
     }
-  / "${" __ source:ArrowFunction __ "}" {
+  / ReplacementOpeningSymbol __ source:ArrowFunction __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
         original: source
       };
     }
+
+ReplacementOpeningSymbol
+  = "${"
+  / "{"
+
+ReplacementClosingSymbol
+  = "}"
 
 ArrowFunction
   = "()" __ "=>" __ source:PreambleSource {

@@ -13,13 +13,11 @@ function CHR (opts) {
    * Adds a number of rules given as argument string.
    */
   function tag (chrSource) {
-    var replacements = []
-
     if (typeof chrSource === 'object' && chrSource instanceof Array) {
       // Called as template string
       var taggedChrSource = chrSource[0]
 
-      replacements = Array.prototype.slice.call(arguments, 1)
+      var replacements = Array.prototype.slice.call(arguments, 1)
       replacements.forEach(function (expr, ix) {
         var pred
         if (typeof expr !== 'function') {
@@ -55,6 +53,28 @@ function CHR (opts) {
           tag[name] = Runtime.Helper.dynamicCaller(name).bind(tag)
           tag.Constraints[functor] = []
         }
+      })
+
+      // replace replacements if source and not number provided
+      ;['guard', 'body'].forEach(function (location) {
+        rule[location] = rule[location].map(function (element) {
+          if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
+            return element
+          }
+
+          var src = element.original
+          if (location === 'guard') {
+            src = 'return ' + src
+          }
+          var pred = new Function(src) // eslint-disable-line
+
+          var replacementId = tag.Replacements.push(pred) - 1
+          var newElement = {
+            type: 'Replacement',
+            num: replacementId
+          }
+          return newElement
+        })
       })
 
       for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {

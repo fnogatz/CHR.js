@@ -95,3 +95,27 @@ test('Scope', function (t) {
 
   t.end()
 })
+
+test('Replacement in String', function (t) {
+  t.test('a ==> ${ () => true } | b', function (t) {
+    var chr = new CHR()
+    chr('a ==> ${ () => true } | b')
+
+    chr.a()
+    t.equal(chr.Store.length, 2)
+
+    t.end()
+  })
+
+  t.test('a ==> ${ true } | b', function (t) {
+    var chr = new CHR()
+    chr('a ==> ${ true } | b')
+
+    chr.a()
+    t.equal(chr.Store.length, 2)
+
+    t.end()
+  })
+
+  t.end()
+})
