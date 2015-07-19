@@ -72,3 +72,28 @@ test('Local variable with Replacements', function (t) {
 
   t.end()
 })
+
+test('Fire function defined in preamble', function (t) {
+  var chr
+
+  function outside (str) { // eslint-disable-line no-unused-vars
+    t.equal(chr.Store.length, 1)
+    t.equal(str, 'called')
+
+    t.end()
+  }
+
+  var program = `
+    {
+      function inside(str) {
+        outside(str)
+      }
+    }
+
+    a ==> \${ inside('called') }
+  `
+  var source = compile(program)
+  eval(source) // eslint-disable-line no-eval
+
+  chr.a()
+})

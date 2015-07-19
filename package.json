@@ -2,7 +2,7 @@
   "name": "chr",
   "version": "1.0.0",
   "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
     "prepublish": "npm run peg",
