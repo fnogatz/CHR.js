@@ -316,6 +316,22 @@ Constraint
       return desc;
     }
 
+BodyConstraint
+  = constraintName:ConstraintName
+    parameters:("(" __ BodyParameters __ ")")? {
+      var desc = { 
+        type: 'Constraint',
+        name: constraintName,
+        parameters: extractOptional(parameters, 2, []),
+        original: text()
+      };
+      if (desc.parameters === null) {
+        desc.parameters = [];
+      }
+      desc.arity = desc.parameters.length
+      return desc;
+    }
+
 ConstraintName
   = first:[a-z] following:[A-z0-9_]* {
       return first+following.join('');
@@ -331,6 +347,9 @@ Parameter
       expression.original = text();
       return expression;
     }
+
+BodyParameters
+  = BuiltIns
 
 Guard
   = guard:BuiltInsNoBitwiseOR __ "|" !"|" __ {
@@ -369,6 +388,17 @@ ArrowFunction
       return source;
     }
 
+BuiltIns
+  = expression:Expression {
+      if (expression.type === 'SequenceExpression') {
+        return expression.expressions;
+      }
+      if (!(expression instanceof Array)) {
+        return [ expression ]
+      }
+      return expression
+    }
+
 BuiltInsNoBitwiseOR
   = expression:ExpressionNoBitwiseOR {
       if (expression.type === 'SequenceExpression') {
@@ -381,13 +411,13 @@ BuiltInsNoBitwiseOR
     }
 
 Body
-  = first:BodyConstraint rest:(__ "," __ BodyConstraint)* {
+  = first:BodyElement rest:(__ "," __ BodyElement)* {
       return buildList(first, rest, 3);
     }
 
-BodyConstraint
+BodyElement
   = Replacement
-  / Constraint
+  / BodyConstraint
 
 SimpleArrayLiteral
   = "[" __ elision:(Elision __)? "]" {
@@ -1372,9 +1402,17 @@ AssignmentOperator
 
 Expression
   = first:AssignmentExpression rest:(__ "," __ AssignmentExpression)* {
-      return rest.length > 0
-        ? { type: "SequenceExpression", expressions: buildList(first, rest, 3) }
-        : first;
+      if (rest.length > 0) {
+        return {
+          type: "SequenceExpression",
+          expressions: buildList(first, rest, 3),
+          original: text()
+        };
+      }
+
+      var res = first
+      res.original = text()
+      return res
     }
 
 ExpressionNoIn

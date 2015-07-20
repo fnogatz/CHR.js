@@ -48,3 +48,24 @@ test('a ==> b', function (t) {
 
   t.end()
 })
+
+test('a(N) ==> b(N+1,N+2)', function (t) {
+  var chr = new CHR()
+  chr('a(N) ==> b(N+1,N+2)')
+
+  chr.a(1)
+  chr.a(2)
+  t.equal(chr.Store.length, 4)
+
+  t.end()
+})
+
+test('a(N) ==> N <= 4 | a(N+1)', function (t) {
+  var chr = new CHR()
+  chr('a(N) ==> N <= 4 | a(N+1)')
+
+  chr.a(1)
+  t.equal(chr.Store.length, 5)
+
+  t.end()
+})
