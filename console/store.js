@@ -1,5 +1,5 @@
 var colors = require('colors') // eslint-disable-line no-unused-vars
-var Store = require('../runtime/store')
+var Store = require('../src/store')
 
 module.exports = {
   fields: {
