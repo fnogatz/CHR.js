@@ -1795,7 +1795,9 @@ CHRSourceElements
     }
 
 CHRSourceElement
-  = Rule
+  = r:Rule ";"? {
+      return r;
+    }
 
 /* ----- A.6 Universal Resource Identifier Character Classes ----- */
 
