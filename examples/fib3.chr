@@ -1,3 +1,0 @@
-begin  @ upto(A) ==> fib(0,1), fib(1,1);
-calc   @ upto(Max), fib(N2,M2) \ fib(N1,M1) <=> 
-           N2 === N1+1, N2 < Max | fib(N2+1, M1+M2);

@@ -1,13 +1,16 @@
 {
   "name": "chr",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "peg": "pegjs compiler/parser.pegjs",
-    "prepublish": "npm run-script peg",
+    "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
+    "prepublish": "npm run peg",
     "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
-    "test": "standard"
+    "standard": "standard",
+    "tape": "babel-tape-runner test/*.js test/**/**.js",
+    "pretest": "npm run peg",
+    "test": "npm run standard && npm run tape"
   },
   "bin": {
     "chrjs": "./bin/chrjs"
@@ -26,10 +29,13 @@
     "url": "git://github.com/fnogatz/CHR.js"
   },
   "devDependencies": {
+    "babel": "^5.6.23",
+    "babel-tape-runner": "^1.1.0",
     "browserify": "^10.0.0",
     "colors": "^1.0.3",
     "pegjs": "^0.8.0",
-    "standard": "^3.7.1",
+    "standard": "^4.5.4",
+    "tape": "^4.0.0",
     "tconsole": "^0.4.0",
     "uglify-js": "^2.4.20"
   },
@@ -39,7 +45,7 @@
   },
   "standard": {
     "ignore": [
-      "compiler/parser.js",
+      "src/parser.js",
       "dist/chr.js"
     ]
   }

@@ -1,2 +1,0 @@
-end_loop @ fib(A) \ generate <=> A > 1000 | true;
-generate @ generate, fib(A) \ fib(B) <=> B <= A | fib(A+B);

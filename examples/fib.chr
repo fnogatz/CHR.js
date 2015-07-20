@@ -1,1 +1,0 @@
-upto(N), fib(A,AV), fib(B,BV) ==> B === A+1, B < N | fib(B+1,AV+BV);
