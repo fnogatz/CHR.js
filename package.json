@@ -29,15 +29,12 @@
     "url": "git://github.com/fnogatz/CHR.js"
   },
   "devDependencies": {
-    "babel": "^5.6.23",
     "babel-tape-runner": "^1.1.0",
-    "browserify": "^10.0.0",
     "colors": "^1.0.3",
     "pegjs": "^0.8.0",
     "standard": "^4.5.4",
-    "tape": "^4.0.0",
-    "tconsole": "^0.4.0",
-    "uglify-js": "^2.4.20"
+    "tape": "^4.0.1",
+    "tconsole": "^0.4.0"
   },
   "dependencies": {
     "commander": "^2.8.0",
