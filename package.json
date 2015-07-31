@@ -5,8 +5,12 @@
   "main": "src/index.js",
   "scripts": {
     "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
-    "prepublish": "npm run peg",
-    "browserify": "browserify -s chrjs compiler/browserify.js | uglifyjs > dist/chr.js",
+    "prepublish": "npm run peg && npm run browserify",
+    "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.js | uglifyjs > ./dist/chrparser.js",
+    "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.js",
+    "browserify-full": "NODE_ENV=browser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr.js",
+    "browserify-console": "NODE_ENV=browser browserify -t envify -t uglifyify -s chr2string console.js | uglifyjs > dist/chr2string.js",
+    "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full && npm run browserify-console",
     "standard": "standard",
     "tape": "babel-tape-runner test/*.js test/**/**.js",
     "pretest": "npm run peg",
@@ -30,11 +34,16 @@
   },
   "devDependencies": {
     "babel-tape-runner": "^1.1.0",
+    "babelify": "^6.1.3",
+    "browserify": "^11.0.1",
     "colors": "^1.0.3",
+    "envify": "^3.4.0",
     "pegjs": "^0.8.0",
     "standard": "^4.5.4",
     "tape": "^4.0.1",
-    "tconsole": "^0.4.0"
+    "tconsole": "^1.0.0",
+    "uglify-js": "^2.4.24",
+    "uglifyify": "^3.0.1"
   },
   "dependencies": {
     "commander": "^2.8.0",
@@ -43,7 +52,7 @@
   "standard": {
     "ignore": [
       "src/parser.js",
-      "dist/chr.js"
+      "dist/*.js"
     ]
   }
 }

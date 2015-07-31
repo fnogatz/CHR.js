@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CHR.js Example Page</title>
+    <script src="chr.js"></script>
+    <script src="chr2string.js"></script>
+    <script src="chrparser.js"></script>
+    <style>
+      body {
+        font-family: Arial;
+      }
+      .col {
+        float: left;
+        width: 40%;
+        margin: 0 5%;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="col">
+      <h1>Usage</h1>
+      For just-in-time (JIT) compilation in your browser simply include the <code>chr.js</code> in your page:
+      <pre><code>&lt;script src="chr.js"&gt;&lt;/script&gt;</code></pre>
+
+      If you want to do the parsing process separately (e.g. in a Webworker), you can use the smaller <code>chr-wop.js</code>:
+      <pre><code>&lt;script src="chr-wop.js"&gt;&lt;/script&gt;</code></pre>
+
+      To get nice tabular representations of the constraint store you can also include <code>chr2string.js</code>, which adds the <code>chr2string()</code> function.
+
+      <h1>Example</h1>
+      Open the JavaScript console of your browser: <code>Ctrl + Shift + J</code>.
+
+      <pre><code class="javascript">
+  // create a new constraint handler
+  var chr = new CHR()
+
+  // add some rules
+  chr('a(N) ==> N > 0 | a(N-1)')
+
+  // inspect the constraint store
+  console.log(chr2string(chr))
+
+  // call a/1 constraint
+  chr.a(10)
+
+  // inspect updated constraint store
+  console.log(chr2string(chr))
+      </code></pre>
+    </div>
+
+    <div class="col">
+      <h1>Screenshot</h1>
+      <img src="screenshot.png" alt="Screenshot of the executed code">
+    </div>
+  </body>
+</html>
