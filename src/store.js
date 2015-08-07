@@ -106,7 +106,7 @@ Store.prototype.toString = function () {
     return '(empty)'
   }
 
-  var t = new Table
+  var t = new Table()
 
   this.forEach(function (constraint) {
     t.cell('ID', constraint.id)
