@@ -7,6 +7,7 @@
 
   var Runtime = require('../runtime')
   var Rules = require('./rules')
+  var joinParts = require('./join-parts')
 
   var parse
   if (process.env.NODE_ENV === 'browserWithoutParser') {
@@ -26,40 +27,38 @@
      */
     function tag (chrSource) {
       var program
+      var replacements
 
-      if (typeof chrSource === 'object' && !(chrSource instanceof Array)) {
-        // already parsed
+      // Examine caller format
+      if (typeof chrSource === 'object' && chrSource.type && chrSource.type === 'Program') {
+        // called with already parsed source code
+        // e.g. tag({ type: 'Program', body: [ ... ] })
         program = chrSource
-      } else if (typeof chrSource === 'object' && chrSource instanceof Array) {
-        // Called as template string
-        var taggedChrSource = chrSource[0]
-
-        var replacements = Array.prototype.slice.call(arguments, 1)
-        replacements.forEach(function (expr, ix) {
-          var pred
-          if (typeof expr !== 'function') {
-            console.warn('Expressions should be functions, #' + (ix + 1) + ' is not. Therefore it is evaluated only once on compilation time, but not for each rule application.')
-            pred = function () {
-              return expr
-            }
-          } else {
-            pred = expr
-          }
-
-          var replacementId = tag.Replacements.push(pred) - 1
-          taggedChrSource += '${' + replacementId + '}' + chrSource[ix + 1]
+        replacements = chrSource.replacements || []
+      } else if (typeof chrSource === 'object' && chrSource instanceof Array && typeof chrSource[0] === 'string') {
+        // called as template tag
+        // e.g. tag`a ==> b`
+        // or   tag`a ==> ${ function() { console.log('Replacement test') } }`
+        var combined = [ chrSource[0] ]
+        Array.prototype.slice.call(arguments, 1).forEach(function (repl, ix) {
+          combined.push(repl)
+          combined.push(chrSource[ix + 1])
         })
-
-        program = parse(taggedChrSource)
-      } else if (typeof chrSource === 'string') {
+        chrSource = joinParts(combined)
+        replacements = Array.prototype.slice.call(arguments, 1)
         program = parse(chrSource)
-      } else {
-        throw new Error("Can't handle input format " + (typeof chrSource))
+      } else if (typeof chrSource === 'string') {
+        // called as normal function
+        // e.g. tag('a ==> b')
+        // or   tag('a ==> ', function() { console.log('Replacement test') })
+        replacements = Array.prototype.filter.call(arguments, isFunction)
+        chrSource = joinParts(Array.prototype.slice.call(arguments))
+        program = parse(chrSource)
       }
 
       var rules = program.body
       rules.forEach(function (rule) {
-        tag.Rules.Add(rule)
+        tag.Rules.Add(rule, replacements)
       })
     }
 
@@ -91,5 +90,9 @@
     }
   } else {
     root.CHR = CHR
+  }
+
+  function isFunction (el) {
+    return typeof el === 'function'
   }
 }).call(this)

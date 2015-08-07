@@ -106,8 +106,14 @@
       ruleDescriptor[location].forEach(function (c) {
         if (c.type === 'Replacement') {
           var entry = {
-            loc: location,
-            original: c.original
+            loc: location
+          }
+
+          if (c.hasOwnProperty('num')) {
+            entry.num = c.num
+          }
+          else if (c.hasOwnProperty('original')) {
+            entry.original = c.original
           }
 
           ruleDescriptor.replacements.push(entry)
@@ -353,7 +359,13 @@ Guard
     }
 
 Replacement
-  = ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
+  = ReplacementOpeningSymbol __ num:$(DecimalIntegerLiteral) __ ReplacementClosingSymbol {
+      return {
+        type: 'Replacement',
+        num: parseInt(num)
+      };
+    }
+  / ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
         original: source

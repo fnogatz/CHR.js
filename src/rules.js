@@ -9,10 +9,10 @@ function Rules (chr) {
   this.Order = []
 }
 
-Rules.prototype.Add = function addRule (ruleObj) {
+Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   var self = this
 
-  var rule = new Rule(ruleObj)
+  var rule = new Rule(ruleObj, globalReplacements)
   var ruleName = rule.Name
 
   this[ruleName] = rule

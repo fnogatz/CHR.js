@@ -1,4 +1,4 @@
-module.exports = compileHead
+module.exports = Compiler
 
 var util = require('./util')
 
@@ -6,11 +6,21 @@ var indent = util.indent
 var indentBy = util.indentBy
 var destructuring = util.destructuring
 
-function compileHead (rule, headNo, opts) {
-  headNo = headNo || 0
+function Compiler (rule, replacements, opts) {
+  this.rule = rule
+  this.replacements = replacements || {}
+
   opts = opts || {}
   opts.this = opts.this || 'this'
   opts.helper = opts.helper || 'self.Helper'
+  this.opts = opts
+}
+
+Compiler.prototype.headNo = function compileHeadNo (headNo) {
+  var self = this
+  headNo = headNo || 0
+  var rule = this.rule
+  var opts = this.opts
 
   if (!rule.head[headNo]) {
     throw new Error('No constraint with number ' + headNo + ' in this rule head')
@@ -72,11 +82,27 @@ function compileHead (rule, headNo, opts) {
     }
 
     // is Replacement
-    parts.push(
-      indent(level + 0) + 'if (!(function() { return ' + guard.original + ' }())) {',
-      indent(level + 1) + 'return',
-      indent(level + 0) + '}'
-    )
+
+    if (guard.hasOwnProperty('original')) {
+      parts.push(
+        indent(level + 0) + 'if (!(function() { return ' + guard.original + ' }())) {',
+        indent(level + 1) + 'return',
+        indent(level + 0) + '}'
+      )
+      return
+    }
+
+    if (guard.hasOwnProperty('num')) {
+      // get parameters via dependency injection
+      var params = getFunctionParameters(self.replacements[guard.num])
+      parts.push(
+        indent(level + 0) + 'if (!replacements[' + guard.num + '].apply(self, [' + params + '])) {',
+        indent(level + 1) + 'return',
+        indent(level + 0) + '}'
+      )
+
+      return
+    }
   })
 
   if (guardWithoutReplacements !== rule.guard.length) {
@@ -91,7 +117,7 @@ function compileHead (rule, headNo, opts) {
   level += 2
 
   if (guardWithoutReplacements.length > 0) {
-    parts.push(indent(level) + generateGuards(opts, rule))
+    parts.push(indent(level) + this.generateGuards())
     level += 1
   }
 
@@ -109,7 +135,7 @@ function compileHead (rule, headNo, opts) {
 
   if (rule.body.length > 0) {
     rule.body.forEach(function (body) {
-      parts.push(indent(level) + generateTell(opts, body))
+      parts.push(indent(level) + self.generateTell(body))
     })
   }
 
@@ -141,12 +167,15 @@ function compileHead (rule, headNo, opts) {
   return parts
 }
 
-function generateGuards (opts, rule) {
+Compiler.prototype.generateGuards = function generateGuards () {
+  var self = this
+  var rule = this.rule
+
   var expr = 'if ('
   var boolExprs = []
   rule.guard.forEach(function (guard) {
     if (guard.type !== 'Replacement') {
-      boolExprs.push(generateGuard(opts, guard))
+      boolExprs.push(self.generateGuard(guard))
     }
   })
   expr += boolExprs.join(' && ')
@@ -154,34 +183,42 @@ function generateGuards (opts, rule) {
   return expr
 }
 
-function generateGuard (opts, guard) {
+Compiler.prototype.generateGuard = function generateGuard (guard) {
   if (guard.type === 'BinaryExpression') {
-    return generateBinaryExpression(opts, guard)
+    return this.generateBinaryExpression(guard)
   }
 
   return 'false'
 }
 
-function generateTell (opts, body, constraints) {
+Compiler.prototype.generateTell = function generateTell (body) {
+  var self = this
+
   var expr = ''
   if (body.type === 'Constraint') {
     expr += 'self.' + body.name + '('
     expr += body.parameters.map(function (parameter) {
-      return generateExpression(opts, parameter)
+      return self.generateExpression(parameter)
     }).join(', ')
     expr += ')'
-
-    // setTell(constraints, body)
 
     return expr
   }
 
   if (body.type === 'Replacement') {
-    return ';(function() { ' + body.original + ' })()'
+    if (body.hasOwnProperty('original')) {
+      return ';(function() { ' + body.original + ' })()'
+    }
+
+    if (body.hasOwnProperty('num')) {
+      // get parameters via dependency injection
+      var params = getFunctionParameters(self.replacements[body.num])
+      return 'replacements[' + body.num + '].apply(self, [' + params + '])'
+    }
   }
 
   expr += [
-    'if (!(' + generateBinaryExpression(opts, body) + ')) {',
+    'if (!(' + self.generateBinaryExpression(body) + ')) {',
     indent(1) + 'self.Store.invalidate()',
     indent(1) + 'return',
     '}'
@@ -189,7 +226,9 @@ function generateTell (opts, body, constraints) {
   return expr
 }
 
-function generateBinaryExpression (opts, expr) {
+Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
+  var self = this
+
   return [ 'left', 'right' ].map(function (part) {
     if (expr[part].type === 'Identifier') {
       return expr[part].name
@@ -198,17 +237,17 @@ function generateBinaryExpression (opts, expr) {
       return expr[part].value
     }
     if (expr[part].type === 'BinaryExpression') {
-      return '(' + generateBinaryExpression(opts, expr[part]) + ')'
+      return '(' + self.generateBinaryExpression(expr[part]) + ')'
     }
   }).join(' ' + expr.operator + ' ')
 }
 
-function generateExpression (opts, parameter) {
+Compiler.prototype.generateExpression = function generateExpression (parameter) {
   if (parameter.type === 'Identifier') {
     return parameter.name
   }
   if (parameter.type === 'BinaryExpression') {
-    return generateBinaryExpression(opts, parameter)
+    return this.generateBinaryExpression(parameter)
   }
   if (parameter.type === 'Literal') {
     return escape(parameter.value)
@@ -221,4 +260,9 @@ function escape (val) {
   }
 
   return val
+}
+
+function getFunctionParameters (func) {
+  var args = func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+  return args
 }
