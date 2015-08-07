@@ -9,6 +9,9 @@
       body {
         font-family: Arial;
       }
+      p {
+        margin: 25px 5%;
+      }
       .col {
         float: left;
         width: 40%;
@@ -17,17 +20,21 @@
     </style>
   </head>
   <body>
+    <h1>CHR.js Example Page</h1>
+
+    <p>CHR.js is a just-in-time (JIT) compiler for Constraint Handling Rules (CHR), embedded in JavaScript. This is just a demo page of the browser usage. More examples, an interactive playground and the full documentation can be found at the project page at <a href="http://chrjs.net">chrjs.net</a>.</p>
+
+    <p>It is not recommended to use the CHR.js interpreter in production. Instead you should use <a href="https://github.com/fnogatz/babel-plugin-chr">babel-plugin-chr</a>, an ahead-of-time (AOT) compiler for CHR.js, which ensures a better runtime performance.</p>
+
     <div class="col">
-      <h1>Usage</h1>
+      <h2>Usage</h2>
       For just-in-time (JIT) compilation in your browser simply include the <code>chr.js</code> in your page:
       <pre><code>&lt;script src="chr.js"&gt;&lt;/script&gt;</code></pre>
 
       If you want to do the parsing process separately (e.g. in a Webworker), you can use the smaller <code>chr-wop.js</code>:
       <pre><code>&lt;script src="chr-wop.js"&gt;&lt;/script&gt;</code></pre>
 
-      To get nice tabular representations of the constraint store you can also include <code>chr2string.js</code>, which adds the <code>chr2string()</code> function.
-
-      <h1>Example</h1>
+      <h2>Example</h2>
       Open the JavaScript console of your browser: <code>Ctrl + Shift + J</code>.
 
       <pre><code class="javascript">
@@ -52,7 +59,7 @@
     </div>
 
     <div class="col">
-      <h1>Screenshot</h1>
+      <h2>Screenshot</h2>
       <img src="screenshot.png" alt="Screenshot of the executed code">
     </div>
   </body>
