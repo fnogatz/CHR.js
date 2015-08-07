@@ -1,6 +1,7 @@
 var History = require('./src/history')
 var Store = require('./src/store')
 var Constraint = require('./src/constraint')
+var dynamicCaller = require('./src/dynamic-caller')
 
 module.exports = {
   History: History,
@@ -18,25 +19,4 @@ function allDifferent (arr) {
       return el1 != el2 // eslint-disable-line eqeqeq
     })
   })
-}
-
-function dynamicCaller (name) {
-  return function () {
-    var self = this
-
-    var args = Array.prototype.slice.call(arguments)
-    var arity = arguments.length
-    var functor = name + '/' + arity
-
-    if (!self.Constraints[functor]) {
-      throw new Error('Constraint ' + name + '/' + arity + ' not defined.')
-    }
-
-    var constraint = new Constraint(name, arity, args)
-    self.Store.add(constraint)
-
-    self.Constraints[functor].forEach(function (occurence) {
-      occurence.call(self, constraint)
-    })
-  }
 }

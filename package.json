@@ -47,7 +47,8 @@
   },
   "dependencies": {
     "commander": "^2.8.0",
-    "concat-stream": "^1.4.8"
+    "concat-stream": "^1.4.8",
+    "uuid": "^2.0.1"
   },
   "standard": {
     "ignore": [

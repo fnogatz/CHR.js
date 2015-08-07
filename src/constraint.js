@@ -3,6 +3,7 @@ module.exports = Constraint
 function Constraint (name, arity, args) {
   this.name = name
   this.arity = arity
+  this.functor = name + '/' + arity
   this.args = args
   this.id = null
   this.alive = true

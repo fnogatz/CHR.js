@@ -106,14 +106,8 @@
       ruleDescriptor[location].forEach(function (c) {
         if (c.type === 'Replacement') {
           var entry = {
-            loc: location
-          }
-
-          if (c.hasOwnProperty('num')) {
-            entry.num = c.num
-          }
-          else if (c.hasOwnProperty('original')) {
-            entry.original = c.original
+            loc: location,
+            original: c.original
           }
 
           ruleDescriptor.replacements.push(entry)
@@ -291,7 +285,7 @@ RuleName
     }
 
 RuleIdentifier
-  = chars:($(!"@" DoubleStringCharacter))+ {
+  = chars:($(!"@" [a-z0-9_] DoubleStringCharacter))+ {
       return chars.join('').trim();
     }
 
@@ -313,6 +307,7 @@ Constraint
         desc.parameters = [];
       }
       desc.arity = desc.parameters.length
+      desc.functor = desc.name + '/' + desc.arity;
       return desc;
     }
 
@@ -329,6 +324,7 @@ BodyConstraint
         desc.parameters = [];
       }
       desc.arity = desc.parameters.length
+      desc.functor = desc.name + '/' + desc.arity
       return desc;
     }
 
@@ -357,13 +353,7 @@ Guard
     }
 
 Replacement
-  = ReplacementOpeningSymbol num:$(DecimalIntegerLiteral) ReplacementClosingSymbol {
-      return {
-        type: 'Replacement',
-        num: parseInt(num)
-      };
-    }
-  / ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
+  = ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
         original: source

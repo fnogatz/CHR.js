@@ -3,6 +3,7 @@ module.exports = compileHead
 var util = require('./util')
 
 var indent = util.indent
+var indentBy = util.indentBy
 var destructuring = util.destructuring
 
 function compileHead (rule, headNo, opts) {
@@ -62,6 +63,26 @@ function compileHead (rule, headNo, opts) {
     parts.push(indent(level))
   }
 
+  // check guard replacements
+  var guardWithoutReplacements = []
+  rule.guard.forEach(function (guard) {
+    if (guard.type !== 'Replacement') {
+      guardWithoutReplacements.push(guard)
+      return
+    }
+
+    // is Replacement
+    parts.push(
+      indent(level + 0) + 'if (!(function() { return ' + guard.original + ' }())) {',
+      indent(level + 1) + 'return',
+      indent(level + 0) + '}'
+    )
+  })
+
+  if (guardWithoutReplacements !== rule.guard.length) {
+    parts.push(indent(level))
+  }
+
   parts.push(
     indent(level + 0) + 'var ids = [ ' + ids.join(', ') + ' ]',
     indent(level + 0) + 'if (ids.every(function(id) { return self.Store.alive(id) })) {',
@@ -69,7 +90,7 @@ function compileHead (rule, headNo, opts) {
   )
   level += 2
 
-  if (rule.guard.length > 0) {
+  if (guardWithoutReplacements.length > 0) {
     parts.push(indent(level) + generateGuards(opts, rule))
     level += 1
   }
@@ -93,18 +114,17 @@ function compileHead (rule, headNo, opts) {
   }
 
   level -= 1
-
   parts.push(indent(level) + '}')
 
-  if (rule.guard.length > 0) {
+  if (guardWithoutReplacements.length > 0) {
     level -= 1
     parts.push(indent(level) + '}')
   }
 
   level -= 2
   parts.push(
-    indent(1) + '}',
-    indent(0) + '}'
+    indent(level + 1) + '}',
+    indent(level + 0) + '}'
   )
 
   for (j = rule.head.length - 1; j >= 0; j--) {
@@ -116,14 +136,20 @@ function compileHead (rule, headNo, opts) {
     parts.push(indent(level) + '})')
   }
 
+  parts = parts.map(indentBy(1))
+
   return parts
 }
 
 function generateGuards (opts, rule) {
   var expr = 'if ('
-  expr += rule.guard.map(function (guard) {
-    return generateGuard(opts, guard)
-  }).join(' && ')
+  var boolExprs = []
+  rule.guard.forEach(function (guard) {
+    if (guard.type !== 'Replacement') {
+      boolExprs.push(generateGuard(opts, guard))
+    }
+  })
+  expr += boolExprs.join(' && ')
   expr += ') {'
   return expr
 }
@@ -131,10 +157,6 @@ function generateGuards (opts, rule) {
 function generateGuard (opts, guard) {
   if (guard.type === 'BinaryExpression') {
     return generateBinaryExpression(opts, guard)
-  }
-
-  if (guard.type === 'Replacement') {
-    return 'self.Replacements[' + guard.num + '].call(self)'
   }
 
   return 'false'
@@ -155,7 +177,7 @@ function generateTell (opts, body, constraints) {
   }
 
   if (body.type === 'Replacement') {
-    return 'self.Replacements[' + body.num + '].call(self)'
+    return ';(function() { ' + body.original + ' })()'
   }
 
   expr += [

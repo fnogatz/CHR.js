@@ -6,7 +6,7 @@
   }
 
   var Runtime = require('../runtime')
-  var compileHead = require('./compile/head')
+  var Rules = require('./rules')
 
   var parse
   if (process.env.NODE_ENV === 'browserWithoutParser') {
@@ -19,6 +19,7 @@
     opts = opts || {}
     opts.Store = opts.Store || new Runtime.Store()
     opts.History = opts.History || new Runtime.History()
+    opts.Rules = opts.Rules || new Rules(tag)
 
     /**
      * Adds a number of rules given.
@@ -58,59 +59,18 @@
 
       var rules = program.body
       rules.forEach(function (rule) {
-        var head
-        var functor
-        var compiled
-        var compiledFunction
-
-        rule.constraints.forEach(function (functor) {
-          var name = functor.split('/')[0]
-
-          // Add caller if not present
-          if (!tag[name]) {
-            tag[name] = Runtime.Helper.dynamicCaller(name).bind(tag)
-            tag.Constraints[functor] = []
-          }
-        })
-
-        // replace replacements if source and not number provided
-        ;['guard', 'body'].forEach(function (location) {
-          rule[location] = rule[location].map(function (element) {
-            if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
-              return element
-            }
-
-            var src = element.original
-            if (location === 'guard') {
-              src = 'return ' + src
-            }
-            var pred = new Function(src) // eslint-disable-line
-
-            var replacementId = tag.Replacements.push(pred) - 1
-            var newElement = {
-              type: 'Replacement',
-              num: replacementId
-            }
-            return newElement
-          })
-        })
-
-        for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {
-          head = rule.head[headNo]
-          functor = head.name + '/' + head.arity
-
-          compiled = compileHead(rule, headNo)
-          compiledFunction = new Function('constraint', compiled.join('\n')) // eslint-disable-line
-
-          tag.Constraints[functor].push(compiledFunction)
-        }
+        tag.Rules.Add(rule)
       })
     }
 
     tag.Store = opts.Store
     tag.History = opts.History
+    tag.Rules = opts.Rules
+
+    // this will save all constraint functors with
+    //   an array of the rules they occur in
     tag.Constraints = {}
-    tag.Replacements = []
+
     tag.Helper = Runtime.Helper
 
     return tag

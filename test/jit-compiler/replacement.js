@@ -119,3 +119,33 @@ test('Replacement in String', function (t) {
 
   t.end()
 })
+
+test('Replacement with variable', function (t) {
+  // TODO
+  /*
+  t.test('a(N) ==> ${ () => console.log(N) }', function (t) {
+    var chr = new CHR()
+    chr('a(N) ==> ${ () => console.log(N) }')
+
+    chr.a(42)
+
+    t.end()
+  })
+
+  t.test('a(N) ==> ${ () => p(N) }', function (t) {
+    function p (k) { // eslint-disable-line no-unused-vars
+      t.equal(k, 42)
+      t.end()
+    }
+
+    var chr = new CHR()
+    chr('a(N) ==> ${ () => p(N) }')
+
+    chr.a(42)
+
+    t.end()
+  })
+  */
+
+  t.end()
+})
