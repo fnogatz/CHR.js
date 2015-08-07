@@ -4,7 +4,6 @@
     <meta charset="utf-8">
     <title>CHR.js Example Page</title>
     <script src="chr.js"></script>
-    <script src="chr2string.js"></script>
     <script src="chrparser.js"></script>
     <style>
       body {
@@ -37,16 +36,19 @@
 
   // add some rules
   chr('a(N) ==> N > 0 | a(N-1)')
+  chr('a(0) &lt;=>', function() { console.log('Removed a(0)') })
 
   // inspect the constraint store
-  console.log(chr2string(chr))
+  console.log(chr.Store.toString())
 
   // call a/1 constraint
   chr.a(10)
 
   // inspect updated constraint store
-  console.log(chr2string(chr))
+  console.log(chr.Store.toString())
       </code></pre>
+
+      More examples can be found at <a href="http://chrjs.net">chrjs.net</a>. This project page also provides a playground to interactively develop your constraint handler.
     </div>
 
     <div class="col">

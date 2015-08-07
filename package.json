@@ -1,7 +1,7 @@
 {
   "name": "chr",
-  "version": "1.0.0",
-  "description": "Compile and run Constraint Handling Rules (CHR) in JavaScript",
+  "version": "2.0.0-alpha1",
+  "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
     "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
@@ -9,8 +9,7 @@
     "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.js | uglifyjs > ./dist/chrparser.js",
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.js",
     "browserify-full": "NODE_ENV=browser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr.js",
-    "browserify-console": "NODE_ENV=browser browserify -t envify -t uglifyify -s chr2string console.js | uglifyjs > dist/chr2string.js",
-    "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full && npm run browserify-console",
+    "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full",
     "standard": "standard",
     "tape": "tape test/*.js test/**/**.js",
     "pretest": "npm run peg",
@@ -47,6 +46,7 @@
   "dependencies": {
     "commander": "^2.8.0",
     "concat-stream": "^1.4.8",
+    "easy-table": "^1.0.0",
     "uuid": "^2.0.1"
   },
   "standard": {

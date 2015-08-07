@@ -3,6 +3,8 @@ module.exports = Store
 var util = require('util')
 var events = require('events')
 
+var Table = require('easy-table')
+
 function Store () {
   this.reset()
 }
@@ -97,4 +99,20 @@ Store.prototype.forEach = function (cb) {
   for (var id in this._store) {
     cb(this._store[id], id)
   }
+}
+
+Store.prototype.toString = function () {
+  if (this.length === 0) {
+    return '(empty)'
+  }
+
+  var t = new Table
+
+  this.forEach(function (constraint) {
+    t.cell('ID', constraint.id)
+    t.cell('Constraint', constraint.toString())
+    t.newRow()
+  })
+
+  return t.toString()
 }
