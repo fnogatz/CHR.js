@@ -15,6 +15,10 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   var rule = new Rule(ruleObj, globalReplacements)
   var ruleName = rule.Name
 
+  if (this.hasOwnProperty(ruleName)) {
+    throw new Error('Rule with name "' + ruleName + '" multiple times specified')
+  }
+
   this[ruleName] = rule
   this.Order.push(rule.Name)
 
@@ -36,7 +40,26 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   })
 }
 
-Rules.prototype.forEach = function forEach (callback, thisArg) {
+Rules.prototype.Reset = function reset () {
+  var self = this
+  var chr = this._chr
+
+  var constraintName
+  for (var functor in chr.Constraints) {
+    constraintName = functor.split('/')[0]
+    if (chr.hasOwnProperty(constraintName)) {
+      delete chr[constraintName]
+    }
+  }
+  chr.Constraints = {}
+
+  this.ForEach(function (rule) {
+    delete self[rule.Name]
+  })
+  this.Order = []
+}
+
+Rules.prototype.ForEach = function forEach (callback, thisArg) {
   var self = this
 
   this.Order.forEach(function (ruleName) {

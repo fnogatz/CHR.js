@@ -75,8 +75,6 @@
     return tag
   }
 
-  CHR.Runtime = Runtime
-
   CHR.noConflict = function () {
     root.CHR = prevCHR
     return CHR
