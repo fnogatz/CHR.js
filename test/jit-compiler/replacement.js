@@ -4,7 +4,7 @@ var CHR = require('../../src/index')
 
 test('a ==> ${ () => 1 < 2 } | b', function (t) {
   var chr = new CHR()
-  chr('a ==> ${ () => 1 < 2 } | b')
+  chr('a ==>', function () { return 1 < 2 }, '| b')
 
   chr.a()
   t.equal(chr.Store.length, 2)
@@ -14,7 +14,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) {
 
 test('a ==> ${ 1 < 2 } | b', function (t) {
   var chr = new CHR()
-  chr('a ==> ${ 1 < 2 } | b')
+  chr('a ==>', function () { return 1 < 2 }, '| b')
 
   chr.a()
   t.equal(chr.Store.length, 2)
@@ -24,7 +24,7 @@ test('a ==> ${ 1 < 2 } | b', function (t) {
 
 test('a ==> ${ () => false } | b', function (t) {
   var chr = new CHR()
-  chr('a ==> ${ () => false } | b')
+  chr('a ==>', function () { return false }, '| b')
 
   chr.a()
   t.equal(chr.Store.length, 1, 'Guard not satisfied')
@@ -32,9 +32,9 @@ test('a ==> ${ () => false } | b', function (t) {
   t.end()
 })
 
-test('a ==> ${ false } | b', function (t) {
+test('a ==> ${ () => false } | b', function (t) {
   var chr = new CHR()
-  chr('a ==> ${ false } | b')
+  chr('a ==>', function () { return false }, '| b')
 
   chr.a()
   t.equal(chr.Store.length, 1, 'Guard not satisfied')
@@ -42,7 +42,7 @@ test('a ==> ${ false } | b', function (t) {
   t.end()
 })
 
-test('a ==> ${ fire("Rule fired") }', function (t) {
+test('a ==> ${ () => fire("Rule fired") }', function (t) {
   function fire (string) {
     t.equal(string, 'Rule fired')
 
@@ -55,7 +55,7 @@ test('a ==> ${ fire("Rule fired") }', function (t) {
   chr.a()
 })
 
-test('a ==> ${ fire() }', function (t) {
+test('a ==> ${ fire }', function (t) {
   function fire () {
     t.end()
   }
