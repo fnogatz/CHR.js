@@ -302,6 +302,11 @@ RuleIdentifier
       return chars.join('').trim();
     }
 
+Query
+  = __ first:Constraint rest:(__ ","? __ Constraint)* __ ","? __ {
+      return buildList(first, rest, 3);
+    }
+
 Constraints
   = first:Constraint rest:(__ "," __ Constraint)* {
       return buildList(first, rest, 3);
