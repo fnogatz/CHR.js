@@ -53,6 +53,15 @@
         chrSource = joinParts(combined)
         replacements = Array.prototype.slice.call(arguments, 1)
         program = parse(chrSource)
+      } else if (typeof chrSource === 'string' && arguments[1] && arguments[1] instanceof Array) {
+        // called with program and replacements array
+        // e.g. tag(
+        //        'a ==> ${ function() { console.log("Replacement test") } }',
+        //        [ eval('( function() { console.log("Replacement test") } )') ]
+        //      )
+        // this is useful to ensure the scope of the given replacements
+        program = parse(chrSource)
+        replacements = arguments[1]
       } else if (typeof chrSource === 'string') {
         // called as normal function
         // e.g. tag('a ==> b')

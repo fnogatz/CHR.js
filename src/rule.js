@@ -87,24 +87,24 @@ Rule.prototype._setReplacements = function (globalReplacements) {
         return el
       }
 
+      if (el.hasOwnProperty('expr') && globalReplacements && globalReplacements.length > 0) {
+        // attention: this mutates the globalReplacement parameter!
+        var replacement = globalReplacements.shift()
+
+        // get free uuid
+        replacementId = uuid()
+        self.Replacements[replacementId] = replacement
+
+        // adapt source object
+        var newElement = {
+          type: 'Replacement',
+          num: replacementId
+        }
+
+        return newElement
+      }
+
       return el
-    /*
-          if (el.hasOwnProperty('expr')) {
-            // attention: this mutates the globalReplacement parameter!
-            var replacement = globalReplacements.shift()
-
-            // get free uuid
-            replacementId = uuid()
-            self.Replacements[replacementId] = replacement
-
-            // adapt source object
-            var newElement = {
-              type: 'Replacement',
-              num: replacementId
-            }
-
-            return newElement
-          }*/
     })
   })
 }

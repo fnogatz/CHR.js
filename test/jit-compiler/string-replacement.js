@@ -214,3 +214,47 @@ test('string replacement in guard', function (t) {
 
   t.end()
 })
+
+test('string replacement specified via tag function', function (t) {
+  t.test('function reference', function (t) {
+    var replacements = (function () {
+      function fire (N) { // eslint-disable-line no-unused-vars
+        t.equal(N, 42)
+
+        t.end()
+      }
+
+      return [
+        'fire'
+      ].map(function (repl) {
+        return eval('(' + repl + ')') // eslint-disable-line no-eval
+      })
+    })()
+
+    var chr = new CHR()
+
+    // should be avoided; see note above
+    chr('a(N) ==> ${ fire }', replacements)
+
+    chr.a(42)
+  })
+
+  t.test('function', function (t) {
+    var replacements = (function () {
+      return [
+        'function(N) { t.equal(N, 42); t.end() }'
+      ].map(function (repl) {
+        return eval('(' + repl + ')') // eslint-disable-line no-eval
+      })
+    })()
+
+    var chr = new CHR()
+
+    // should be avoided; see note above
+    chr('a(N) ==> ${ function(N) { t.equal(N, 42); t.end() } }', replacements)
+
+    chr.a(42)
+  })
+
+  t.end()
+})
