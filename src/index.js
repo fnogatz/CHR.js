@@ -18,9 +18,10 @@
 
   function CHR (opts) {
     opts = opts || {}
-    opts.Store = opts.Store || new Runtime.Store()
-    opts.History = opts.History || new Runtime.History()
-    opts.Rules = opts.Rules || new Rules(tag)
+    opts.store = opts.store || new Runtime.Store()
+    opts.history = opts.history || new Runtime.History()
+    opts.rules = opts.rules || new Rules(tag)
+    opts.scope = opts.scope || {}
 
     /**
      * Adds a number of rules given.
@@ -34,7 +35,12 @@
         // called with already parsed source code
         // e.g. tag({ type: 'Program', body: [ ... ] })
         program = chrSource
-        replacements = chrSource.replacements || []
+        replacements = []
+
+        // allow to specify replacements as second argument
+        if (arguments[1] && typeof arguments[1] === 'object' && arguments[1] instanceof Array) {
+          replacements = arguments[1]
+        }
       } else if (typeof chrSource === 'object' && chrSource instanceof Array && typeof chrSource[0] === 'string') {
         // called as template tag
         // e.g. tag`a ==> b`
@@ -62,9 +68,10 @@
       })
     }
 
-    tag.Store = opts.Store
-    tag.History = opts.History
-    tag.Rules = opts.Rules
+    tag.Store = opts.store
+    tag.History = opts.history
+    tag.Rules = opts.rules
+    tag.Scope = opts.scope
 
     // this will save all constraint functors with
     //   an array of the rules they occur in
@@ -74,6 +81,9 @@
 
     return tag
   }
+
+  // expose Constraint constructor
+  CHR.Constraint = Runtime.Constraint
 
   CHR.noConflict = function () {
     root.CHR = prevCHR

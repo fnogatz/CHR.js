@@ -17,7 +17,7 @@ function dynamicCaller (name) {
 
     var self = this
     this.Rules.ForEach(function (rule) {
-      if (rule.Constraints[functor]) {
+      if (rule[functor]) {
         rule.fire(self, constraint)
       }
     })

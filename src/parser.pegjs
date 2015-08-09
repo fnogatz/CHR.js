@@ -115,6 +115,9 @@
           else if (c.hasOwnProperty('original')) {
             entry.original = c.original
           }
+          else if (c.hasOwnProperty('expr')) {
+            entry.expr = c.expr
+          }
 
           ruleDescriptor.replacements.push(entry)
         }
@@ -204,6 +207,10 @@ Start
 ProgramWithPreamble
   = __ preamble:Preamble? __ program:Program {
       program.preamble = preamble
+      program.replacements = []
+      program.body.forEach(function (rule) {
+        program.replacements = program.replacements.concat(rule.replacements)
+      })
       return program
     }
 
@@ -365,16 +372,19 @@ Replacement
         num: parseInt(num)
       };
     }
-  / ReplacementOpeningSymbol __ source:PreambleSource __ ReplacementClosingSymbol {
+  / ReplacementOpeningSymbol __ func:FunctionExpression __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
-        original: source
+        expr: func
       };
     }
-  / ReplacementOpeningSymbol __ source:ArrowFunction __ ReplacementClosingSymbol {
+  / ReplacementOpeningSymbol __ expr:$(Expression) __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',
-        original: source
+        expr: {
+          type: 'SourceCode',
+          original: expr
+        }
       };
     }
 
@@ -386,8 +396,17 @@ ReplacementClosingSymbol
   = "}"
 
 ArrowFunction
-  = "()" __ "=>" __ source:PreambleSource {
-      return source;
+  = "(" __ params:FormalParameterList? __ ")" __ "=>" __ body:PreambleSource {
+      var desc = {
+        type: 'ArrowFunction',
+        original: text(),
+        params: [],
+        body: body
+      }
+      if (params) {
+        desc.params = params
+      }
+      return desc;
     }
 
 BuiltIns
@@ -1757,7 +1776,8 @@ FunctionExpression
         type:   "FunctionExpression",
         id:     extractOptional(id, 0),
         params: optionalList(extractOptional(params, 0)),
-        body:   body
+        body:   body,
+        original: text()
       };
     }
 

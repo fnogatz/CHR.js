@@ -1,19 +1,24 @@
 module.exports = Compiler
 
 var util = require('./util')
+var fakeScope = require('./fake-scope')
 
 var indent = util.indent
 var indentBy = util.indentBy
 var destructuring = util.destructuring
 
-function Compiler (rule, replacements, opts) {
-  this.rule = rule
-  this.replacements = replacements || {}
-
+function Compiler (rule, opts) {
   opts = opts || {}
-  opts.this = opts.this || 'this'
-  opts.helper = opts.helper || 'self.Helper'
-  this.opts = opts
+
+  this.rule = rule
+
+  this.replacements = opts.replacements || {}
+  this.scope = opts.scope || {}
+
+  this.opts = {
+    this: opts.this || 'this',
+    helper: opts.helper || 'self.Helper'
+  }
 }
 
 Compiler.prototype.headNo = function compileHeadNo (headNo) {
@@ -83,20 +88,21 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
 
     // is Replacement
 
-    if (guard.hasOwnProperty('original')) {
+    if (guard.hasOwnProperty('num')) {
+      // get parameters via dependency injection
+      var params = util.getFunctionParameters(self.replacements[guard.num])
       parts.push(
-        indent(level + 0) + 'if (!(function() { return ' + guard.original + ' }())) {',
+        indent(level + 0) + 'if (!replacements["' + guard.num + '"].apply(self, [' + params + '])) {',
         indent(level + 1) + 'return',
         indent(level + 0) + '}'
       )
+
       return
     }
 
-    if (guard.hasOwnProperty('num')) {
-      // get parameters via dependency injection
-      var params = getFunctionParameters(self.replacements[guard.num])
+    if (guard.hasOwnProperty('expr')) {
       parts.push(
-        indent(level + 0) + 'if (!replacements[' + guard.num + '].apply(self, [' + params + '])) {',
+        indent(level + 0) + 'if (!' + fakeScope(self.scope, guard.expr.original, true) + ') {',
         indent(level + 1) + 'return',
         indent(level + 0) + '}'
       )
@@ -135,7 +141,8 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
 
   if (rule.body.length > 0) {
     rule.body.forEach(function (body) {
-      parts.push(indent(level) + self.generateTell(body))
+      var tell = self.generateTell(body).map(indentBy(level))
+      parts = parts.concat(tell)
     })
   }
 
@@ -202,19 +209,29 @@ Compiler.prototype.generateTell = function generateTell (body) {
     }).join(', ')
     expr += ')'
 
-    return expr
+    return [ expr ]
   }
 
   if (body.type === 'Replacement') {
     if (body.hasOwnProperty('original')) {
-      return ';(function() { ' + body.original + ' })()'
+      return [
+        ';(function() { ' + body.original + ' })()'
+      ]
     }
 
     if (body.hasOwnProperty('num')) {
       // get parameters via dependency injection
-      var params = getFunctionParameters(self.replacements[body.num])
-      return 'replacements[' + body.num + '].apply(self, [' + params + '])'
+      var params = util.getFunctionParameters(self.replacements[body.num])
+      return [
+        'replacements["' + body.num + '"].apply(self, [' + params + '])'
+      ]
     }
+
+    if (body.hasOwnProperty('expr')) {
+      return fakeScope(self.scope, body.expr.original)
+    }
+
+    return
   }
 
   expr += [
@@ -223,7 +240,7 @@ Compiler.prototype.generateTell = function generateTell (body) {
     indent(1) + 'return',
     '}'
   ].join('\n')
-  return expr
+  return [ expr ]
 }
 
 Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
@@ -260,9 +277,4 @@ function escape (val) {
   }
 
   return val
-}
-
-function getFunctionParameters (func) {
-  var args = func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
-  return args
 }

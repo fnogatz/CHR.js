@@ -10,6 +10,7 @@
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.js",
     "browserify-full": "NODE_ENV=browser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr.js",
     "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full",
+    "dist": "npm run browserify",
     "standard": "standard",
     "tape": "tape test/*.js test/**/**.js",
     "pretest": "npm run peg",
@@ -52,6 +53,7 @@
   "standard": {
     "ignore": [
       "src/parser.js",
+      "src/compile/fake-scope.js",
       "dist/*.js"
     ]
   }

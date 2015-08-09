@@ -2,6 +2,7 @@ module.exports = {}
 module.exports.indent = indent
 module.exports.indentBy = indentBy
 module.exports.destructuring = destructuring
+module.exports.getFunctionParameters = getFunctionParameters
 
 function indent (level, text, spaces) {
   level = level || 0
@@ -42,4 +43,9 @@ function destructuring (constraint, to) {
     parts.push('var ' + parameter.name + ' = ' + to + '[' + i + ']')
   })
   return parts
+}
+
+function getFunctionParameters (func) {
+  var args = func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+  return args
 }

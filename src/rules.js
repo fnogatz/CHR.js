@@ -12,7 +12,10 @@ function Rules (chr) {
 Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   var self = this
 
-  var rule = new Rule(ruleObj, globalReplacements)
+  var rule = new Rule(ruleObj, {
+    replacements: globalReplacements,
+    scope: self._chr.Scope
+  })
   var ruleName = rule.Name
 
   if (this.hasOwnProperty(ruleName)) {

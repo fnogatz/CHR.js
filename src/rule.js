@@ -1,31 +1,39 @@
 module.exports = Rule
 
-var uuid = require('uuid').v4
+var uuid = require('uuid').v1
 
 var HeadCompiler = require('./compile/head')
 
-function Rule (ruleObj, globalReplacements) {
+function Rule (ruleObj, opts) {
   if (typeof ruleObj.name === 'undefined') {
     ruleObj.name = '_' + uuid()
   }
 
+  opts = opts || {}
+  opts.globalReplacements = opts.replacements || {}
+
+  this.Scope = opts.scope || {}
   this._source = ruleObj
 
   this.Replacements = {}
-  this._setReplacements(globalReplacements)
+  this._setReplacements(opts.globalReplacements)
 
-  this.Constraints = {}
   this.Name = ruleObj.name
 
   this._compile(ruleObj)
 }
 
 Rule.prototype._compile = function compileRule (ruleObj) {
+  var self = this
+
   var head
   var body
   var compiled
 
-  var headCompiler = new HeadCompiler(ruleObj, this.Replacements)
+  var headCompiler = new HeadCompiler(ruleObj, {
+    replacements: self.Replacements,
+    scope: self.Scope
+  })
 
   for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
     head = ruleObj.head[headNo]
@@ -41,8 +49,8 @@ Rule.prototype._compile = function compileRule (ruleObj) {
       continue
     }
 
-    if (!this.Constraints[body.functor]) {
-      this.Constraints[body.functor] = []
+    if (!this[body.functor]) {
+      this[body.functor] = []
     }
   }
 }
@@ -51,38 +59,60 @@ Rule.prototype._addConstraintCaller = function (functor, compiled) {
   // create a new function with a single parameter "constraint"
   var compiledFunction = new Function('constraint', 'replacements', compiled) // eslint-disable-line
 
-  compiledFunction.toString = function () {
-    return 'function (constraint, replacements) {\n' + compiled + '}'
+  if (!this[functor]) {
+    this[functor] = []
   }
 
-  if (!this.Constraints[functor]) {
-    this.Constraints[functor] = []
-  }
-
-  this.Constraints[functor].push(compiledFunction)
+  this[functor].push(compiledFunction)
 }
 
 Rule.prototype._setReplacements = function (globalReplacements) {
   var self = this
 
-  this._source.replacements.forEach(function (replacement) {
-    if (!replacement.hasOwnProperty('num')) {
-      return
-    }
+  ;['guard', 'body'].forEach(function (location) {
+    self._source[location] = self._source[location].map(function (el) {
+      if (el.type !== 'Replacement') {
+        return el
+      }
 
-    var num = replacement.num
-    if (!globalReplacements[num]) {
-      throw new Error('There is no replacement with number ' + num)
-    }
+      var replacementId
 
-    self.Replacements[num] = globalReplacements[num]
+      if (el.hasOwnProperty('num')) {
+        replacementId = el.num
+        if (!globalReplacements[replacementId]) {
+          throw new Error('There is no replacement with number ' + replacementId)
+        }
+
+        self.Replacements[replacementId] = globalReplacements[replacementId]
+        return el
+      }
+
+      return el
+    /*
+          if (el.hasOwnProperty('expr')) {
+            // attention: this mutates the globalReplacement parameter!
+            var replacement = globalReplacements.shift()
+
+            // get free uuid
+            replacementId = uuid()
+            self.Replacements[replacementId] = replacement
+
+            // adapt source object
+            var newElement = {
+              type: 'Replacement',
+              num: replacementId
+            }
+
+            return newElement
+          }*/
+    })
   })
 }
 
 Rule.prototype.fire = function fireConstraint (chr, constraint) {
   var replacements = this.Replacements
 
-  this.Constraints[constraint.functor].forEach(function (occurence) {
+  this[constraint.functor].forEach(function (occurence) {
     occurence.call(chr, constraint, replacements)
   })
 }
