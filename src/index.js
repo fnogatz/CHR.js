@@ -86,6 +86,12 @@
     //   an array of the rules they occur in
     tag.Constraints = {}
 
+    Object.defineProperty(tag, 'Functors', {
+      get: function () {
+        return Object.keys(tag.Constraints)
+      }
+    })
+
     tag.Helper = Runtime.Helper
 
     return tag
