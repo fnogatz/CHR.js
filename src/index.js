@@ -100,6 +100,8 @@
   // expose Constraint constructor
   CHR.Constraint = Runtime.Constraint
 
+  CHR.version = '__VERSION__'
+
   CHR.noConflict = function () {
     root.CHR = prevCHR
     return CHR
