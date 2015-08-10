@@ -101,6 +101,14 @@ Store.prototype.forEach = function (cb) {
   }
 }
 
+Store.prototype.map = function (callback, thisArg) {
+  var res = []
+  for (var id in this._store) {
+    res.push(callback.call(thisArg, this._store[id], id, this))
+  }
+  return res
+}
+
 Store.prototype.toString = function () {
   if (this.length === 0) {
     return '(empty)'

@@ -47,3 +47,28 @@ test('Store.forEach()', function (t) {
 
   t.end()
 })
+
+test('Store.map()', function (t) {
+  var s = new Store()
+
+  var expected = [
+    'a(1)',
+    'b(2,3)',
+    'a',
+    'a',
+    'c(1)'
+  ]
+  s.add(new Constraint('a', 1, [1]))
+  s.add(new Constraint('b', 2, [2, 3]))
+  s.add(new Constraint('a', 0))
+  s.add(new Constraint('a', 0))
+  s.add(new Constraint('c', 1, [1]))
+
+  var res = s.map(function (c) {
+    return c.toString()
+  })
+
+  t.deepEqual(res, expected)
+
+  t.end()
+})
