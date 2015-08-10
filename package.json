@@ -4,7 +4,7 @@
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
-    "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble' src/parser.pegjs",
+    "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble,Query' --optimize size src/parser.pegjs",
     "prepublish": "npm run peg && npm run browserify",
     "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.js | uglifyjs > ./dist/chrparser.js",
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.js",
