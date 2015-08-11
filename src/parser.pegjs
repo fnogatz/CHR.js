@@ -303,8 +303,36 @@ RuleIdentifier
     }
 
 Query
-  = __ first:Constraint rest:(__ ","? __ Constraint)* __ ","? __ {
+  = __ first:ConstraintCall rest:(__ ","? __ ConstraintCall)* __ ","? __ {
       return buildList(first, rest, 3);
+    }
+
+ConstraintCall
+  = constraintName:ConstraintName
+    parameters:("(" __ CallParameters __ ")")? {
+      var desc = { 
+        type: 'Constraint',
+        name: constraintName,
+        parameters: extractOptional(parameters, 2, []),
+        original: text()
+      };
+      if (desc.parameters === null) {
+        desc.parameters = [];
+      }
+      desc.arity = desc.parameters.length
+      desc.functor = desc.name + '/' + desc.arity;
+      return desc;
+    }
+
+CallParameters
+  = first:CallParameter rest:(__ "," __ CallParameter)* {
+      return buildList(first, rest, 3);
+    }
+
+CallParameter
+  = expression:Expression {
+      expression.original = text();
+      return expression;
     }
 
 Constraints

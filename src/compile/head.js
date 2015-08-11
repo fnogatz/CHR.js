@@ -223,7 +223,7 @@ Compiler.prototype.generateTell = function generateTell (body) {
       // get parameters via dependency injection
       var params = util.getFunctionParameters(self.replacements[body.num])
       return [
-        'replacements["' + body.num + '"].apply(self, [' + params + '])'
+        'replacements["' + body.num + '"].apply(null, [' + params + '])'
       ]
     }
 

@@ -105,3 +105,73 @@ test('a,b,', function (t) {
 
   t.end()
 })
+
+test('Array as argument', function (t) {
+  var res = parse('a([1,2,3])')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('Object as argument', function (t) {
+  var res = parse('a({ a: 1, b: 2, "c": 3 })')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('String as argument, single quotation marks', function (t) {
+  var res = parse("a('1,2,3')")
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('String as argument, doule quotation marks', function (t) {
+  var res = parse('a("1,2,3")')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('Identifier as argument', function (t) {
+  var res = parse('a(fire)')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('Function as argument', function (t) {
+  var res = parse('a(function() {})')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
+
+test('Negative number as argument', function (t) {
+  var res = parse('a(-1)')
+
+  t.equal(typeof res, 'object')
+  t.ok(res instanceof Array)
+  t.equal(res.length, 1)
+
+  t.end()
+})
