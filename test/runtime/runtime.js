@@ -1,6 +1,6 @@
 var test = require('tape')
 
-var Runtime = require('../runtime')
+var Runtime = require('../../runtime')
 
 test('Runtime.Store', function (t) {
   t.ok(Runtime.hasOwnProperty('Store'))

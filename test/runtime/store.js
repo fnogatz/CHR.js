@@ -1,7 +1,7 @@
 var test = require('tape')
 
-var Store = require('../src/store')
-var Constraint = require('../src/constraint')
+var Store = require('../../src/store')
+var Constraint = require('../../src/constraint')
 
 test('Creation', function (t) {
   var s = new Store()

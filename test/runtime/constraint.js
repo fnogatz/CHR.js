@@ -1,6 +1,6 @@
 var test = require('tape')
 
-var Constraint = require('../src/constraint')
+var Constraint = require('../../src/constraint')
 
 test('Creation', function (t) {
   t.test('Arity: 2', function (t) {
