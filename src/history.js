@@ -23,6 +23,16 @@ History.prototype.notIn = function notIn (rule, ids) {
   return !found
 }
 
+History.prototype.has = function has (rule, ids) {
+  if (!this._history.hasOwnProperty(rule)) {
+    return false
+  }
+
+  var str = hash(ids)
+  var found = (this._history[rule].indexOf(str) >= 0)
+  return found
+}
+
 function hash (ids) {
   return ids.join('_')
 }

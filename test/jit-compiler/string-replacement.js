@@ -22,14 +22,18 @@ var CHR = require('../../src/index')
 test('string replacement in body', function (t) {
   t.test('function reference', function (t) {
     var scope = (function () {
-      function fire (N) {
-        t.equal(N, 42)
+      var m
 
-        t.end()
+      function fire (N, cb) {
+        m = N
+        cb()
       }
 
       return {
-        fire: fire
+        fire: fire,
+        getM: function () {
+          return m
+        }
       }
     })()
 
@@ -40,15 +44,19 @@ test('string replacement in body', function (t) {
     // should be avoided; see note above
     chr('a(N) ==> ${ fire }')
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(scope.getM(), 42)
+      t.end()
+    })
   })
 
   t.test('indirection', function (t) {
     var scope = (function () {
-      function fire (N) {
-        t.equal(N, 42)
+      var m
 
-        t.end()
+      function fire (N, cb) {
+        m = N
+        cb()
       }
 
       function getFire () {
@@ -57,7 +65,10 @@ test('string replacement in body', function (t) {
 
       return {
         fire: fire,
-        getFire: getFire
+        getFire: getFire,
+        getM: function () {
+          return m
+        }
       }
     })()
 
@@ -68,19 +79,25 @@ test('string replacement in body', function (t) {
     // should be avoided; see note above
     chr('a(N) ==> ${ getFire() }')
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(scope.getM(), 42)
+      t.end()
+    })
   })
 
   t.test('indirection via anonymous function', function (t) {
     var scope = (function () {
-      function fire (N) {
-        t.equal(N, 42)
+      var m
 
-        t.end()
+      function fire (N) {
+        m = N
       }
 
       return {
-        fire: fire
+        fire: fire,
+        getM: function () {
+          return m
+        }
       }
     })()
 
@@ -89,21 +106,27 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N) { return fire(N) } }')
+    chr('a(N) ==> ${ function(N, cb) { fire(N); cb() } }')
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(scope.getM(), 42)
+      t.end()
+    })
   })
 
   t.test('variable renaming', function (t) {
     var scope = (function () {
-      function fire (N) {
-        t.equal(N, 42)
+      var m
 
-        t.end()
+      function fire (N) {
+        m = N
       }
 
       return {
-        fire: fire
+        fire: fire,
+        getM: function () {
+          return m
+        }
       }
     })()
 
@@ -112,17 +135,20 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(M) ==> ${ function(M) { return fire(M) } }')
+    chr('a(M) ==> ${ function(M, cb) { fire(M); cb() } }')
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(scope.getM(), 42)
+      t.end()
+    })
   })
 
   t.test('variable renaming with indirection', function (t) {
     var scope = (function () {
-      function fire (N) {
-        t.equal(N, 42)
+      var m
 
-        t.end()
+      function fire (N) {
+        m = N
       }
 
       function getFire () {
@@ -131,7 +157,10 @@ test('string replacement in body', function (t) {
 
       return {
         fire: fire,
-        getFire: getFire
+        getFire: getFire,
+        getM: function () {
+          return m
+        }
       }
     })()
 
@@ -140,9 +169,12 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(M) ==> ${ function(M) { getFire()(M) } }')
+    chr('a(M) ==> ${ function(M, cb) { getFire()(M); cb() } }')
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(scope.getM(), 42)
+      t.end()
+    })
   })
 
   t.end()
@@ -151,8 +183,8 @@ test('string replacement in body', function (t) {
 test('string replacement in guard', function (t) {
   t.test('function reference, constant true', function (t) {
     var scope = (function () {
-      function test () {
-        return true
+      function test (cb) {
+        cb(true)
       }
 
       return {
@@ -167,17 +199,16 @@ test('string replacement in guard', function (t) {
     // should be avoided; see note above
     chr('a(N) ==> ${ test } | b')
 
-    chr.a(42)
-
-    t.equal(chr.Store.length, 2, 'rule fired')
-
-    t.end()
+    chr.a(42).then(function () {
+      t.equal(chr.Store.length, 2, 'rule fired')
+      t.end()
+    })
   })
 
   t.test('function reference, constant false', function (t) {
     var scope = (function () {
-      function test () {
-        return false
+      function test (cb) {
+        cb(false)
       }
 
       return {
@@ -192,36 +223,33 @@ test('string replacement in guard', function (t) {
     // should be avoided; see note above
     chr('a(N) ==> ${ test } | b')
 
-    chr.a(42)
-
-    t.equal(chr.Store.length, 1, 'rule not fired')
-
-    t.end()
+    chr.a(42).then(function () {
+      t.equal(chr.Store.length, 1, 'rule not fired')
+      t.end()
+    })
   })
 
   t.test('string replacement', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N) { return N > 0 } } | a(N-1)')
+    chr('a(N) ==> ${ function(N, cb) { cb(N > 0) } } | a(N-1)')
 
-    chr.a(4)
-
-    t.equal(chr.Store.length, 5, 'rule executed four times')
-
-    t.end()
+    chr.a(4).then(function () {
+      t.equal(chr.Store.length, 5, 'rule executed four times')
+      t.end()
+    })
   })
-
-  t.end()
 })
 
 test('string replacement specified via tag function', function (t) {
   t.test('function reference', function (t) {
-    var replacements = (function () {
-      function fire (N) { // eslint-disable-line no-unused-vars
-        t.equal(N, 42)
+    var m
 
-        t.end()
+    var replacements = (function () {
+      function fire (N, cb) { // eslint-disable-line no-unused-vars
+        m = N
+        cb()
       }
 
       return [
@@ -236,13 +264,18 @@ test('string replacement specified via tag function', function (t) {
     // should be avoided; see note above
     chr('a(N) ==> ${ fire }', replacements)
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(m, 42)
+      t.end()
+    })
   })
 
   t.test('function', function (t) {
+    var m
+
     var replacements = (function () {
       return [
-        'function(N) { t.equal(N, 42); t.end() }'
+        'function(N, cb) { t.equal(N, 42); m = N; cb() }'
       ].map(function (repl) {
         return eval('(' + repl + ')') // eslint-disable-line no-eval
       })
@@ -251,9 +284,12 @@ test('string replacement specified via tag function', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N) { t.equal(N, 42); t.end() } }', replacements)
+    chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements)
 
-    chr.a(42)
+    chr.a(42).then(function () {
+      t.equal(m, 42)
+      t.end()
+    })
   })
 
   t.end()

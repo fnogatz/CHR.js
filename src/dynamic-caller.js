@@ -15,11 +15,16 @@ function dynamicCaller (name) {
     var constraint = new Constraint(name, arity, args)
     this.Store.add(constraint)
 
-    var self = this
+    var rules = []
     this.Rules.ForEach(function (rule) {
       if (rule[functor]) {
-        rule.fire(self, constraint)
+        rules.push(rule)
       }
     })
+
+    var self = this
+    return Promise.all(rules.map(function (rule) {
+      return rule.fire(self, constraint)
+    }))
   }
 }

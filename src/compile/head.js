@@ -37,139 +37,191 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
   }
 
   var parts = []
+  var level = 0
+
   parts.push(
-    'var self = ' + opts.this,
-    ''
+    indent(level) + 'var self = ' + opts.this,
+    indent(level) + ''
   )
 
   if (constraint.arity > 0) {
+    parts = parts.concat(destructuring(constraint, 'constraint.args').map(indentBy(level)))
     parts.push(
-      indent(0, destructuring(constraint, 'constraint.args')).join('\n'),
-      indent(0)
+      indent(level)
     )
   }
 
-  var j
-  var level = 0
-  var ids = []
-  for (j = 0; j < rule.head.length; j++) {
-    if (j === headNo) {
-      ids.push('constraint.id')
-      continue
+  // start:def_constraintIds
+  parts.push(
+    indent(level) + 'var constraintIds = ['
+  )
+
+  rule.head.forEach(function (head, headIndex) {
+    var line = headIndex === 0 ? indent(1) : ', '
+    if (headIndex === headNo) {
+      line += '[ constraint.id ]'
+    } else {
+      line += 'self.Store.lookup("' + head.name + '", ' + head.arity + ')'
     }
-
-    ids.push('id' + (j + 1))
-
-    parts.push(indent(level) + 'self.Store.lookup("' + rule.head[j].name + '", ' + rule.head[j].arity + ').forEach(function (id' + (j + 1) + ') {')
-    level++
-
     parts.push(
-      indent(level, 'if (!self.Store.alive(id' + (j + 1) + ')) {'),
-      indent(level + 1) + 'return',
-      indent(level, '}')
+      indent(level) + line
     )
-
-    if (rule.head[j].arity > 0) {
-      parts.push(
-        indent(level, destructuring(rule.head[j], 'self.Store.args(id' + (j + 1) + ')')).join('\n')
-      )
-    }
-
-    parts.push(indent(level))
-  }
-
-  // check guard replacements
-  var guardWithoutReplacements = []
-  rule.guard.forEach(function (guard) {
-    if (guard.type !== 'Replacement') {
-      guardWithoutReplacements.push(guard)
-      return
-    }
-
-    // is Replacement
-
-    if (guard.hasOwnProperty('num')) {
-      // get parameters via dependency injection
-      var params = util.getFunctionParameters(self.replacements[guard.num])
-      parts.push(
-        indent(level + 0) + 'if (!replacements["' + guard.num + '"].apply(self, [' + params + '])) {',
-        indent(level + 1) + 'return',
-        indent(level + 0) + '}'
-      )
-
-      return
-    }
-
-    if (guard.hasOwnProperty('expr')) {
-      parts.push(
-        indent(level + 0) + 'if (!' + fakeScope(self.scope, guard.expr.original, true) + ') {',
-        indent(level + 1) + 'return',
-        indent(level + 0) + '}'
-      )
-
-      return
-    }
   })
 
-  if (guardWithoutReplacements !== rule.guard.length) {
-    parts.push(indent(level))
-  }
-
   parts.push(
-    indent(level + 0) + 'var ids = [ ' + ids.join(', ') + ' ]',
-    indent(level + 0) + 'if (ids.every(function(id) { return self.Store.alive(id) })) {',
-    indent(level + 1) + 'if (' + opts.helper + '.allDifferent(ids)) {'
+    indent(level) + ']',
+    indent(level) + ''
   )
-  level += 2
+  // end:def_constraintIds
 
-  if (guardWithoutReplacements.length > 0) {
-    parts.push(indent(level) + this.generateGuards())
+  // start:return_promise
+  parts.push(
+    indent(level) + 'return new Promise(function (resolve, reject) {'
+  )
+  level += 1
+
+  // start:def_iterator
+  parts.push(
+    indent(level) + this.opts.helper + '.forEach(constraintIds, function iterator (ids, callback) {'
+  )
+  level += 1
+
+  // start:test_allAlive
+  parts.push(
+    indent(level) + 'if (!self.Store.allAlive(ids))',
+    indent(level) + '  return callback()',
+    indent(level)
+  )
+  // end:test_allAlive
+
+  // start:test_ruleFired
+  parts.push(
+    indent(level) + 'if (self.History.has("' + rule.name + '", ids))',
+    indent(level) + '  return callback()',
+    indent(level)
+  )
+  // end:test_ruleFired
+
+  // start:destructuring_other_constraints
+  rule.head.forEach(function (head, headIndex) {
+    if (headIndex === headNo) {
+      return
+    }
+
+    if (head.arity > 0) {
+      parts = parts.concat(destructuring(head, 'self.Store.args(ids[' + headIndex + '])').map(indentBy(level)))
+      parts.push(
+        indent(level)
+      )
+    }
+  })
+  // end:destructuring_other_constraints
+
+  // start:guards_promises
+  // generates something like:
+  //   var guards = []
+  if (rule.guard && rule.guard.length > 0) {
+    parts = parts.concat(
+      this.generateGuardPromisesArray().map(indentBy(level))
+    )
+    parts.push(
+      indent(level) + 'Promise.all(guards)',
+      indent(level) + '.then(function () {'
+    )
     level += 1
   }
 
   parts.push(
-    indent(level + 0) + 'if (self.History.notIn("' + rule.name + '", ids)) {',
-    indent(level + 1) + 'self.History.add("' + rule.name + '", ids)'
+    indent(level) + 'self.History.add("' + rule.name + '", ids)'
   )
-
-  level += 1
-
   for (var k = rule.r + 1; k <= rule.head.length; k++) {
     // remove constraints
-    parts.push(indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])')
+    parts.push(
+      indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])'
+    )
   }
 
+  // start:tells
   if (rule.body.length > 0) {
-    rule.body.forEach(function (body) {
-      var tell = self.generateTell(body).map(indentBy(level))
-      parts = parts.concat(tell)
-    })
+    parts.push(
+      indent(level)
+    )
+    parts = parts.concat(self.generateTellPromises().map(indentBy(level)))
+  } else {
+    parts.push(
+      indent(level) + 'callback()'
+    )
   }
+  // end: tells
+
+  if (rule.guard && rule.guard.length > 0) {
+    level -= 1
+    parts.push(
+      indent(level) + '})',
+      indent(level) + '.catch(function () {',
+      indent(level + 1) + ' callback()',
+      indent(level) + '})'
+    )
+  }
+  // end:guards_promises
 
   level -= 1
-  parts.push(indent(level) + '}')
-
-  if (guardWithoutReplacements.length > 0) {
-    level -= 1
-    parts.push(indent(level) + '}')
-  }
-
-  level -= 2
   parts.push(
-    indent(level + 1) + '}',
-    indent(level + 0) + '}'
+    indent(level) + '}, resolve)'
+  )
+  // end:def_iterator
+
+  level -= 1
+  parts.push('})')
+  // end:return_promise
+
+  return parts
+}
+
+Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesArray () {
+  var self = this
+  var parts = []
+
+  parts.push(
+    'var guards = ['
   )
 
-  for (j = rule.head.length - 1; j >= 0; j--) {
-    if (j === headNo) {
-      continue
+  this.rule.guard.forEach(function (guard, guardIndex) {
+    var expr = guardIndex === 0 ? indent(1) : ', '
+
+    if (guard.type === 'Replacement' && guard.hasOwnProperty('num')) {
+      // get parameters via dependency injection
+      var params = util.getFunctionParameters(self.replacements[guard.num])
+      var lastParamName = util.getLastParamName(params)
+      parts.push(
+        expr + 'new Promise(function (s, j) {',
+        indent(2) + 'var ' + lastParamName + ' = function (r) { r ? s() : j() }',
+        indent(2) + 'replacements["' + guard.num + '"].apply(self, [' + params + '])',
+        indent(1) + '})'
+      )
+
+      return
     }
 
-    level--
-    parts.push(indent(level) + '})')
-  }
+    if (guard.type === 'Replacement' && guard.hasOwnProperty('expr')) {
+      parts = parts.concat(fakeScope(self.scope, guard.expr.original, { isGuard: true }).map(function (row, rowId) {
+        if (rowId === 0) {
+          return expr + row
+        }
+        return indent(1) + row
+      }))
+      return
+    }
 
-  parts = parts.map(indentBy(1))
+    parts.push(
+      expr + 'new Promise(function (s, j) { (' + self.generateGuard(guard) + ') ? s() : j() })'
+    )
+  })
+
+  parts.push(
+    ']',
+    ''
+  )
 
   return parts
 }
@@ -198,6 +250,62 @@ Compiler.prototype.generateGuard = function generateGuard (guard) {
   return 'false'
 }
 
+Compiler.prototype.generateTellPromises = function generateTellPromises () {
+  var self = this
+  var parts = []
+
+  parts.push(
+    'Promise.all(['
+  )
+
+  this.rule.body.forEach(function (body, bodyIndex) {
+    var expr = bodyIndex === 0 ? indent(1) : ', '
+
+    if (body.type === 'Constraint') {
+      expr += 'self.' + body.name + '('
+      expr += body.parameters.map(function (parameter) {
+        return self.generateExpression(parameter)
+      }).join(', ')
+      expr += ')'
+      parts.push(expr)
+      return
+    }
+
+    if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
+      parts = parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
+        if (rowId === 0) {
+          return expr + row
+        }
+        return indent(1) + row
+      }))
+      return
+    }
+
+    if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
+      // get parameters via dependency injection
+      var params = util.getFunctionParameters(self.replacements[body.num])
+      var lastParamName = util.getLastParamName(params)
+      parts.push(
+        expr + 'new Promise(function (s) {',
+        indent(2) + 'var ' + lastParamName + ' = s',
+        indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
+        indent(1) + '})'
+      )
+      return
+    }
+  })
+
+  parts.push(
+    ']).then(function () {',
+    indent(1) + 'callback()',
+    '}).catch(function() {',
+    indent(1) + 'reject()',
+    '})'
+  )
+
+  return parts
+}
+
 Compiler.prototype.generateTell = function generateTell (body) {
   var self = this
 
@@ -213,20 +321,6 @@ Compiler.prototype.generateTell = function generateTell (body) {
   }
 
   if (body.type === 'Replacement') {
-    if (body.hasOwnProperty('original')) {
-      return [
-        ';(function() { ' + body.original + ' })()'
-      ]
-    }
-
-    if (body.hasOwnProperty('num')) {
-      // get parameters via dependency injection
-      var params = util.getFunctionParameters(self.replacements[body.num])
-      return [
-        'replacements["' + body.num + '"].apply(null, [' + params + '])'
-      ]
-    }
-
     if (body.hasOwnProperty('expr')) {
       return fakeScope(self.scope, body.expr.original)
     }

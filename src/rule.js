@@ -38,7 +38,9 @@ Rule.prototype._compile = function compileRule (ruleObj) {
   for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
     head = ruleObj.head[headNo]
 
-    compiled = headCompiler.headNo(headNo).join('\n')
+    compiled = headCompiler.headNo(headNo).map(function (row) {
+      return '  ' + row
+    }).join('\n')
     this._addConstraintCaller(head.functor, compiled)
   }
 
@@ -57,7 +59,13 @@ Rule.prototype._compile = function compileRule (ruleObj) {
 
 Rule.prototype._addConstraintCaller = function (functor, compiled) {
   // create a new function with a single parameter "constraint"
-  var compiledFunction = new Function('constraint', 'replacements', compiled) // eslint-disable-line
+  try {
+    var compiledFunction = new Function('constraint', 'replacements', compiled) // eslint-disable-line
+  } catch (e) {
+    console.log('Compiled source:')
+    console.log(compiled)
+    throw e
+  }
 
   if (!this[functor]) {
     this[functor] = []
@@ -112,9 +120,9 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 Rule.prototype.fire = function fireConstraint (chr, constraint) {
   var replacements = this.Replacements
 
-  this[constraint.functor].forEach(function (occurence) {
-    occurence.call(chr, constraint, replacements)
-  })
+  return Promise.all(this[constraint.functor].map(function (occurence) {
+    return occurence.call(chr, constraint, replacements)
+  }))
 }
 
 Rule.prototype.toString = function toString () {

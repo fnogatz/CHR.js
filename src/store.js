@@ -76,6 +76,10 @@ Store.prototype.alive = function alive (id) {
   return this._store[id].alive
 }
 
+Store.prototype.allAlive = function allAlive (arr) {
+  return arr.every(this.alive.bind(this))
+}
+
 Store.prototype.args = function args (id) {
   return this._store[id].args
 }
