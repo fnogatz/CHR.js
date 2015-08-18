@@ -36,7 +36,11 @@ function forEachOnIndex (arr, indexes, iterator, onEnd) {
   var disjoint = true
   for (var position = 0; position < indexes.length; position++) {
     ix = indexes[position]
-    value = arr[position][ix]
+
+    if (typeof arr[position][ix] === 'undefined') {
+      return onEnd()
+    }
+    value = arr[position][ix].toString()
 
     if (ix < arr[position].length - 1) {
       iterablePosition = position
