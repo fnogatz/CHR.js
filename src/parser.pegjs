@@ -234,6 +234,7 @@ Rule
         rule.name = name;
       }
       rule.original = text()
+      rule.location = location()
       return rule;
     }
 
@@ -347,7 +348,8 @@ Constraint
         type: 'Constraint',
         name: constraintName,
         parameters: extractOptional(parameters, 2, []),
-        original: text()
+        original: text(),
+        location: location()
       };
       if (desc.parameters === null) {
         desc.parameters = [];
