@@ -254,30 +254,30 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
   var self = this
   var parts = []
 
-  parts.push(
-    'Promise.all(['
-  )
+  parts.push('Promise.resolve()')
 
   this.rule.body.forEach(function (body, bodyIndex) {
-    var expr = bodyIndex === 0 ? indent(1) : ', '
+    parts.push('.then(function () {')
 
     if (body.type === 'Constraint') {
-      expr += 'self.' + body.name + '('
+      var expr = indent(1) + 'return self.' + body.name + '('
       expr += body.parameters.map(function (parameter) {
         return self.generateExpression(parameter)
       }).join(', ')
       expr += ')'
       parts.push(expr)
+      parts.push('})')
       return
     }
 
     if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
       parts = parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
         if (rowId === 0) {
-          return expr + row
+          return 'return ' + row
         }
         return indent(1) + row
       }))
+      parts.push('})')
       return
     }
 
@@ -286,19 +286,21 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       var params = util.getFunctionParameters(self.replacements[body.num])
       var lastParamName = util.getLastParamName(params)
       parts.push(
-        expr + 'new Promise(function (s) {',
+        indent(1) + 'return new Promise(function (s) {',
         indent(2) + 'var ' + lastParamName + ' = s',
         indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
-        indent(1) + '})'
+        indent(1) + '})',
+        '})'
       )
       return
     }
   })
 
   parts.push(
-    ']).then(function () {',
+    '.then(function () {',
     indent(1) + 'callback()',
-    '}).catch(function() {',
+    '})',
+    '.catch(function() {',
     indent(1) + 'reject()',
     '})'
   )

@@ -11,6 +11,7 @@ function Rule (ruleObj, opts) {
 
   opts = opts || {}
   opts.globalReplacements = opts.replacements || {}
+  opts.breakpoints = opts.breakpoints || false
 
   this.Scope = opts.scope || {}
   this._source = ruleObj
@@ -20,6 +21,10 @@ function Rule (ruleObj, opts) {
 
   this.Name = ruleObj.name
 
+  this.Breakpoints = {
+    try: undefined
+  }
+
   this._compile(ruleObj)
 }
 
@@ -27,7 +32,6 @@ Rule.prototype._compile = function compileRule (ruleObj) {
   var self = this
 
   var head
-  var body
   var compiled
 
   var headCompiler = new HeadCompiler(ruleObj, {
@@ -41,23 +45,16 @@ Rule.prototype._compile = function compileRule (ruleObj) {
     compiled = headCompiler.headNo(headNo).map(function (row) {
       return '  ' + row
     }).join('\n')
-    this._addConstraintCaller(head.functor, compiled)
-  }
 
-  for (var bodyNo = 0; bodyNo < ruleObj.body.length; bodyNo++) {
-    body = ruleObj.body[bodyNo]
-
-    if (body.type !== 'Constraint') {
-      continue
-    }
-
-    if (!this[body.functor]) {
-      this[body.functor] = []
-    }
+    this._addConstraintCaller(head.functor, compiled, {
+      location: head.location
+    })
   }
 }
 
-Rule.prototype._addConstraintCaller = function (functor, compiled) {
+Rule.prototype._addConstraintCaller = function (functor, compiled, data) {
+  data = data || {}
+
   // create a new function with a single parameter "constraint"
   try {
     var compiledFunction = new Function('constraint', 'replacements', compiled) // eslint-disable-line
@@ -65,6 +62,10 @@ Rule.prototype._addConstraintCaller = function (functor, compiled) {
     console.log('Compiled source:')
     console.log(compiled)
     throw e
+  }
+
+  for (var key in data) {
+    compiledFunction[key] = data[key]
   }
 
   if (!this[functor]) {
@@ -117,15 +118,58 @@ Rule.prototype._setReplacements = function (globalReplacements) {
   })
 }
 
-Rule.prototype.fire = function fireConstraint (chr, constraint) {
-  var replacements = this.Replacements
+Rule.prototype.ForEach = function forEach (callback, thisArg) {
+  var self = this
 
-  return Promise.all(this[constraint.functor].map(function (occurence) {
-    return occurence.call(chr, constraint, replacements)
-  }))
+  for (var functor in self) {
+    if (!functor.match(/^[a-z]/)) {
+      continue
+    }
+
+    callback.call(thisArg, self[functor])
+  }
 }
 
-Rule.prototype.toString = function toString () {
-  // TODO
-  return '[TODO]'
+Rule.prototype.Fire = function fireConstraint (chr, constraint) {
+  var self = this
+  var replacements = this.Replacements
+
+  return Promise.resolve().then(callback2Promise({
+    event: 'rule:try',
+    rule: self.Name,
+    location: self._source.location,
+    constraint: constraint
+  }, this.Breakpoints.try)).then(function () {
+    var occurences = self[constraint.functor].length - 1
+
+    return self[constraint.functor].reduce(function (promise, occurence, ix) {
+      return promise.then(callback2Promise({
+        event: 'rule:try-occurence',
+        rule: self.Name,
+        occurence: occurences - ix,
+        constraint: constraint,
+        location: occurence.location
+      }, occurence.try)).then(function () {
+        return occurence.call(chr, constraint, replacements)
+      })
+    }, Promise.resolve())
+  })
+}
+
+function callback2Promise () {
+  var f = Array.prototype.slice.call(arguments, -1)[0]
+  if (!f) {
+    return function () {
+      return Promise.resolve()
+    }
+  }
+
+  var self = this
+  var data = Array.prototype.slice.call(arguments, 0, -1)
+  return function () {
+    return new Promise(function (resolve) {
+      data.push(resolve)
+      f.apply(self, data)
+    })
+  }
 }

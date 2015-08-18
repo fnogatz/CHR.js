@@ -75,3 +75,13 @@ test('a(N) ==> N <= 4 | a(N+1)', function (t) {
     t.end()
   })
 })
+
+test('a, a ==> b', function (t) {
+  var chr = new CHR()
+  chr('a, a ==> b')
+
+  chr.a().then(function () {
+    t.equal(chr.Store.length, 1, 'Rule not fired')
+    t.end()
+  })
+})

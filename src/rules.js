@@ -69,3 +69,19 @@ Rules.prototype.ForEach = function forEach (callback, thisArg) {
     callback.call(thisArg, self[ruleName])
   })
 }
+
+Rules.prototype.SetBreakpoints = function setBreakpoints (f) {
+  this.ForEach(function (rule) {
+    rule.Breakpoints.try = f
+
+    rule.ForEach(function (occurences) {
+      occurences.forEach(function (occurence) {
+        occurence.try = f
+      })
+    })
+  })
+}
+
+Rules.prototype.RemoveBreakpoints = function removeBreakpoints (f) {
+  this.SetBreakpoints(undefined)
+}
