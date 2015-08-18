@@ -23,8 +23,11 @@ function dynamicCaller (name) {
     })
 
     var self = this
-    return Promise.all(rules.map(function (rule) {
-      return rule.Fire(self, constraint)
-    }))
+
+    return rules.reduce(function (curr, rule) {
+      return curr.then(function () {
+        return rule.Fire(self, constraint)
+      })
+    }, Promise.resolve())
   }
 }
