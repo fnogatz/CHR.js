@@ -257,6 +257,10 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
   parts.push('Promise.resolve()')
 
   this.rule.body.forEach(function (body, bodyIndex) {
+    if (body.type === 'Constraint' && body.name === 'true' && body.arity === 0) {
+      return
+    }
+
     parts.push('.then(function () {')
 
     if (body.type === 'Constraint') {
