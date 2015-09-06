@@ -72,11 +72,11 @@ Rules.prototype.ForEach = function forEach (callback, thisArg) {
 
 Rules.prototype.SetBreakpoints = function setBreakpoints (f) {
   this.ForEach(function (rule) {
-    rule.Breakpoints.try = f
+    rule.Breakpoints.onTry = f
 
     rule.ForEach(function (occurences) {
       occurences.forEach(function (occurence) {
-        occurence.try = f
+        occurence.onTry = f
       })
     })
   })

@@ -22,7 +22,7 @@ function Rule (ruleObj, opts) {
   this.Name = ruleObj.name
 
   this.Breakpoints = {
-    try: undefined
+    onTry: undefined
   }
 
   this._compile(ruleObj)
@@ -139,7 +139,7 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
     rule: self.Name,
     location: self._source.location,
     constraint: constraint
-  }, this.Breakpoints.try)).then(function () {
+  }, this.Breakpoints.onTry)).then(function () {
     var occurences = self[constraint.functor].length - 1
 
     return self[constraint.functor].reduce(function (promise, occurence, ix) {
@@ -149,7 +149,7 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
         occurence: occurences - ix,
         constraint: constraint,
         location: occurence.location
-      }, occurence.try)).then(function () {
+      }, occurence.onTry)).then(function () {
         return occurence.call(chr, constraint, replacements)
       })
     }, Promise.resolve())
