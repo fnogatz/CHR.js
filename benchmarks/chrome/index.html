@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CHR.js Benchmarks</title>
+    <script src="chr.js"></script>
+    <script src="chrparser.js"></script>
+    <style>
+      body {
+        font-family: Arial;
+      }
+      p {
+        margin: 25px 5%;
+      }
+      .col {
+        float: left;
+        width: 40%;
+        margin: 0 5%;
+      }
+      img {
+        width: 100%;
+      }
+    </style>
+    <script src="benchmarks.js"></script>
+    <script src="run-benchmarks.js"></script>
+  </head>
+  <body>
+    <h1>CHR.js Benchmarks</h1>
+
+    <p>Open the Developer Tools in Google Chrome: <code>Ctrl + Shift + I</code>.</p>
+
+    <p>Switch to the <code>Profiles</code> panel to see the benchmark results with their performance charts.</p> 
+
+    <h2>Manual call of a single benchmark</h2>
+
+    <p>The benchmarks are specified in <code>benchmarks.js</code>. It is possible to call them manually, for example via: <code>primes(1000)</code>.</p>
+
+    <h2>Example Screenshot</h2>
+    <img src="screenshot.png" alt="Screenshot of the executed primes(1000) benchmark">
+  </body>
+</html>
