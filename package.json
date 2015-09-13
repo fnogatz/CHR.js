@@ -12,9 +12,9 @@
     "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full",
     "dist": "npm run browserify",
     "standard": "standard",
-    "tap": "tap test",
+    "tape": "tape 'test/**/*.js'",
     "pretest": "npm run peg && npm run browserify",
-    "test": "npm run standard && npm run tap"
+    "test": "npm run standard && npm run tape"
   },
   "bin": {
     "chrjs": "./bin/chrjs"
@@ -38,9 +38,9 @@
     "browserify-versionify": "^1.0.6",
     "colors": "^1.0.3",
     "envify": "^3.4.0",
-    "pegjs": "git://github.com/pegjs/pegjs.git",
-    "standard": "^4.5.4",
-    "tap": "^1.3.2",
+    "pegjs": "^0.9.0",
+    "standard": "^5.2.2",
+    "tape": "^4.2.0",
     "tconsole": "^1.0.0",
     "uglify-js": "^2.4.24",
     "uglifyify": "^3.0.1"
