@@ -1881,7 +1881,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
 
   // start:def_iterator
   parts.push(
-    indent(level) + this.opts.helper + '.forEach(constraintIds, function iterator (ids, callback) {'
+    indent(level) + this.opts.helper + '.forEach(constraintIds, function iterateConstraint (ids, callback) {'
   )
   level += 1
 
