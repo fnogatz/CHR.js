@@ -1,5 +1,5 @@
 function primes (N) {
-  var profile = 'primes('+N+')'
+  var profile = 'primes(' + N + ')'
 
   var chr = new CHR()
   chr`

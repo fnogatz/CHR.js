@@ -4,6 +4,7 @@ module.exports.indentBy = indentBy
 module.exports.destructuring = destructuring
 module.exports.getFunctionParameters = getFunctionParameters
 module.exports.getLastParamName = getLastParamName
+module.exports.isArrowFunction = isArrowFunction
 
 function indent (level, text, spaces) {
   level = level || 0
@@ -47,10 +48,17 @@ function destructuring (constraint, to) {
 }
 
 function getFunctionParameters (func) {
-  var args = func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
-  return args
+  if (isArrowFunction(func)) {
+    return func.toString().match(/^\(\s*([^\)]*)\)\s*=>/m)[1]
+  } else {
+    return func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+  }
 }
 
 function getLastParamName (params) {
   return params.replace(/(^.*,|^)\s*([^,]+)$/g, '$2')
+}
+
+function isArrowFunction (func) {
+  return !func.hasOwnProperty('prototype')
 }

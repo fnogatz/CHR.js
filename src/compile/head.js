@@ -17,7 +17,8 @@ function Compiler (rule, opts) {
 
   this.opts = {
     this: opts.this || 'this',
-    helper: opts.helper || 'self.Helper'
+    helper: opts.helper || 'self.Helper',
+    defaultCallbackNames: opts.defaultCallbackNames || [ 'cb', 'callback' ]
   }
 }
 
@@ -289,13 +290,26 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       // get parameters via dependency injection
       var params = util.getFunctionParameters(self.replacements[body.num])
       var lastParamName = util.getLastParamName(params)
-      parts.push(
-        indent(1) + 'return new Promise(function (s) {',
-        indent(2) + 'var ' + lastParamName + ' = s',
-        indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
-        indent(1) + '})',
-        '})'
-      )
+
+      if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
+        // async
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + 'var ' + lastParamName + ' = s',
+          indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
+          indent(1) + '})',
+          '})'
+        )
+      } else {
+        // sync
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
+          indent(2) + 's()',
+          indent(1) + '})',
+          '})'
+        )
+      }
       return
     }
   })
