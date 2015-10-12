@@ -5,22 +5,23 @@
   "main": "src/index.js",
   "scripts": {
     "peg": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble,Query' --optimize size src/parser.pegjs",
-    "prepublish": "npm run peg && npm run browserify",
+    "prepublish": "npm run peg && npm run dist",
     "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.js | uglifyjs > ./dist/chrparser.min.js",
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -t browserify-versionify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.min.js",
     "browserify-full": "NODE_ENV=browser browserify -t envify -t uglifyify -t browserify-versionify -s CHR src/index.js | uglifyjs > ./dist/chr.min.js",
     "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full",
     "browserify-nonminified": "browserify -s chrparser src/parser.js > ./dist/chrparser.js && NODE_ENV=browser browserify -t envify -t browserify-versionify -s CHR src/index.js > ./dist/chr.js",
-    "nonminified-cp-to-dist": "cp dist/chrparser.js benchmarks/chrome && cp dist/chr.js benchmarks/chrome",
-    "dist": "npm run browserify && npm run browserify-nonminified && npm run nonminified-cp-to-dist",
+    "dist": "npm run browserify && npm run browserify-nonminified",
     "standard": "standard",
     "tape": "tape 'test/**/*.js'",
     "pretest": "npm run peg && npm run browserify",
-    "test": "npm run standard && npm run tape",
-    "benchmark": "node"
+    "test": "npm run standard && npm run tape"
   },
   "bin": {
     "chrjs": "./bin/chrjs"
+  },
+  "engines": {
+    "node": "^4.0.0"
   },
   "keywords": [
     "CHR",

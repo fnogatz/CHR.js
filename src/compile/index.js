@@ -94,12 +94,12 @@ function transform (program, opts) {
   for (var functor in constraints) {
     activates = []
 
-    constraints[functor].forEach(function (occurenceFunctionSource, occurence) {
-      var functionName = '_' + functor.replace('/', '_') + '_' + occurence
+    constraints[functor].forEach(function (occurrenceFunctionSource, occurrence) {
+      var functionName = '_' + functor.replace('/', '_') + '_' + occurrence
       activates.push(functionName)
 
       parts.push(indent(level) + 'function ' + functionName + ' (constraint) {')
-      parts = parts.concat(occurenceFunctionSource.map(indentBy(level + 1)))
+      parts = parts.concat(occurrenceFunctionSource.map(indentBy(level + 1)))
       parts.push(
         indent(level) + '}',
         indent(level)
@@ -145,8 +145,8 @@ function generateObject (opts, constraints, replacements) {
   var functorNo = 0
   for (var functor in constraints) {
     parts.push((functorNo++ > 0 ? indent(1) + ', ' : indent(2)) + '"' + functor + '": [')
-    constraints[functor].forEach(function (o, occurence) {
-      parts.push((occurence > 0 ? indent(2) + ', ' : indent(3)) + '_' + functor.replace('/', '_') + '_' + occurence + '.bind(chr)')
+    constraints[functor].forEach(function (o, occurrence) {
+      parts.push((occurrence > 0 ? indent(2) + ', ' : indent(3)) + '_' + functor.replace('/', '_') + '_' + occurrence + '.bind(chr)')
     })
     parts.push(indent(2) + ']')
   }

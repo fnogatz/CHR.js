@@ -74,9 +74,9 @@ Rules.prototype.SetBreakpoints = function setBreakpoints (f) {
   this.ForEach(function (rule) {
     rule.Breakpoints.onTry = f
 
-    rule.ForEach(function (occurences) {
-      occurences.forEach(function (occurence) {
-        occurence.onTry = f
+    rule.ForEach(function (occurrences) {
+      occurrences.forEach(function (occurrence) {
+        occurrence.onTry = f
       })
     })
   })

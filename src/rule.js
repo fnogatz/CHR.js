@@ -140,17 +140,17 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
     location: self._source.location,
     constraint: constraint
   }, this.Breakpoints.onTry)).then(function () {
-    var occurences = self[constraint.functor].length - 1
+    var occurrences = self[constraint.functor].length - 1
 
-    return self[constraint.functor].reduce(function (promise, occurence, ix) {
+    return self[constraint.functor].reduce(function (promise, occurrence, ix) {
       return promise.then(callback2Promise({
-        event: 'rule:try-occurence',
+        event: 'rule:try-occurrence',
         rule: self.Name,
-        occurence: occurences - ix,
+        occurrence: occurrences - ix,
         constraint: constraint,
-        location: occurence.location
-      }, occurence.onTry)).then(function () {
-        return occurence.call(chr, constraint, replacements)
+        location: occurrence.location
+      }, occurrence.onTry)).then(function () {
+        return occurrence.call(chr, constraint, replacements)
       })
     }, Promise.resolve())
   })

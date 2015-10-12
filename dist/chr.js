@@ -1816,7 +1816,8 @@ function Compiler (rule, opts) {
 
   this.opts = {
     this: opts.this || 'this',
-    helper: opts.helper || 'self.Helper'
+    helper: opts.helper || 'self.Helper',
+    defaultCallbackNames: opts.defaultCallbackNames || [ 'cb', 'callback' ]
   }
 }
 
@@ -2088,13 +2089,26 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       // get parameters via dependency injection
       var params = util.getFunctionParameters(self.replacements[body.num])
       var lastParamName = util.getLastParamName(params)
-      parts.push(
-        indent(1) + 'return new Promise(function (s) {',
-        indent(2) + 'var ' + lastParamName + ' = s',
-        indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
-        indent(1) + '})',
-        '})'
-      )
+
+      if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
+        // async
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + 'var ' + lastParamName + ' = s',
+          indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
+          indent(1) + '})',
+          '})'
+        )
+      } else {
+        // sync
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + 'replacements["' + body.num + '"].apply(self, [' + params + '])',
+          indent(2) + 's()',
+          indent(1) + '})',
+          '})'
+        )
+      }
       return
     }
   })
@@ -2185,6 +2199,7 @@ module.exports.indentBy = indentBy
 module.exports.destructuring = destructuring
 module.exports.getFunctionParameters = getFunctionParameters
 module.exports.getLastParamName = getLastParamName
+module.exports.isArrowFunction = isArrowFunction
 
 function indent (level, text, spaces) {
   level = level || 0
@@ -2228,12 +2243,19 @@ function destructuring (constraint, to) {
 }
 
 function getFunctionParameters (func) {
-  var args = func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
-  return args
+  if (isArrowFunction(func)) {
+    return func.toString().match(/^\(\s*([^\)]*)\)\s*=>/m)[1]
+  } else {
+    return func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+  }
 }
 
 function getLastParamName (params) {
   return params.replace(/(^.*,|^)\s*([^,]+)$/g, '$2')
+}
+
+function isArrowFunction (func) {
+  return !func.hasOwnProperty('prototype')
 }
 
 },{}],13:[function(require,module,exports){
@@ -2354,6 +2376,7 @@ function hash (ids) {
 
   var Runtime = require('../runtime')
   var Rules = require('./rules')
+  var Rule = require('./rule')
   var joinParts = require('./join-parts')
 
   var parse
@@ -2444,8 +2467,11 @@ function hash (ids) {
     return tag
   }
 
-  // expose Constraint constructor
+  // expose public constructors
   CHR.Constraint = Runtime.Constraint
+  CHR.Store = Runtime.Store
+  CHR.History = Runtime.History
+  CHR.Rule = Rule
 
   CHR.version = '2.0.0-alpha1'
 
@@ -2469,7 +2495,7 @@ function hash (ids) {
   }
 }).call(this)
 
-},{"../runtime":9,"./join-parts":17,"./parser":18,"./rules":20}],17:[function(require,module,exports){
+},{"../runtime":9,"./join-parts":17,"./parser":18,"./rule":19,"./rules":20}],17:[function(require,module,exports){
 module.exports = joinParts
 
 function joinParts (arr) {
@@ -4556,17 +4582,17 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
     location: self._source.location,
     constraint: constraint
   }, this.Breakpoints.onTry)).then(function () {
-    var occurences = self[constraint.functor].length - 1
+    var occurrences = self[constraint.functor].length - 1
 
-    return self[constraint.functor].reduce(function (promise, occurence, ix) {
+    return self[constraint.functor].reduce(function (promise, occurrence, ix) {
       return promise.then(callback2Promise({
-        event: 'rule:try-occurence',
+        event: 'rule:try-occurrence',
         rule: self.Name,
-        occurence: occurences - ix,
+        occurrence: occurrences - ix,
         constraint: constraint,
-        location: occurence.location
-      }, occurence.onTry)).then(function () {
-        return occurence.call(chr, constraint, replacements)
+        location: occurrence.location
+      }, occurrence.onTry)).then(function () {
+        return occurrence.call(chr, constraint, replacements)
       })
     }, Promise.resolve())
   })
@@ -4667,9 +4693,9 @@ Rules.prototype.SetBreakpoints = function setBreakpoints (f) {
   this.ForEach(function (rule) {
     rule.Breakpoints.onTry = f
 
-    rule.ForEach(function (occurences) {
-      occurences.forEach(function (occurence) {
-        occurence.onTry = f
+    rule.ForEach(function (occurrences) {
+      occurrences.forEach(function (occurrence) {
+        occurrence.onTry = f
       })
     })
   })
@@ -4688,7 +4714,12 @@ var events = require('events')
 var Table = require('easy-table')
 
 function Store () {
-  this.reset()
+  this._lastId = 0
+  this._store = {}
+  this._index = {}
+  this.length = 0
+
+  this.invalid = false
 }
 
 util.inherits(Store, events.EventEmitter)
@@ -4707,7 +4738,7 @@ Store.prototype.reset = function reset () {
  * @param  {Constraint} constraint
  * @return {Id}         ID of the stored Constraint
  */
-Store.prototype.add = function add (constraint) {
+Store.prototype.store = Store.prototype.add = function add (constraint) {
   var id = this._getNewConstraintId()
   constraint.id = id
   this._store[id] = constraint

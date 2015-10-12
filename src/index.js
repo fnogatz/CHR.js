@@ -7,6 +7,7 @@
 
   var Runtime = require('../runtime')
   var Rules = require('./rules')
+  var Rule = require('./rule')
   var joinParts = require('./join-parts')
 
   var parse
@@ -97,8 +98,11 @@
     return tag
   }
 
-  // expose Constraint constructor
+  // expose public constructors
   CHR.Constraint = Runtime.Constraint
+  CHR.Store = Runtime.Store
+  CHR.History = Runtime.History
+  CHR.Rule = Rule
 
   CHR.version = '__VERSION__'
 
