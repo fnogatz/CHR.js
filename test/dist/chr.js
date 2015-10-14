@@ -1,7 +1,7 @@
 var test = require('tape')
 
 var dist = require('../../dist/chr')
-var distWithoutParser = require('../../dist/chr-wop')
+var distWithoutParser = require('../../dist/chr-wop.min.js')
 var version = require('../../package.json').version
 
 ;[ dist, distWithoutParser ].forEach(function (CHR) {

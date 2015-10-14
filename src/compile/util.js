@@ -42,7 +42,18 @@ function destructuring (constraint, to) {
       return
     }
 
-    parts.push('var ' + parameter.name + ' = ' + to + '[' + i + ']')
+    var name = parameter.name
+    if (parameter.type === 'ArrayExpression') {
+      console.log('This feature needs native Destructuring (Array value).')
+
+      name = parameter.original
+    } else if (parameter.type === 'ObjectExpression') {
+      console.info('This feature needs native Destructuring (Object value).')
+
+      name = parameter.original
+    }
+
+    parts.push('var ' + name + ' = ' + to + '[' + i + ']')
   })
   return parts
 }

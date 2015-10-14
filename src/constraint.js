@@ -23,9 +23,9 @@ Constraint.prototype.toString = function toString () {
 }
 
 function escape (val) {
-  if (typeof val === 'string') {
-    return '"' + val + '"'
+  var res = JSON.stringify(val)
+  if (typeof res !== 'string') {
+    res = '"' + val.toString() + '"'
   }
-
-  return val
+  return res
 }

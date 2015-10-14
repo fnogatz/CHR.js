@@ -46,7 +46,9 @@
         // called as template tag
         // e.g. tag`a ==> b`
         // or   tag`a ==> ${ function() { console.log('Replacement test') } }`
-        var combined = [ chrSource[0] ]
+        var combined = [
+          chrSource[0]
+        ]
         Array.prototype.slice.call(arguments, 1).forEach(function (repl, ix) {
           combined.push(repl)
           combined.push(chrSource[ix + 1])

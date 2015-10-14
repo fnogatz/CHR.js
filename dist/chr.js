@@ -2237,7 +2237,18 @@ function destructuring (constraint, to) {
       return
     }
 
-    parts.push('var ' + parameter.name + ' = ' + to + '[' + i + ']')
+    var name = parameter.name
+    if (parameter.type === 'ArrayExpression') {
+      console.log('This feature needs native Destructuring (Array value).')
+
+      name = parameter.original
+    } else if (parameter.type === 'ObjectExpression') {
+      console.info('This feature needs native Destructuring (Object value).')
+
+      name = parameter.original
+    }
+
+    parts.push('var ' + name + ' = ' + to + '[' + i + ']')
   })
   return parts
 }
@@ -2284,11 +2295,11 @@ Constraint.prototype.toString = function toString () {
 }
 
 function escape (val) {
-  if (typeof val === 'string') {
-    return '"' + val + '"'
+  var res = JSON.stringify(val)
+  if (typeof res !== 'string') {
+    res = '"' + val.toString() + '"'
   }
-
-  return val
+  return res
 }
 
 },{}],14:[function(require,module,exports){
@@ -2415,7 +2426,9 @@ function hash (ids) {
         // called as template tag
         // e.g. tag`a ==> b`
         // or   tag`a ==> ${ function() { console.log('Replacement test') } }`
-        var combined = [ chrSource[0] ]
+        var combined = [
+          chrSource[0]
+        ]
         Array.prototype.slice.call(arguments, 1).forEach(function (repl, ix) {
           combined.push(repl)
           combined.push(chrSource[ix + 1])
