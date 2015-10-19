@@ -286,10 +286,13 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
+    var params
+    var lastParamName
+
     if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
       // get parameters via dependency injection
-      var params = util.getFunctionParameters(self.replacements[body.num])
-      var lastParamName = util.getLastParamName(params)
+      params = util.getFunctionParameters(self.replacements[body.num])
+      lastParamName = util.getLastParamName(params)
 
       if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
         // async
@@ -314,15 +317,15 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
     }
 
     if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
-      var func = eval(body.func)
-      var params = util.getFunctionParameters(func)
-      var lastParamName = util.getLastParamName(params, true)
+      var func = eval(body.func) // eslint-disable-line
+      params = util.getFunctionParameters(func)
+      lastParamName = util.getLastParamName(params, true)
 
       if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
         // async
         parts.push(
           indent(1) + 'return new Promise(function (s) {',
-          indent(2) + '('+body.func+').apply(self, [' + util.replaceLastParam(params,'s') + '])',
+          indent(2) + '(' + body.func + ').apply(self, [' + util.replaceLastParam(params, 's') + '])',
           indent(1) + '})',
           '})'
         )
@@ -330,7 +333,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
         // sync
         parts.push(
           indent(1) + 'return new Promise(function (s) {',
-          indent(2) + '('+body.func+').apply(self, [' + params + '])',
+          indent(2) + '(' + body.func + ').apply(self, [' + params + '])',
           indent(2) + 's()',
           indent(1) + '})',
           '})'

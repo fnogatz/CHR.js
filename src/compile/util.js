@@ -72,7 +72,7 @@ function getLastParamName (params) {
 }
 
 function replaceLastParam (params, replacement) {
-  return params.replace(/((^.*,|^)\s*)([^,]+)$/g, '$1'+replacement)
+  return params.replace(/((^.*,|^)\s*)([^,]+)$/g, '$1' + replacement)
 }
 
 function isArrowFunction (func) {

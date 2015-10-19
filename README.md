@@ -70,6 +70,24 @@ The easiest way to precompile your JavaScript source code with embedded Constrai
 
 Functions ecapsulated in `${ ... }` are evaluated at rule application, as for JIT compilation too.
 
+## REPL
+
+CHR.js provides a REPL (Read-eval-print loop) to use it interactively with the command line. The `CHR >` REPL can be started by calling `node repl.js` from within the project's root directory. Then it is possible to directly define rules and call constraints:
+
+    CHR > dec(0) <=> true
+      [Rule] Added.
+    CHR > dec(N) ==> dec(N-1)
+      [Rule] Added.
+    CHR > dec(4)
+      ID  Constraint
+      --  ----------
+      1   dec(4)    
+      2   dec(3)    
+      3   dec(2)    
+      4   dec(1)
+
+The REPL can also be used programmatically by calling `var Repl = require('chr/repl')`.
+
 ## Background
 
 CHR.js was realized as a part of my Master Thesis in Computer Science at the University of Ulm, Germany. Its Project Report for a prototype implementation (versions `0.x`) with additional information about its architecture can be found online: https://fnogatz.github.io/paper-now-chrjs/.
