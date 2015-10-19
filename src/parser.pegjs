@@ -413,6 +413,12 @@ Replacement
         expr: func
       };
     }
+  / ReplacementOpeningSymbol __ func:$(ArrowFunction) __ ReplacementClosingSymbol {
+      return {
+        type: 'Replacement',
+        func: func
+      };
+    }
   / ReplacementOpeningSymbol __ expr:$(Expression) __ ReplacementClosingSymbol {
       return {
         type: 'Replacement',

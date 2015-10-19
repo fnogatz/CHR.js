@@ -312,6 +312,33 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       }
       return
     }
+
+    if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
+      var func = eval(body.func)
+      var params = util.getFunctionParameters(func)
+      var lastParamName = util.getLastParamName(params, true)
+
+      if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
+        // async
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + '('+body.func+').apply(self, [' + util.replaceLastParam(params,'s') + '])',
+          indent(1) + '})',
+          '})'
+        )
+      } else {
+        // sync
+        parts.push(
+          indent(1) + 'return new Promise(function (s) {',
+          indent(2) + '('+body.func+').apply(self, [' + params + '])',
+          indent(2) + 's()',
+          indent(1) + '})',
+          '})'
+        )
+      }
+
+      return
+    }
   })
 
   parts.push(

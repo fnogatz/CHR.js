@@ -4,6 +4,7 @@ module.exports.indentBy = indentBy
 module.exports.destructuring = destructuring
 module.exports.getFunctionParameters = getFunctionParameters
 module.exports.getLastParamName = getLastParamName
+module.exports.replaceLastParam = replaceLastParam
 module.exports.isArrowFunction = isArrowFunction
 
 function indent (level, text, spaces) {
@@ -68,6 +69,10 @@ function getFunctionParameters (func) {
 
 function getLastParamName (params) {
   return params.replace(/(^.*,|^)\s*([^,]+)$/g, '$2')
+}
+
+function replaceLastParam (params, replacement) {
+  return params.replace(/((^.*,|^)\s*)([^,]+)$/g, '$1'+replacement)
 }
 
 function isArrowFunction (func) {
