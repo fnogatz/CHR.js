@@ -5,7 +5,7 @@ var path = require('path')
 var fs = require('fs')
 var PEG = require('pegjs')
 
-var parser = require('./src/parser')
+var parser = require('./src/parser.peg.js')
 
 function parse (src, elementName) {
   if (elementName) {

@@ -14,7 +14,7 @@
   if (process.env.NODE_ENV === 'browserWithoutParser') {
     parse = root.parseCHR
   } else {
-    parse = require('./parser').parse
+    parse = require('./parser.peg.js').parse
   }
 
   function CHR (opts) {
