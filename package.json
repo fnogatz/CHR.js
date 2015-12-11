@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -8,15 +8,15 @@
     "peg-parser": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble,Query' --optimize size src/parser.pegjs src/parser.peg.js",
     "peg-repl": "pegjs --allowed-start-rules 'Program,Query' --optimize speed src/parser.pegjs src/repl.peg.js",
     "prepublish": "npm run peg && npm run dist",
-    "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.js | uglifyjs > ./dist/chrparser.min.js",
+    "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.peg.js | uglifyjs > ./dist/chrparser.min.js",
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -t browserify-versionify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.min.js",
     "browserify-full": "NODE_ENV=browser browserify -t envify -t uglifyify -t browserify-versionify -s CHR src/index.js | uglifyjs > ./dist/chr.min.js",
     "browserify": "npm run browserify-parser && npm run browserify-wo-parser && npm run browserify-full",
-    "browserify-nonminified": "browserify -s chrparser src/parser.js > ./dist/chrparser.js && NODE_ENV=browser browserify -t envify -t browserify-versionify -s CHR src/index.js > ./dist/chr.js",
+    "browserify-nonminified": "browserify -s chrparser src/parser.peg.js > ./dist/chrparser.js && NODE_ENV=browser browserify -t envify -t browserify-versionify -s CHR src/index.js > ./dist/chr.js",
     "dist": "npm run browserify && npm run browserify-nonminified",
     "standard": "standard",
     "tape": "tape 'test/**/*.js'",
-    "pretest": "npm run peg && npm run browserify",
+    "pretest": "npm run peg; npm run browserify",
     "test": "npm run standard && npm run tape"
   },
   "bin": {
