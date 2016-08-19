@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "peg": "npm run peg-parser && npm run peg-repl",
-    "peg-parser": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble,Query' --optimize size src/parser.pegjs src/parser.peg.js",
-    "peg-repl": "pegjs --allowed-start-rules 'Program,Query' --optimize speed src/parser.pegjs src/repl.peg.js",
+    "peg-parser": "pegjs --allowed-start-rules 'Program,ProgramWithPreamble,Query' --optimize size --output src/parser.peg.js src/parser.pegjs",
+    "peg-repl": "pegjs --allowed-start-rules 'Program,Query' --optimize speed --output src/repl.peg.js src/parser.pegjs",
     "prepublish": "npm run peg && npm run dist",
     "browserify-parser": "browserify -t uglifyify -s chrparser src/parser.peg.js | uglifyjs > ./dist/chrparser.min.js",
     "browserify-wo-parser": "NODE_ENV=browserWithoutParser browserify -t envify -t uglifyify -t browserify-versionify -s CHR src/index.js | uglifyjs > ./dist/chr-wop.min.js",

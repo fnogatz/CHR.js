@@ -18,7 +18,7 @@ function parse (src, elementName) {
 function getElementParser (elementName) {
   var parserSource = fs.readFileSync(path.join(__dirname, 'src', 'parser.pegjs'), 'utf8')
 
-  var customParser = PEG.buildParser(parserSource, {
+  var customParser = PEG.generate(parserSource, {
     allowedStartRules: [
       elementName
     ]
