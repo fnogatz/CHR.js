@@ -22,7 +22,7 @@ test('a ==> 1 > 2 | b', function (t) {
   })
 })
 
-test('a ==> ${ () => 1 < 2 } | b', function (t) {
+test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
   chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
 
@@ -32,7 +32,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) {
   })
 })
 
-test('a ==> ${ () => 1 > 2 } | b', function (t) {
+test('a ==> ${ () => 1 > 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
   chr('a ==>', function (cb) { cb(1 > 2) }, '| b')
 

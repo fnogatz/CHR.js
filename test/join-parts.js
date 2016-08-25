@@ -16,7 +16,7 @@ test('Single replacement', function (t) {
     'a ==>',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0}')
+  t.equal(res, 'a ==> ${0}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -26,7 +26,7 @@ test('Head ends with space', function (t) {
     'a ==> ',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0}')
+  t.equal(res, 'a ==> ${0}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -37,7 +37,7 @@ test('Single replacement, ending with space', function (t) {
     function () {},
     ''
   ])
-  t.equal(res, 'a ==> ${0}')
+  t.equal(res, 'a ==> ${0}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -49,7 +49,7 @@ test('Multiple replacements, separated by comma', function (t) {
     ',',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0}, ${1}')
+  t.equal(res, 'a ==> ${0}, ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -62,7 +62,7 @@ test('Multiple replacements, separated by comma, ending with empty space', funct
     function () {},
     ''
   ])
-  t.equal(res, 'a ==> ${0}, ${1}')
+  t.equal(res, 'a ==> ${0}, ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -73,7 +73,7 @@ test('Multiple replacements, without comma separation', function (t) {
     function () {},
     function () {}
   ])
-  t.equal(res, 'a ==> ${0}, ${1}')
+  t.equal(res, 'a ==> ${0}, ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -85,7 +85,7 @@ test('Multiple replacements, without comma separation, ending with empty space',
     function () {},
     ''
   ])
-  t.equal(res, 'a ==> ${0}, ${1}')
+  t.equal(res, 'a ==> ${0}, ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -95,7 +95,7 @@ test('Mixed constraints and replacement comma sepator', function (t) {
     'a ==> b,',
     function () {}
   ])
-  t.equal(res, 'a ==> b, ${0}')
+  t.equal(res, 'a ==> b, ${0}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -105,7 +105,7 @@ test('Mixed constraints and replacement comma sepator, without comma', function 
     'a ==> b',
     function () {}
   ])
-  t.equal(res, 'a ==> b, ${0}')
+  t.equal(res, 'a ==> b, ${0}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -116,7 +116,7 @@ test('Mixed constraints and replacement comma sepator, without comma, ending wit
     function () {},
     'c'
   ])
-  t.equal(res, 'a ==> b, ${0}, c')
+  t.equal(res, 'a ==> b, ${0}, c') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -127,7 +127,7 @@ test('Constraint prefixed with comma', function (t) {
     function () {},
     ', c'
   ])
-  t.equal(res, 'a ==> b, ${0}, c')
+  t.equal(res, 'a ==> b, ${0}, c') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -138,7 +138,7 @@ test('Mixed constraints and replacement comma sepator, without comma, ending wit
     function () {},
     'c, d'
   ])
-  t.equal(res, 'a ==> b, ${0}, c, d')
+  t.equal(res, 'a ==> b, ${0}, c, d') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -149,7 +149,7 @@ test('Also works for simplification rule', function (t) {
     function () {},
     'c, d'
   ])
-  t.equal(res, 'a <=> b, ${0}, c, d')
+  t.equal(res, 'a <=> b, ${0}, c, d') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -161,7 +161,7 @@ test('Function in guard', function (t) {
     '|',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0} | ${1}')
+  t.equal(res, 'a ==> ${0} | ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -174,7 +174,7 @@ test('Mixed content in guard', function (t) {
     'c |',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0}, ${1}, c | ${2}')
+  t.equal(res, 'a ==> ${0}, ${1}, c | ${2}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })
@@ -186,7 +186,7 @@ test('Mixed content after guard', function (t) {
     '| b',
     function () {}
   ])
-  t.equal(res, 'a ==> ${0} | b, ${1}')
+  t.equal(res, 'a ==> ${0} | b, ${1}') // eslint-disable-line no-template-curly-in-string
 
   t.end()
 })

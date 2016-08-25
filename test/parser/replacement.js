@@ -2,8 +2,8 @@ var test = require('tape')
 
 var parse = require('../../parse').element('Replacement')
 
-test('${0}', function (t) {
-  var res = parse('${0}')
+test('${0}', function (t) { // eslint-disable-line no-template-curly-in-string
+  var res = parse('${0}') // eslint-disable-line no-template-curly-in-string
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Replacement')
@@ -12,8 +12,8 @@ test('${0}', function (t) {
   t.end()
 })
 
-test('${42}', function (t) {
-  var res = parse('${42}')
+test('${42}', function (t) { // eslint-disable-line no-template-curly-in-string
+  var res = parse('${42}') // eslint-disable-line no-template-curly-in-string
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Replacement')

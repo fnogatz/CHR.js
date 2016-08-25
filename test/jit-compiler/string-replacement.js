@@ -42,7 +42,7 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ fire }')
+    chr('a(N) ==> ${ fire }') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(scope.getM(), 42)
@@ -77,7 +77,7 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ getFire() }')
+    chr('a(N) ==> ${ getFire() }') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(scope.getM(), 42)
@@ -106,7 +106,7 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N, cb) { fire(N); cb() } }')
+    chr('a(N) ==> ${ function(N, cb) { fire(N); cb() } }') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(scope.getM(), 42)
@@ -135,7 +135,7 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(M) ==> ${ function(M, cb) { fire(M); cb() } }')
+    chr('a(M) ==> ${ function(M, cb) { fire(M); cb() } }') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(scope.getM(), 42)
@@ -169,7 +169,7 @@ test('string replacement in body', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(M) ==> ${ function(M, cb) { getFire()(M); cb() } }')
+    chr('a(M) ==> ${ function(M, cb) { getFire()(M); cb() } }') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(scope.getM(), 42)
@@ -197,7 +197,7 @@ test('string replacement in guard', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ test } | b')
+    chr('a(N) ==> ${ test } | b') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(chr.Store.length, 2, 'rule fired')
@@ -221,7 +221,7 @@ test('string replacement in guard', function (t) {
     })
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ test } | b')
+    chr('a(N) ==> ${ test } | b') // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(chr.Store.length, 1, 'rule not fired')
@@ -233,7 +233,7 @@ test('string replacement in guard', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N, cb) { cb(N > 0) } } | a(N-1)')
+    chr('a(N) ==> ${ function(N, cb) { cb(N > 0) } } | a(N-1)') // eslint-disable-line no-template-curly-in-string
 
     chr.a(4).then(function () {
       t.equal(chr.Store.length, 5, 'rule executed four times')
@@ -262,7 +262,7 @@ test('string replacement specified via tag function', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ fire }', replacements)
+    chr('a(N) ==> ${ fire }', replacements) // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(m, 42)
@@ -284,7 +284,7 @@ test('string replacement specified via tag function', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements)
+    chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements)  // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(m, 42)
