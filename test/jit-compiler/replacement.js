@@ -2,7 +2,7 @@ var test = require('tape')
 
 var CHR = require('../../src/index')
 
-test('a ==> ${ () => 1 < 2 } | b', function (t) {
+test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
   chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
 
@@ -12,7 +12,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) {
   })
 })
 
-test('a ==> ${ 1 < 2 } | b', function (t) {
+test('a ==> ${ 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
   chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
 
@@ -22,7 +22,7 @@ test('a ==> ${ 1 < 2 } | b', function (t) {
   })
 })
 
-test('a ==> ${ () => false } | b', function (t) {
+test('a ==> ${ () => false } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
   chr('a ==>', function (cb) { cb(false) }, '| b')
 
@@ -32,7 +32,7 @@ test('a ==> ${ () => false } | b', function (t) {
   })
 })
 
-test('a ==> ${ () => fire("Rule fired") }', function (t) {
+test('a ==> ${ () => fire("Rule fired") }', function (t) { // eslint-disable-line no-template-curly-in-string
   var fired = false
 
   function fire (string) {
@@ -49,7 +49,7 @@ test('a ==> ${ () => fire("Rule fired") }', function (t) {
   })
 })
 
-test('a ==> ${ fire }', function (t) {
+test('a ==> ${ fire }', function (t) { // eslint-disable-line no-template-curly-in-string
   var fired = false
   function fire (cb) {
     fired = true
@@ -93,7 +93,7 @@ test('Replacement in String', function (t) {
 })
 
 test('Replacement with variable', function (t) {
-  t.test('a(N) ==> ${ (N) => p(N) }', function (t) {
+  t.test('a(N) ==> ${ (N) => p(N) }', function (t) { // eslint-disable-line no-template-curly-in-string
     function p (N) {
       // noop
     }
@@ -106,7 +106,7 @@ test('Replacement with variable', function (t) {
     })
   })
 
-  t.test('a(N) ==> ${ (N) => p(N) }', function (t) {
+  t.test('a(N) ==> ${ (N) => p(N) }', function (t) { // eslint-disable-line no-template-curly-in-string
     var n
 
     function p (k) {
@@ -122,7 +122,7 @@ test('Replacement with variable', function (t) {
     })
   })
 
-  t.test('a(N) ==> ${ p }', function (t) {
+  t.test('a(N) ==> ${ p }', function (t) { // eslint-disable-line no-template-curly-in-string
     var m
 
     function p (N, cb) {

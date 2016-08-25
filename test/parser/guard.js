@@ -57,8 +57,8 @@ test('f([1,2]), X = { a: 2, b: 4 } |', function (t) {
   t.end()
 })
 
-test('${0}, ${1} |', function (t) {
-  var res = parse('${0}, ${1} |')
+test('${0}, ${1} |', function (t) { // eslint-disable-line no-template-curly-in-string
+  var res = parse('${0}, ${1} |') // eslint-disable-line no-template-curly-in-string
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
