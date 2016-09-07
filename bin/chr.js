@@ -4,9 +4,9 @@ var program = require('commander')
 var concat = require('concat-stream')
 var compile = require('../compile')
 
-function onFinish(err, code) {
+function onFinish (err, code) {
   if (err) {
-    throw err;
+    throw err
   }
 
   console.log(code)

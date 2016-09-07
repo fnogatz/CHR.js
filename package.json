@@ -20,7 +20,7 @@
     "test": "npm run standard && npm run tape"
   },
   "bin": {
-    "chrjs": "./bin/chrjs"
+    "chrjs": "./bin/chr.js"
   },
   "engines": {
     "node": "^4.0.0"
