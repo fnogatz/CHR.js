@@ -55,7 +55,7 @@
     "commander": "^2.8.0",
     "concat-stream": "^1.4.8",
     "easy-table": "^1.0.0",
-    "uuid": "^2.0.1"
+    "uuid": "^3.0.0"
   },
   "standard": {
     "ignore": [
