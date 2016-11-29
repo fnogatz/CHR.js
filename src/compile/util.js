@@ -61,9 +61,9 @@ function destructuring (constraint, to) {
 
 function getFunctionParameters (func) {
   if (isArrowFunction(func)) {
-    return func.toString().match(/^\(\s*([^\)]*)\)\s*=>/m)[1]
+    return func.toString().match(/^\(\s*([^)]*)\)\s*=>/m)[1]
   } else {
-    return func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+    return func.toString().match(/^function\s*[^(]*\(\s*([^)]*)\)/m)[1]
   }
 }
 
