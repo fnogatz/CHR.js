@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -44,7 +44,7 @@
     "colors": "^1.0.3",
     "envify": "^4.0.0",
     "pegjs": "^0.10.0",
-    "standard": "^8.0.0",
+    "standard": "^8.6.0",
     "tape": "^4.2.0",
     "tconsole": "^1.0.0",
     "uglify-js": "^2.4.24",
