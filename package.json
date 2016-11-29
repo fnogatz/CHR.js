@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {

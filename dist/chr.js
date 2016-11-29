@@ -743,31 +743,6 @@ function isUndefined(arg) {
 }
 
 },{}],3:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],4:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -779,25 +754,40 @@ var process = module.exports = {};
 var cachedSetTimeout;
 var cachedClearTimeout;
 
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
 (function () {
     try {
-        cachedSetTimeout = setTimeout;
-    } catch (e) {
-        cachedSetTimeout = function () {
-            throw new Error('setTimeout is not defined');
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
         }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
     }
     try {
-        cachedClearTimeout = clearTimeout;
-    } catch (e) {
-        cachedClearTimeout = function () {
-            throw new Error('clearTimeout is not defined');
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
         }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
     }
 } ())
 function runTimeout(fun) {
     if (cachedSetTimeout === setTimeout) {
         //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
         return setTimeout(fun, 0);
     }
     try {
@@ -818,6 +808,11 @@ function runTimeout(fun) {
 function runClearTimeout(marker) {
     if (cachedClearTimeout === clearTimeout) {
         //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
         return clearTimeout(marker);
     }
     try {
@@ -928,6 +923,31 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
+
+},{}],4:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
 
 },{}],5:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
@@ -1526,82 +1546,29 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":5,"_process":4,"inherits":3}],7:[function(require,module,exports){
-(function (global){
+},{"./support/isBuffer":5,"_process":3,"inherits":4}],7:[function(require,module,exports){
+var v1 = require('./v1');
+var v4 = require('./v4');
 
-var rng;
+var uuid = v4;
+uuid.v1 = v1;
+uuid.v4 = v4;
 
-if (global.crypto && crypto.getRandomValues) {
-  // WHATWG crypto-based RNG - http://wiki.whatwg.org/wiki/Crypto
-  // Moderately fast, high quality
-  var _rnds8 = new Uint8Array(16);
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(_rnds8);
-    return _rnds8;
-  };
+module.exports = uuid;
+
+},{"./v1":10,"./v4":11}],8:[function(require,module,exports){
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
 }
 
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var  _rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      _rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return _rnds;
-  };
-}
-
-module.exports = rng;
-
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
-//     uuid.js
-//
-//     Copyright (c) 2010-2012 Robert Kieffer
-//     MIT License - http://opensource.org/licenses/mit-license.php
-
-// Unique ID creation requires a high quality random # generator.  We feature
-// detect to determine the best RNG source, normalizing to a function that
-// returns 128-bits of randomness, since that's what's usually required
-var _rng = require('./rng');
-
-// Maps for number <-> hex string conversion
-var _byteToHex = [];
-var _hexToByte = {};
-for (var i = 0; i < 256; i++) {
-  _byteToHex[i] = (i + 0x100).toString(16).substr(1);
-  _hexToByte[_byteToHex[i]] = i;
-}
-
-// **`parse()` - Parse a UUID into it's component bytes**
-function parse(s, buf, offset) {
-  var i = (buf && offset) || 0, ii = 0;
-
-  buf = buf || [];
-  s.toLowerCase().replace(/[0-9a-f]{2}/g, function(oct) {
-    if (ii < 16) { // Don't overflow!
-      buf[i + ii++] = _hexToByte[oct];
-    }
-  });
-
-  // Zero out remaining bytes if string was short
-  while (ii < 16) {
-    buf[i + ii++] = 0;
-  }
-
-  return buf;
-}
-
-// **`unparse()` - Convert UUID byte array (ala parse()) into a string**
-function unparse(buf, offset) {
-  var i = offset || 0, bth = _byteToHex;
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
   return  bth[buf[i++]] + bth[buf[i++]] +
           bth[buf[i++]] + bth[buf[i++]] + '-' +
           bth[buf[i++]] + bth[buf[i++]] + '-' +
@@ -1612,13 +1579,59 @@ function unparse(buf, offset) {
           bth[buf[i++]] + bth[buf[i++]];
 }
 
+module.exports = bytesToUuid;
+
+},{}],9:[function(require,module,exports){
+(function (global){
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = global.crypto || global.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16);
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var  rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+module.exports = rng;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],10:[function(require,module,exports){
+// Unique ID creation requires a high quality random # generator.  We feature
+// detect to determine the best RNG source, normalizing to a function that
+// returns 128-bits of randomness, since that's what's usually required
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
 // **`v1()` - Generate time-based UUID**
 //
 // Inspired by https://github.com/LiosK/UUID.js
 // and http://docs.python.org/library/uuid.html
 
 // random #'s we need to init node and clockseq
-var _seedBytes = _rng();
+var _seedBytes = rng();
 
 // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
 var _nodeId = [
@@ -1701,18 +1714,20 @@ function v1(options, buf, offset) {
 
   // `node`
   var node = options.node || _nodeId;
-  for (var n = 0; n < 6; n++) {
+  for (var n = 0; n < 6; ++n) {
     b[i + n] = node[n];
   }
 
-  return buf ? buf : unparse(b);
+  return buf ? buf : bytesToUuid(b);
 }
 
-// **`v4()` - Generate random UUID**
+module.exports = v1;
 
-// See https://github.com/broofa/node-uuid for API details
+},{"./lib/bytesToUuid":8,"./lib/rng":9}],11:[function(require,module,exports){
+var rng = require('./lib/rng');
+var bytesToUuid = require('./lib/bytesToUuid');
+
 function v4(options, buf, offset) {
-  // Deprecated - 'format' argument, as supported in v1.2
   var i = buf && offset || 0;
 
   if (typeof(options) == 'string') {
@@ -1721,7 +1736,7 @@ function v4(options, buf, offset) {
   }
   options = options || {};
 
-  var rnds = options.random || (options.rng || _rng)();
+  var rnds = options.random || (options.rng || rng)();
 
   // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
   rnds[6] = (rnds[6] & 0x0f) | 0x40;
@@ -1729,24 +1744,17 @@ function v4(options, buf, offset) {
 
   // Copy bytes to buffer, if provided
   if (buf) {
-    for (var ii = 0; ii < 16; ii++) {
+    for (var ii = 0; ii < 16; ++ii) {
       buf[i + ii] = rnds[ii];
     }
   }
 
-  return buf || unparse(rnds);
+  return buf || bytesToUuid(rnds);
 }
 
-// Export public API
-var uuid = v4;
-uuid.v1 = v1;
-uuid.v4 = v4;
-uuid.parse = parse;
-uuid.unparse = unparse;
+module.exports = v4;
 
-module.exports = uuid;
-
-},{"./rng":7}],9:[function(require,module,exports){
+},{"./lib/bytesToUuid":8,"./lib/rng":9}],12:[function(require,module,exports){
 var History = require('./src/history')
 var Store = require('./src/store')
 var Constraint = require('./src/constraint')
@@ -1826,7 +1834,7 @@ function forEachOnIndex (arr, indexes, iterator, onEnd) {
   iterator(values, next)
 }
 
-},{"./src/constraint":13,"./src/dynamic-caller":14,"./src/history":15,"./src/store":21}],10:[function(require,module,exports){
+},{"./src/constraint":16,"./src/dynamic-caller":17,"./src/history":18,"./src/store":24}],13:[function(require,module,exports){
 module.exports = fakeScope
 
 var util = require('./util')
@@ -1866,7 +1874,7 @@ function fakeScope (scope, expr, opts) {
 
 
 
-},{"./util":12}],11:[function(require,module,exports){
+},{"./util":15}],14:[function(require,module,exports){
 module.exports = Compiler
 
 var util = require('./util')
@@ -2292,7 +2300,7 @@ function escape (val) {
   return val
 }
 
-},{"./fake-scope":10,"./util":12}],12:[function(require,module,exports){
+},{"./fake-scope":13,"./util":15}],15:[function(require,module,exports){
 module.exports = {}
 module.exports.indent = indent
 module.exports.indentBy = indentBy
@@ -2356,9 +2364,9 @@ function destructuring (constraint, to) {
 
 function getFunctionParameters (func) {
   if (isArrowFunction(func)) {
-    return func.toString().match(/^\(\s*([^\)]*)\)\s*=>/m)[1]
+    return func.toString().match(/^\(\s*([^)]*)\)\s*=>/m)[1]
   } else {
-    return func.toString().match(/^function\s*[^\(]*\(\s*([^\)]*)\)/m)[1]
+    return func.toString().match(/^function\s*[^(]*\(\s*([^)]*)\)/m)[1]
   }
 }
 
@@ -2374,7 +2382,7 @@ function isArrowFunction (func) {
   return !func.hasOwnProperty('prototype')
 }
 
-},{}],13:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = Constraint
 
 function Constraint (name, arity, args) {
@@ -2407,7 +2415,7 @@ function escape (val) {
   return res
 }
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = dynamicCaller
 
 var Constraint = require('./constraint')
@@ -2442,7 +2450,7 @@ function dynamicCaller (name) {
   }
 }
 
-},{"./constraint":13}],15:[function(require,module,exports){
+},{"./constraint":16}],18:[function(require,module,exports){
 module.exports = History
 
 function History () {
@@ -2482,7 +2490,7 @@ function hash (ids) {
   return ids.join('_')
 }
 
-},{}],16:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 ;(function () {
   var root = this
   var prevCHR
@@ -2591,7 +2599,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '2.0.10'
+  CHR.version = '2.0.11'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
@@ -2613,7 +2621,7 @@ function hash (ids) {
   }
 }).call(this)
 
-},{"../runtime":9,"./join-parts":17,"./parser.peg.js":18,"./rule":19,"./rules":20}],17:[function(require,module,exports){
+},{"../runtime":12,"./join-parts":20,"./parser.peg.js":21,"./rule":22,"./rules":23}],20:[function(require,module,exports){
 module.exports = joinParts
 
 function joinParts (arr) {
@@ -2691,7 +2699,7 @@ function isPipe (str) {
   return str.match(/^\s*\|\s*$/)
 }
 
-},{}],18:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -4617,7 +4625,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],19:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = Rule
 
 var uuid = require('uuid').v1
@@ -4794,7 +4802,7 @@ function callback2Promise () {
   }
 }
 
-},{"./compile/head":11,"uuid":8}],20:[function(require,module,exports){
+},{"./compile/head":14,"uuid":7}],23:[function(require,module,exports){
 module.exports = Rules
 
 var dynamicCaller = require('./dynamic-caller')
@@ -4883,7 +4891,7 @@ Rules.prototype.RemoveBreakpoints = function removeBreakpoints (f) {
   this.SetBreakpoints(undefined)
 }
 
-},{"./dynamic-caller":14,"./rule":19}],21:[function(require,module,exports){
+},{"./dynamic-caller":17,"./rule":22}],24:[function(require,module,exports){
 module.exports = Store
 
 var util = require('util')
@@ -5020,5 +5028,5 @@ Store.prototype.toString = function () {
   return t.toString()
 }
 
-},{"easy-table":1,"events":2,"util":6}]},{},[16])(16)
+},{"easy-table":1,"events":2,"util":6}]},{},[19])(19)
 });
