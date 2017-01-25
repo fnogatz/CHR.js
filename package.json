@@ -39,7 +39,7 @@
     "url": "git://github.com/fnogatz/CHR.js"
   },
   "devDependencies": {
-    "browserify": "^13.0.0",
+    "browserify": "^14.0.0",
     "browserify-versionify": "^1.0.6",
     "colors": "^1.0.3",
     "envify": "^4.0.0",
