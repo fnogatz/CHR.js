@@ -2216,8 +2216,6 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
           '})'
         )
       }
-
-      return
     }
   })
 
@@ -2327,7 +2325,7 @@ function indent (level, text, spaces) {
     return text.map(indentBy(level, spaces))
   }
 
-  return Array(level * spaces + 1).join(' ')
+  return Array((level * spaces) + 1).join(' ')
 }
 
 function indentBy (level, spaces) {
@@ -2599,7 +2597,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '2.0.12'
+  CHR.version = '2.0.13'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
@@ -2672,7 +2670,6 @@ function joinParts (arr) {
 
       res += ' ${' + replacementNo + '}'
       replacementNo++
-      return
     }
   })
 

@@ -24,7 +24,7 @@ function indent (level, text, spaces) {
     return text.map(indentBy(level, spaces))
   }
 
-  return Array(level * spaces + 1).join(' ')
+  return Array((level * spaces) + 1).join(' ')
 }
 
 function indentBy (level, spaces) {

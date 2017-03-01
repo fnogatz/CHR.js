@@ -339,8 +339,6 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
           '})'
         )
       }
-
-      return
     }
   })
 

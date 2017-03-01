@@ -65,7 +65,6 @@ function Repl () {
       r.output.write('  [Rule' + (rules.body.length > 1 ? 's' : '') + '] Added.\n')
 
       callback()
-      return
     }
   })
 }
