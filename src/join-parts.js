@@ -48,7 +48,6 @@ function joinParts (arr) {
 
       res += ' ${' + replacementNo + '}'
       replacementNo++
-      return
     }
   })
 
