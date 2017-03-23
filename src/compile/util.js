@@ -33,12 +33,13 @@ function indentBy (level, spaces) {
   }
 }
 
-function destructuring (constraint, to) {
+function destructuring (constraint, to, returnValue) {
+  returnValue = returnValue || 'Promise.resolve()'
   var parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
       parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
-      parts.push(indent(1) + 'return')
+      parts.push(indent(1) + 'return ' + returnValue)
       parts.push(indent(0) + '}')
       return
     }
