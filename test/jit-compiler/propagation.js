@@ -92,7 +92,7 @@ test('a(0), b ==> c', function (t) {
 
   chr.b().then(function () {
     t.equal(chr.Store.length, 1, 'Rule not fired')
-    
+
     chr.a(3).then(function () {
       t.equal(chr.Store.length, 2, 'Rule not fired')
 
@@ -100,7 +100,7 @@ test('a(0), b ==> c', function (t) {
         t.equal(chr.Store.length, 3, 'Rule not fired')
 
         chr.a(0).then(function () {
-          t.equal(chr.Store.length, (3+1+2), "Rule fired for both b's")
+          t.equal(chr.Store.length, (3 + 1 + 2), "Rule fired for both b's")
 
           t.end()
         })
