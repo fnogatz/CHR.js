@@ -1987,7 +1987,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
     }
 
     if (head.arity > 0) {
-      parts = parts.concat(destructuring(head, 'self.Store.args(ids[' + headIndex + '])').map(indentBy(level)))
+      parts = parts.concat(destructuring(head, 'self.Store.args(ids[' + headIndex + '])', 'callback()').map(indentBy(level)))
       parts.push(
         indent(level)
       )
@@ -2334,12 +2334,13 @@ function indentBy (level, spaces) {
   }
 }
 
-function destructuring (constraint, to) {
+function destructuring (constraint, to, returnValue) {
+  returnValue = returnValue || 'Promise.resolve()'
   var parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
       parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
-      parts.push(indent(1) + 'return')
+      parts.push(indent(1) + 'return ' + returnValue)
       parts.push(indent(0) + '}')
       return
     }
@@ -2597,7 +2598,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '2.0.13'
+  CHR.version = '2.0.14'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
