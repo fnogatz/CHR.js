@@ -1883,6 +1883,7 @@ var fakeScope = require('./fake-scope')
 var indent = util.indent
 var indentBy = util.indentBy
 var destructuring = util.destructuring
+var escape = util.escape
 
 function Compiler (rule, opts) {
   opts = opts || {}
@@ -2270,7 +2271,7 @@ Compiler.prototype.generateBinaryExpression = function generateBinaryExpression 
       return expr[part].name
     }
     if (expr[part].type === 'Literal') {
-      return expr[part].value
+      return escape(expr[part].value)
     }
     if (expr[part].type === 'BinaryExpression') {
       return '(' + self.generateBinaryExpression(expr[part]) + ')'
@@ -2290,14 +2291,6 @@ Compiler.prototype.generateExpression = function generateExpression (parameter) 
   }
 }
 
-function escape (val) {
-  if (typeof val === 'string') {
-    return '"' + val + '"'
-  }
-
-  return val
-}
-
 },{"./fake-scope":13,"./util":15}],15:[function(require,module,exports){
 module.exports = {}
 module.exports.indent = indent
@@ -2307,6 +2300,7 @@ module.exports.getFunctionParameters = getFunctionParameters
 module.exports.getLastParamName = getLastParamName
 module.exports.replaceLastParam = replaceLastParam
 module.exports.isArrowFunction = isArrowFunction
+module.exports.escape = escape
 
 function indent (level, text, spaces) {
   level = level || 0
@@ -2379,6 +2373,14 @@ function replaceLastParam (params, replacement) {
 
 function isArrowFunction (func) {
   return !func.hasOwnProperty('prototype')
+}
+
+function escape (val) {
+  if (typeof val === 'string') {
+    return '"' + val + '"'
+  }
+
+  return val
 }
 
 },{}],16:[function(require,module,exports){
@@ -2598,7 +2600,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '2.0.14'
+  CHR.version = '2.0.15'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
