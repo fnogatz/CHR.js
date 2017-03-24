@@ -6,6 +6,7 @@ module.exports.getFunctionParameters = getFunctionParameters
 module.exports.getLastParamName = getLastParamName
 module.exports.replaceLastParam = replaceLastParam
 module.exports.isArrowFunction = isArrowFunction
+module.exports.escape = escape
 
 function indent (level, text, spaces) {
   level = level || 0
@@ -78,4 +79,12 @@ function replaceLastParam (params, replacement) {
 
 function isArrowFunction (func) {
   return !func.hasOwnProperty('prototype')
+}
+
+function escape (val) {
+  if (typeof val === 'string') {
+    return '"' + val + '"'
+  }
+
+  return val
 }

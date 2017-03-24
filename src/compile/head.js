@@ -6,6 +6,7 @@ var fakeScope = require('./fake-scope')
 var indent = util.indent
 var indentBy = util.indentBy
 var destructuring = util.destructuring
+var escape = util.escape
 
 function Compiler (rule, opts) {
   opts = opts || {}
@@ -393,7 +394,7 @@ Compiler.prototype.generateBinaryExpression = function generateBinaryExpression 
       return expr[part].name
     }
     if (expr[part].type === 'Literal') {
-      return expr[part].value
+      return escape(expr[part].value)
     }
     if (expr[part].type === 'BinaryExpression') {
       return '(' + self.generateBinaryExpression(expr[part]) + ')'
@@ -411,12 +412,4 @@ Compiler.prototype.generateExpression = function generateExpression (parameter) 
   if (parameter.type === 'Literal') {
     return escape(parameter.value)
   }
-}
-
-function escape (val) {
-  if (typeof val === 'string') {
-    return '"' + val + '"'
-  }
-
-  return val
 }
