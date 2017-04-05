@@ -1856,7 +1856,7 @@ function fakeScope (scope, expr, opts) {
   if (opts.isGuard) {
     var parts = [
       'new Promise(function (s, j) {',
-      indent(1) + 'var ' + lastParamName + ' = function(r) { r ? s() : j() }',
+      indent(1) + 'var ' + lastParamName + ' = function(e, r) { (e || !r) ? j() : s() }',
       indent(1) + 'with (self.Scope) { (' + expr + ').apply(self, [' + params + ']) }',
       '})'
     ]
@@ -2074,7 +2074,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
       var lastParamName = util.getLastParamName(params)
       parts.push(
         expr + 'new Promise(function (s, j) {',
-        indent(2) + 'var ' + lastParamName + ' = function (r) { r ? s() : j() }',
+        indent(2) + 'var ' + lastParamName + ' = function (e, r) { (e || !r) ? j() : s() }',
         indent(2) + 'replacements["' + guard.num + '"].apply(self, [' + params + '])',
         indent(1) + '})'
       )
@@ -2600,7 +2600,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '2.0.15'
+  CHR.version = '3.0.0'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
