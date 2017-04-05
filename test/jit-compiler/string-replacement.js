@@ -184,7 +184,7 @@ test('string replacement in guard', function (t) {
   t.test('function reference, constant true', function (t) {
     var scope = (function () {
       function test (cb) {
-        cb(true)
+        cb(null, true)
       }
 
       return {
@@ -208,7 +208,7 @@ test('string replacement in guard', function (t) {
   t.test('function reference, constant false', function (t) {
     var scope = (function () {
       function test (cb) {
-        cb(false)
+        cb(null, false)
       }
 
       return {
@@ -233,7 +233,7 @@ test('string replacement in guard', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N, cb) { cb(N > 0) } } | a(N-1)') // eslint-disable-line no-template-curly-in-string
+    chr('a(N) ==> ${ function(N, cb) { cb(null, N > 0) } } | a(N-1)') // eslint-disable-line no-template-curly-in-string
 
     chr.a(4).then(function () {
       t.equal(chr.Store.length, 5, 'rule executed four times')

@@ -4,7 +4,7 @@ var CHR = require('../../src/index')
 
 test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
+  chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 2)
@@ -14,7 +14,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-temp
 
 test('a ==> ${ 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
+  chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 2)
@@ -24,7 +24,7 @@ test('a ==> ${ 1 < 2 } | b', function (t) { // eslint-disable-line no-template-c
 
 test('a ==> ${ () => false } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(false) }, '| b')
+  chr('a ==>', function (cb) { cb(null, false) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 1, 'Guard not satisfied')
@@ -69,7 +69,7 @@ test('Scope', function (t) {
   var i = 0
 
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(i !== 0) }, '| b')
+  chr('a ==>', function (cb) { cb(null, i !== 0) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 1, 'b not propagated')
@@ -84,7 +84,7 @@ test('Scope', function (t) {
 
 test('Replacement in String', function (t) {
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(true) }, '| b')
+  chr('a ==>', function (cb) { cb(null, true) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 2)

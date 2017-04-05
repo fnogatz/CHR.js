@@ -19,7 +19,7 @@ function fakeScope (scope, expr, opts) {
   if (opts.isGuard) {
     var parts = [
       'new Promise(function (s, j) {',
-      indent(1) + 'var ' + lastParamName + ' = function(r) { r ? s() : j() }',
+      indent(1) + 'var ' + lastParamName + ' = function(e, r) { (e || !r) ? j() : s() }',
       indent(1) + 'with (self.Scope) { (' + expr + ').apply(self, [' + params + ']) }',
       '})'
     ]

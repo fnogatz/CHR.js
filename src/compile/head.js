@@ -197,7 +197,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
       var lastParamName = util.getLastParamName(params)
       parts.push(
         expr + 'new Promise(function (s, j) {',
-        indent(2) + 'var ' + lastParamName + ' = function (r) { r ? s() : j() }',
+        indent(2) + 'var ' + lastParamName + ' = function (e, r) { (e || !r) ? j() : s() }',
         indent(2) + 'replacements["' + guard.num + '"].apply(self, [' + params + '])',
         indent(1) + '})'
       )

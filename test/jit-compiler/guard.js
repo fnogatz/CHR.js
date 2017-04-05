@@ -24,7 +24,7 @@ test('a ==> 1 > 2 | b', function (t) {
 
 test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(1 < 2) }, '| b')
+  chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 2)
@@ -34,7 +34,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-temp
 
 test('a ==> ${ () => 1 > 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
   var chr = new CHR()
-  chr('a ==>', function (cb) { cb(1 > 2) }, '| b')
+  chr('a ==>', function (cb) { cb(null, 1 > 2) }, '| b')
 
   chr.a().then(function () {
     t.equal(chr.Store.length, 1)
@@ -44,7 +44,7 @@ test('a ==> ${ () => 1 > 2 } | b', function (t) { // eslint-disable-line no-temp
 
 test('Scope', function (t) {
   var chr = new CHR()
-  chr('a(N) ==>', function (N, cb) { cb(N > 10) }, '| b')
+  chr('a(N) ==>', function (N, cb) { cb(null, N > 10) }, '| b')
 
   chr.a(1).then(function () {
     t.equal(chr.Store.length, 1)
@@ -56,9 +56,9 @@ test('Scope', function (t) {
   })
 })
 
-test('Guard with used-defined predicate', function (t) {
+test('Guard with user-defined predicate', function (t) {
   function greaterThan10 (N, onlyIf) {
-    onlyIf(N > 10)
+    onlyIf(null, N > 10)
   }
 
   var chr = new CHR()
