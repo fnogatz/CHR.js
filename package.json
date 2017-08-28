@@ -47,8 +47,8 @@
     "standard": "^10.0.0",
     "tape": "^4.2.0",
     "tconsole": "^1.0.0",
-    "uglify-js": "^2.4.24",
-    "uglifyify": "^3.0.1"
+    "uglify-js": "^3.0.1",
+    "uglifyify": "^4.0.1"
   },
   "dependencies": {
     "char-spinner": "^1.0.1",
