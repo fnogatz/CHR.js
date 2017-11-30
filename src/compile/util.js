@@ -85,6 +85,9 @@ function escape (val) {
   if (typeof val === 'string') {
     return '"' + val + '"'
   }
+  if (val === null) {
+    return 'null'
+  }
 
   return val
 }
