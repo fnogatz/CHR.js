@@ -2379,6 +2379,9 @@ function escape (val) {
   if (typeof val === 'string') {
     return '"' + val + '"'
   }
+  if (val === null) {
+    return 'null'
+  }
 
   return val
 }
@@ -2600,7 +2603,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.0.1'
+  CHR.version = '3.0.2'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
