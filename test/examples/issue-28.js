@@ -27,3 +27,18 @@ test('null as argument in result (Issue #28)', function (t) {
     t.end()
   })
 })
+
+test('null as argument (Issue #28)', function (t) {
+  var chr = new CHR()
+  chr('a(null) ==> b(null)')
+
+  chr.a('some').then(function () {
+    t.equal(chr.Store.length, 1)
+
+    chr.a(null).then(function () {
+      t.equal(chr.Store.length, 3)
+
+      t.end()
+    })
+  })
+})
