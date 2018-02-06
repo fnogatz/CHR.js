@@ -43,19 +43,20 @@
     "browserify-versionify": "^1.0.6",
     "colors": "^1.0.3",
     "envify": "^4.0.0",
+    "es6ify": "^1.6.0",
     "pegjs": "^0.10.0",
     "standard": "^10.0.0",
     "tape": "^4.2.0",
     "tconsole": "^1.0.0",
-    "uglify-js": "^3.3.2",
+    "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "uglifyify": "^4.0.1"
   },
   "dependencies": {
     "char-spinner": "^1.0.1",
-    "commander": "^2.8.0",
+    "commander": "^2.14.0",
     "concat-stream": "^1.4.8",
     "easy-table": "^1.0.0",
-    "uuid": "^3.0.1"
+    "uuid": "^3.2.1"
   },
   "standard": {
     "ignore": [
