@@ -5,7 +5,7 @@ var fs = require('fs')
 
 var parse = require('../parser.peg.js').parse
 var util = require('./util')
-var compileHead = require('./head')
+var HeadCompiler = require('./head')
 
 var indent = util.indent
 var indentBy = util.indentBy
@@ -39,23 +39,15 @@ function transform (program, opts) {
   var replacements = []
 
   var rules = parsed.body
-  rules.forEach(function (rule) {
+  rules.forEach(function (ruleObj) {
     var head
     var functor
+    var name
     var compiled
-
-    rule.constraints.forEach(function (functor) {
-      var name = functor.split('/')[0]
-      constraintNames[name] = true
-
-      if (!constraints[functor]) {
-        constraints[functor] = []
-      }
-    })
 
     // replace replacements
     ;['guard', 'body'].forEach(function (location) {
-      rule[location] = rule[location].map(function (element) {
+      ruleObj[location] = ruleObj[location].map(function (element) {
         if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
           return element
         }
@@ -74,15 +66,35 @@ function transform (program, opts) {
       })
     })
 
-    for (var headNo = rule.head.length - 1; headNo >= 0; headNo--) {
-      head = rule.head[headNo]
-      functor = head.name + '/' + head.arity
+    var headCompiler = new HeadCompiler(ruleObj, {
+      replacements: replacements
+    })
 
-      compiled = compileHead(rule, headNo, {
-        helper: 'Runtime.Helper'
+    for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+      head = ruleObj.head[headNo]
+      functor = head.functor
+
+      if (!constraints[functor]) {
+        constraints[functor] = []
+      }
+      name = functor.split('/')[0]
+      constraintNames[name] = true
+
+      compiled = headCompiler.headNo(headNo).map(function (row) {
+        return '  ' + row
       })
+
       constraints[functor].push(compiled)
     }
+
+    ruleObj.constraints.forEach(function (functor) {
+      // add callers if not present
+      var name = functor.split('/')[0]
+      if (!constraintNames[name]) {
+        constraintNames[name] = true
+        constraints[functor] = []
+      }
+    })
   })
 
   parts.push(
@@ -107,9 +119,15 @@ function transform (program, opts) {
     })
 
     parts.push(indent(level) + '_activators.' + functor.replace('/', '_') + ' = function (constraint) {')
-    activates.map(function (activatorName) {
-      parts.push(indent(level + 1) + activatorName + '.call(chr, constraint)')
+    parts.push(indent(level + 1) + 'return [')
+    activates.map(function (activatorName, ix) {
+      parts.push(indent(level + 1) + (ix > 0 ? ', ' : '  ') + activatorName)
     })
+    parts.push(indent(level + 1) + '].reduce(function (curr, activator) {')
+    parts.push(indent(level + 2) + 'return curr.then(function () {')
+    parts.push(indent(level + 3) + 'return activator.call(chr, constraint)')
+    parts.push(indent(level + 2) + '})')
+    parts.push(indent(level + 1) + '}, Promise.resolve())')
     parts.push(
       indent(level) + '}',
       indent(level)
@@ -139,6 +157,7 @@ function generateObject (opts, constraints, replacements) {
     indent(0) + 'var chr = {',
     indent(1) + 'Store: new Runtime.Store(),',
     indent(1) + 'History: new Runtime.History(),',
+    indent(1) + 'Helper: Runtime.Helper,',
     indent(1) + 'Constraints: {'
   )
 
@@ -187,9 +206,9 @@ function generateCaller (opts, name) {
     indent(2) + 'throw new Error("Constraint "+functor+" not defined.")',
     indent(1) + '}',
     indent(1),
-    indent(1) + 'var constraint = new Runtime.Constraint("' + name + ' ", arity, args)',
+    indent(1) + 'var constraint = new Runtime.Constraint("' + name + '", arity, args)',
     indent(1) + 'self.Store.add(constraint)',
-    indent(1) + '_activators[functor.replace("/","_")].call(chr, constraint)',
+    indent(1) + 'return _activators[functor.replace("/","_")].call(chr, constraint)',
     indent(0) + '}'
   )
 

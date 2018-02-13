@@ -69,14 +69,20 @@ Defining CHR rules in this way, they are compiled at runtime, that means we use 
 
 ## AOT Compilation
 
-The easiest way to precompile your JavaScript source code with embedded Constraint Handling Rules is by using [babel-plugin-chr](https://github.com/fnogatz/babel-plugin-chr), a plugin for [Babel](http://babeljs.io/):
+CHR.js comes with a CLI to pre-compile CHR programs:
 
 ```sh
-npm install babel-plugin-chr
-babel --plugins chr script.js
+$ cat example.chr
+gcd(0) <=> true
+gcd(N) \ gcd(M) <=> 0 < N, N <= M | gcd(M - N)
+$ chrjs example.chr > example.js
+$ node
+> var chr = require('./example.js')
+> chr.gcd(1000).then(function () { console.log(chr.Store.toString()) })
+> chr.gcd(42).then(function () { console.log(chr.Store.toString()) })
 ```
 
-Functions ecapsulated in `${ ... }` are evaluated at rule application, as for JIT compilation too.
+Functions encapsulated in `${ ... }` are evaluated at rule application, as for JIT compilation too.
 
 ## REPL
 
