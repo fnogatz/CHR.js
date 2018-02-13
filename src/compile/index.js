@@ -3,7 +3,7 @@ module.exports.fromFile = transformFile
 
 var fs = require('fs')
 
-var parse = require('../parser').parse
+var parse = require('../parser.peg.js').parse
 var util = require('./util')
 var compileHead = require('./head')
 
