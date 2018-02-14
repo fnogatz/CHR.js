@@ -34,13 +34,18 @@ function indentBy (level, spaces) {
   }
 }
 
-function destructuring (constraint, to, returnValue) {
-  returnValue = returnValue || 'Promise.resolve()'
+function destructuring (constraint, to, thenStmt) {
+  thenStmt = thenStmt || 'return Promise.resolve()'
+
   var parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
       parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
-      parts.push(indent(1) + 'return ' + returnValue)
+      if (Array.isArray(thenStmt)) {
+        parts = parts.concat(thenStmt.map(indentBy(1)))
+      } else {
+        parts.push(indent(1) + thenStmt)
+      }
       parts.push(indent(0) + '}')
       return
     }

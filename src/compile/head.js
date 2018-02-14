@@ -111,7 +111,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
     }
 
     if (head.arity > 0) {
-      parts = parts.concat(destructuring(head, 'self.Store.args(ids[' + headIndex + '])', 'callback()').map(indentBy(level)))
+      parts = parts.concat(destructuring(head, 'self.Store.args(ids[' + headIndex + '])', 'return callback()').map(indentBy(level)))
       parts.push(
         indent(level)
       )
