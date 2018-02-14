@@ -14,6 +14,7 @@ function onFinish (err, code) {
 
 program
   .usage('[options] <file>')
+  .option('-O, --optimized', 'Use optimized compilation (only sync code)')
   .parse(process.argv)
 
 var file = program.args[0]

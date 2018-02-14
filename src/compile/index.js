@@ -6,6 +6,7 @@ var fs = require('fs')
 var parse = require('../parser.peg.js').parse
 var util = require('./util')
 var HeadCompiler = require('./head')
+var transformOptimized = require('./optimized')
 
 var indent = util.indent
 var indentBy = util.indentBy
@@ -14,6 +15,10 @@ function transform (program, opts) {
   opts = opts || {}
   opts.exports = opts.exports || 'module.exports'
   opts.runtime = opts.runtime || 'require("chr/runtime")'
+
+  if (opts.optimized) {
+    return transformOptimized(program, opts)
+  }
 
   var parsed = parse(program, {
     startRule: 'ProgramWithPreamble'
