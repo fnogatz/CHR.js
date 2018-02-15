@@ -13,7 +13,7 @@ function Constraint (name, arity, args) {
 }
 
 Constraint.prototype.continue = function () {
-  this.cont.call(this, this)
+  this.cont[0].call(this, this, this.cont[1])
 }
 
 Constraint.prototype.toString = function () {
@@ -44,13 +44,17 @@ Store.prototype.add = function (constraint) {
 Store.prototype.remove = function (constraint) {
   constraint.alive = false
   var ix = this._index[constraint.functor].indexOf(constraint)
-  this._index[constraint.functor].Store.splice(ix, 1)
+  this._index[constraint.functor].splice(ix, 1)
 
   this._size -= 1
 }
 
 Store.prototype.lookup = function (rule, patterns, constraint) {
-  return Store.prototype.lookupResume(rule, patterns, constraint, 0).res
+  var ret = this.lookupResume(rule, patterns, constraint, 0)
+  if (!ret || !ret.res) {
+    return false
+  }
+  return ret.res
 }
 
 Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) {
@@ -102,10 +106,11 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
     }
     
     // check if already in history
+/*
     if (history.lookup(rule, res_ids)) {
       continue loop_n
     }
-
+*/
     return {
       n: n,
       res: res
@@ -151,6 +156,7 @@ Store.prototype.toString = function () {
 }
 
 // History
+/*
 function History () {
   this._index = {}
   this._size = 0
@@ -216,7 +222,7 @@ History.prototype.lookup = function (rule, ids) {
 
   return true
 }
-
+*/
 // trampoline
 function trampoline () {
   var constraint
@@ -230,4 +236,4 @@ var chr = {
 }
 
 var stack = []
-var history = new History()
+// var history = new History()

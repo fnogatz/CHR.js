@@ -39,6 +39,7 @@ Compiler.prototype.compile = function () {
 
   this.parts.push(
     indent(0) + 'module.exports = (function () {',
+    ''
   )
 
   var l = 1
@@ -84,6 +85,7 @@ Compiler.prototype.compile = function () {
 
   this.addLastHeadFunctions(1)
   this.addConstraintCallers(1)
+  this.addConstraintProperties(1)
 
   this.parts.push(
     indent(1) + 'return chr',
@@ -104,6 +106,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   var self = this
   var l = level || 0
   var _str // only temp str
+  var _sthAdded = false
 
   var head = ruleObj.head[headNo]
   var functor = head.functor
@@ -112,14 +115,18 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   var arity = p[1]
   var no = this.constraints[name][arity]
 
+  var currentConstraintGetsRemoved = false
+
   this.parts.push(
-    indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint) {'
+    indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint, __n) {',
+    indent(l) + '  __n = __n || 0',
+    ''
   )
   l++
 
   if (head.arity > 0) {
     var breakCmds = [
-      'constraint.cont = ' + Compiler.getContinuationReference(name, arity, no+1),
+      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no+1) + ', 0]',
       'stack.push(constraint)',
       'return'
     ]
@@ -153,12 +160,13 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
     // end: constraintPattern
 
     this.parts.push(
-      indent(l) + 'var constraints = chr.Store.lookup(' + ruleObj._id + ', constraintPattern, constraint)',
-      indent(l) + 'if (constraints === false) {',
-      indent(l) + '  constraint.cont = ' + Compiler.getContinuationReference(name, arity, no+1),
+      indent(l) + 'var lookupResult = chr.Store.lookupResume(' + ruleObj._id + ', constraintPattern, constraint, __n)',
+      indent(l) + 'if (lookupResult === false) {',
+      indent(l) + '  constraint.cont = [' + Compiler.getContinuationReference(name, arity, no+1) + ', 0]',
       indent(l) + '  stack.push(constraint)',
       indent(l) + '  return',
       indent(l) + '}',
+      indent(l) + 'var constraints = lookupResult.res',
       ''
     )
 
@@ -169,7 +177,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
       }
 
       if (head.arity > 0) {
-        self.parts = self.parts.concat(destructuring(head, 'constraints[' + headIndex + ']', 'return callback()').map(indentBy(l)))
+        self.parts = self.parts.concat(destructuring(head, 'constraints[' + headIndex + '].args', 'return callback()').map(indentBy(l)))
         self.parts.push(
           ''
         )
@@ -184,29 +192,36 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   }
   // end: guards
 
-  // TODO: Add to propagation history
+  /*
+  // propagation history might no longer be necessary
   this.parts.push(
     indent(l) + '// TODO: Add to propagation history (possibly)',
     ''
   )
+  */
 
+  _sthAdded = false
   // start: remove_constraints
   if (ruleObj.r < ruleObj.head.length) {
     for (var k = ruleObj.r + 1; k <= ruleObj.head.length; k++) {
       if ((k-1) === headNo) {
-        // do nothing - this is handled
+        // do nothing here - this is handled
         //   by not adding the active constraint
         //   via cont
+        currentConstraintGetsRemoved = true
       } else {
         // remove constraint from Store
         this.parts.push(
           indent(l) + 'chr.Store.remove(constraints[' + (k - 1) + '])'
         )
+        _sthAdded = true
       }
     }
-    this.parts.push(
-      ''
-    )
+    if (_sthAdded) {
+      this.parts.push(
+        ''
+      )
+    }
   }
   // end: remove_constraints
 
@@ -218,9 +233,19 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   }
   // end: tells
 
-  this.parts.push(
-    indent(l) + '// done :)'
-  )
+  if (!currentConstraintGetsRemoved) {
+    // put the current constraint back on
+    //   the stack and continue
+    this.parts.push(
+      indent(l) + 'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no) + ', __n+1]',
+      indent(l) + 'stack.push(constraint)',
+      indent(l) + 'return'
+    )
+  } else {
+    this.parts.push(
+      indent(l) + '// active constraint gets removed'
+    )
+  }
 
   l--
   this.parts.push(
@@ -244,9 +269,9 @@ Compiler.prototype.addTell = function (level, body) {
       return Compiler.generateExpression(parameter)
     }).join(', ')
     this.parts.push(
-      indent(l) + '(function () {',
+      indent(l) + ';(function () {', // leading semicolon necessary
       indent(l) + '  var _c = new Constraint("' + body.name + '", ' + body.parameters.length + ', [ ' + args + ' ])',
-      indent(l) + '  _c.cont = ' + Compiler.getContinuationReference(body.name, body.parameters.length, 0),
+      indent(l) + '  _c.cont = [' + Compiler.getContinuationReference(body.name, body.parameters.length, 0) + ', 0]',
       indent(l) + '  stack.push(_c)',
       indent(l) + '})()',
       ''
@@ -316,6 +341,22 @@ Compiler.prototype.addLastHeadFunctions = function (level) {
   }
 }
 
+Compiler.prototype.addConstraintProperties = function (level) {
+  var self = this
+  var l = level || 0
+
+  // bind callers to `chr` variable
+  Object.keys(this.constraints).forEach(function (constraintName) {
+    self.parts.push(
+      indent(l) + 'chr.' + constraintName + ' = ' + constraintName
+    )
+  })
+
+  this.parts.push(
+    ''
+  )
+}
+
 Compiler.prototype.addConstraintCallers = function (level) {
   var self = this
   var l = level || 0
@@ -327,7 +368,7 @@ Compiler.prototype.addConstraintCallers = function (level) {
       indent(l) + '  var args = Array.prototype.slice.call(arguments)',
       indent(l) + '  var arity = arguments.length',
       indent(l) + '  var functor = "' + constraintName + '/" + arity',
-      indent(l) + '  var constraint = new Constraint("gcd", arity, args)'
+      indent(l) + '  var constraint = new Constraint("' + constraintName + '", arity, args)'
     )
 
     self.addConstraintContinuations(l + 1, constraintName)
@@ -352,7 +393,7 @@ Compiler.prototype.addConstraintContinuations = function (level, constraintName)
   if (arities.length === 1) {
     self.parts.push(
       indent(l) + 'if (arity === ' + arities[0] + ') {',
-      indent(l) + '  constraint.cont = ' + Compiler.getContinuationReference(constraintName, arities[0], 0),
+      indent(l) + '  constraint.cont = [' + Compiler.getContinuationReference(constraintName, arities[0], 0) + ', ]',
       indent(l) + '} else {',
       indent(l) + '  throw new Error("Undefined constraint: " + functor)',
       indent(l) + '}'
@@ -364,7 +405,7 @@ Compiler.prototype.addConstraintContinuations = function (level, constraintName)
     arities.sort(function (a, b) { return a - b }).forEach(function (arity) {
       self.parts.push(
         indent(l + 1) + 'case ' + arity + ':',
-        indent(l + 1) + '  constraint.cont = ' + Compiler.getContinuationReference(constraintName, arity, 0),
+        indent(l + 1) + '  constraint.cont = [' + Compiler.getContinuationReference(constraintName, arity, 0) + ', ]',
         indent(l + 1) + '  break'
       )
     })
@@ -394,7 +435,7 @@ Compiler.prototype.addGuards = function (level, ruleObj, cont) {
 
   this.parts.push(
     indent(l) + expr,
-    indent(l) + '  constraint.cont = ' + cont,
+    indent(l) + '  constraint.cont = [' + cont + ', 0]',
     indent(l) + '  stack.push(constraint)',
     indent(l) + '  return',
     indent(l) + '}',
