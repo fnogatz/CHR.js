@@ -46,8 +46,8 @@ Compiler.prototype.compile = function () {
 
   // add optional preamble
   if (this.parsed.preamble) {
-    parts.push(indent(l) + this.parsed.preamble)
-    parts.push(indent(l))
+    this.parts.push(indent(l) + this.parsed.preamble)
+    this.parts.push(indent(l))
   }
 
   this.addStatics(l)
@@ -126,7 +126,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
 
   if (head.arity > 0) {
     var breakCmds = [
-      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no+1) + ', 0]',
+      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no + 1) + ', 0]',
       'stack.push(constraint)',
       'return'
     ]
@@ -162,7 +162,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
     this.parts.push(
       indent(l) + 'var lookupResult = chr.Store.lookupResume(' + ruleObj._id + ', constraintPattern, constraint, __n)',
       indent(l) + 'if (lookupResult === false) {',
-      indent(l) + '  constraint.cont = [' + Compiler.getContinuationReference(name, arity, no+1) + ', 0]',
+      indent(l) + '  constraint.cont = [' + Compiler.getContinuationReference(name, arity, no + 1) + ', 0]',
       indent(l) + '  stack.push(constraint)',
       indent(l) + '  return',
       indent(l) + '}',
@@ -188,7 +188,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
 
   // start: guards
   if (ruleObj.guard && ruleObj.guard.length > 0) {
-    this.addGuards(l, ruleObj, Compiler.getContinuationReference(name, arity, no+1))
+    this.addGuards(l, ruleObj, Compiler.getContinuationReference(name, arity, no + 1))
   }
   // end: guards
 
@@ -204,7 +204,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   // start: remove_constraints
   if (ruleObj.r < ruleObj.head.length) {
     for (var k = ruleObj.r + 1; k <= ruleObj.head.length; k++) {
-      if ((k-1) === headNo) {
+      if ((k - 1) === headNo) {
         // do nothing here - this is handled
         //   by not adding the active constraint
         //   via cont
@@ -279,16 +279,6 @@ Compiler.prototype.addTell = function (level, body) {
     return
   }
 
-  if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
-    this.parts = this.parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
-      if (rowId === 0) {
-        return 'return ' + row
-      }
-      return indent(l) + row
-    }))
-    return
-  }
-
   var params
   var lastParamName
 
@@ -302,7 +292,7 @@ Compiler.prototype.addTell = function (level, body) {
       indent(l) + 'return new Promise(function (s) {',
       indent(l) + '  replacements["' + body.num + '"].apply(self, [' + params + '])',
       indent(l) + '  s()',
-      indent(l) + '})',
+      indent(l) + '})'
     )
     return
   }
@@ -318,7 +308,7 @@ Compiler.prototype.addTell = function (level, body) {
         indent(l) + 'return new Promise(function (s) {',
         indent(l) + '  (' + body.func + ').apply(self, [' + params + '])',
         indent(l) + '  s()',
-        indent(l) + '})',
+        indent(l) + '})'
       )
     }
   }
@@ -420,7 +410,6 @@ Compiler.prototype.addConstraintContinuations = function (level, constraintName)
 }
 
 Compiler.prototype.addGuards = function (level, ruleObj, cont) {
-  var self = this
   var l = level || 0
 
   var expr = 'if (!('
@@ -443,8 +432,7 @@ Compiler.prototype.addGuards = function (level, ruleObj, cont) {
   )
 }
 
-
-///////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////
 
 Compiler.isBuiltIn = function (functor) {
   if (functor === 'true/0') { return true }

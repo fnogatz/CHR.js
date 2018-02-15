@@ -1,8 +1,10 @@
+/* eslint no-labels: ["error", { "allowLoop": true }] */
+
 // Constraint
 function Constraint (name, arity, args) {
   this.name = name
   this.arity = arity
-  this.functor = name + "/" + arity
+  this.functor = name + '/' + arity
   this.args = args
   this.id = null
   this.alive = true
@@ -19,7 +21,7 @@ Constraint.prototype.continue = function () {
 Constraint.prototype.toString = function () {
   var s = this.name
   if (this.arity >= 1) {
-    s += "(" + this.args.join(",") + ")"
+    s += '(' + this.args.join(',') + ')'
   }
   return s
 }
@@ -85,30 +87,31 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
     divs[i] = div
     div *= arr[i].length
   }
-  max = divs[0] * arr[0].length
+  var max = divs[0] * arr[0].length
 
   var res
-  var res_ids
-  loop_n: for (n = startFrom; n < max; n++) {
+  var resIds
+  var curr
+  loopng: for (var n = startFrom; n < max; n++) {
     res = []
-    res_ids = []
+    resIds = []
     curr = n
-    loop_i: for (i = 0; i <= lastPattern; i++) {
+    for (i = 0; i <= lastPattern; i++) {
       res[i] = arr[i][curr / divs[i] >> 0]
-      res_ids[i] = res[i].id
+      resIds[i] = res[i].id
 
-      //avoid multiple occurences of the same constraint
+      // avoid multiple occurences of the same constraint
       if (res.slice(0, i).indexOf(res[i]) !== -1) {
-        continue loop_n
+        continue loopng
       }
 
       curr = curr % divs[i]
     }
-    
+
     // check if already in history
 /*
-    if (history.lookup(rule, res_ids)) {
-      continue loop_n
+    if (history.lookup(rule, resIds)) {
+      continue loopng
     }
 */
     return {
@@ -130,28 +133,29 @@ Store.prototype.valueOf = function () {
 
 Store.prototype.toString = function () {
   if (this.size() === 0) {
-    return "(empty)"
+    return '(empty)'
   }
 
-  var maxLength_c = "constraint".length
-  var maxLength_i = "id".length
+  var maxLengthC = 'constraint'.length
+  var maxLengthI = 'id'.length
   var rows = []
-  for (var functor in this._index) {
+  var functor
+  for (functor in this._index) {
     this._index[functor].forEach(function (c) {
       var s = c.toString()
-      maxLength_c = Math.max(s.length, maxLength_c)
-      maxLength_i = Math.max(c.id.toString().length+1, maxLength_i)
+      maxLengthC = Math.max(s.length, maxLengthC)
+      maxLengthI = Math.max(c.id.toString().length + 1, maxLengthI)
     })
   }
-  for (var functor in this._index) {
+  for (functor in this._index) {
     this._index[functor].forEach(function (c) {
-      rows.push(c.id.toString().padStart(maxLength_i) + " | " + c.toString().padEnd(maxLength_c))
+      rows.push(c.id.toString().padStart(maxLengthI) + ' | ' + c.toString().padEnd(maxLengthC))
     })
   }
 
   return [
-    "id".padStart(maxLength_i) + " | " + "constraint".padEnd(maxLength_c),
-    "".padStart(maxLength_i, "-") + "-+-" + "".padEnd(maxLength_c, "-")
+    'id'.padStart(maxLengthI) + ' | ' + 'constraint'.padEnd(maxLengthC),
+    ''.padStart(maxLengthI, '-') + '-+-' + ''.padEnd(maxLengthC, '-')
   ].concat(rows).join('\n')
 }
 
@@ -224,14 +228,14 @@ History.prototype.lookup = function (rule, ids) {
 }
 */
 // trampoline
-function trampoline () {
+function trampoline () { // eslint-disable-line
   var constraint
-  while (constraint = stack.pop()) {
+  while (constraint = stack.pop()) { // eslint-disable-line
     constraint.continue()
   }
 }
 
-var chr = {
+var chr = { // eslint-disable-line
   Store: new Store()
 }
 
