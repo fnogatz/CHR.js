@@ -1,119 +1,328 @@
 module.exports = transform
+module.exports.Compiler = Compiler
+
+var fs = require('fs')
+var path = require('path')
 
 var parse = require('../parser.peg.js').parse
 var util = require('./util')
 
 var indent = util.indent
+var indentBy = util.indentBy
+var destructuring = util.destructuring
+var escape = util.escape
 
 function transform (program, opts) {
+  var compiler = new Compiler(program, opts)
+  return compiler.compile()
+}
+
+function Compiler (program, opts) {
   opts = opts || {}
+  this.opts = opts
 
   var parsed = parse(program, {
     startRule: 'ProgramWithPreamble'
   })
-  var rules = parsed.body
 
-  var constraints = {}
+  this.parsed = parsed
+  this.parts = []
 
-  var parts = []
-  var level = 1
+  this.constraints = {}
+  this.nextRuleId = 0
+}
 
-  parts.push(
+Compiler.prototype.compile = function () {
+  var self = this
+
+  this.parts = []
+
+  this.parts.push(
     indent(0) + 'module.exports = (function () {',
-    indent(1) + 'var chr = {',
-    indent(1) + '  Store:',
-    indent(1) + '}',
-    ''
   )
 
-  addStatics(parts, 1)
+  var l = 1
 
   // add optional preamble
-  if (parsed.preamble) {
-    parts.push(indent(level) + parsed.preamble)
-    parts.push(indent(level))
+  if (this.parsed.preamble) {
+    parts.push(indent(l) + this.parsed.preamble)
+    parts.push(indent(l))
   }
 
-  // handle all rules
-  rules.forEach(function (ruleObj) {
-    // TODO
+  this.addStatics(l)
 
+  // handle all rules
+  var rules = this.parsed.body
+  rules.forEach(function (ruleObj) {
+    // add unique id
+    ruleObj._id = self.nextRuleId
+    self.nextRuleId++
+
+    // remember constraint names and arity
     ruleObj.constraints.forEach(function (functor) {
-      if (isBuiltIn(functor)) {
+      if (Compiler.isBuiltIn(functor)) {
         return
       }
 
       // add callers if not present
-      var parts = functor.split('/')
-      var name = parts[0]
-      var arity = parts[1]
-      if (!constraints[name]) {
-        constraints[name] = {}
+      var p = functor.split('/')
+      var name = p[0]
+      var arity = p[1]
+      if (!self.constraints.hasOwnProperty(name)) {
+        self.constraints[name] = {}
       }
-      if (!constraints[name][arity]) {
-        constraints[name][arity] = true
+      if (!self.constraints[name].hasOwnProperty(arity)) {
+        self.constraints[name][arity] = 0
       }
     })
+
+    // add functions
+    for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+      self.addHeadFunction(1, ruleObj, headNo)
+    }
   })
 
-  addConstraintCallers(parts, 1, constraints)
+  this.addLastHeadFunctions(1)
+  this.addConstraintCallers(1)
 
-  parts.push(
+  this.parts.push(
     indent(1) + 'return chr',
     indent(0) + '})()'
   )
 
-  return parts.join('\n')
+  return this.parts.join('\n')
 }
 
-function addStatics (parts, level) {
+Compiler.prototype.addStatics = function (level) {
   var l = level || 0
 
-  // Constraint
-  parts.push(
-    indent(l) + 'function Constraint (name, arity, args) {',
-    indent(l) + '  this.name = name',
-    indent(l) + '  this.arity = arity',
-    indent(l) + '  this.functor = name + "/" + arity',
-    indent(l) + '  this.args = args',
-    indent(l) + '  this.id = null',
-    indent(l) + '  this.alive = true',
-    indent(l) + '  this.activated = false',
-    indent(l) + '  this.stored = false',
-    indent(l) + '  this.hist = null',
-    indent(l) + '  this.cont = null',
-    indent(l) + '}',
-    '',
-    indent(l) + 'Constraint.prototype.continue = function () {',
-    indent(l) + '  this.cont.call(this, this)',
-    indent(l) + '}',
-    ''
-  )
-
-  // trampoline
-  parts.push(
-    indent(l) + 'function trampoline () {',
-    indent(l) + '  var constraint',
-    indent(l) + '  while (constraint = stack.pop()) {',
-    indent(l) + '    constraint.continue()',
-    indent(l) + '  }',
-    indent(l) + '}',
-    ''
-  )
-
-  // stack variable
-  parts.push(
-    indent(l) + 'var stack = []',
-    ''
-  )
+  var statics = fs.readFileSync(path.join(__dirname, 'optimized-statics.js'), 'utf8')
+  this.parts = this.parts.concat(statics.split('\n').map(indentBy(l)))
 }
 
-function addConstraintCallers (parts, level, constraints) {
+Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
+  var self = this
+  var l = level || 0
+  var _str // only temp str
+
+  var head = ruleObj.head[headNo]
+  var functor = head.functor
+  var p = functor.split('/')
+  var name = p[0]
+  var arity = p[1]
+  var no = this.constraints[name][arity]
+
+  this.parts.push(
+    indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint) {'
+  )
+  l++
+
+  if (head.arity > 0) {
+    var breakCmds = [
+      'constraint.cont = ' + Compiler.getContinuationReference(name, arity, no+1),
+      'stack.push(constraint)',
+      'return'
+    ]
+
+    this.parts = this.parts.concat(destructuring(head, 'constraint.args', breakCmds).map(indentBy(l)))
+    this.parts.push(
+      ''
+    )
+  }
+
+  if (ruleObj.head.length > 1) {
+    // have to find partner constraints
+
+    // start: constraintPattern
+    _str = 'var constraintPattern = [ '
+    ruleObj.head.forEach(function (head, headIndex) {
+      if (headIndex > 0) {
+        _str += ', '
+      }
+
+      if (headIndex === headNo) {
+        _str += '"_"'
+      } else {
+        _str += '"' + head.functor + '"'
+      }
+    })
+    _str += ' ]'
+    this.parts.push(
+      indent(l) + _str
+    )
+    // end: constraintPattern
+
+    this.parts.push(
+      indent(l) + 'var constraints = chr.Store.lookup(' + ruleObj._id + ', constraintPattern, constraint)',
+      indent(l) + 'if (constraints === false) {',
+      indent(l) + '  constraint.cont = ' + Compiler.getContinuationReference(name, arity, no+1),
+      indent(l) + '  stack.push(constraint)',
+      indent(l) + '  return',
+      indent(l) + '}',
+      ''
+    )
+
+    // start: destructuring_other_constraints
+    ruleObj.head.forEach(function (head, headIndex) {
+      if (headIndex === headNo) {
+        return
+      }
+
+      if (head.arity > 0) {
+        self.parts = self.parts.concat(destructuring(head, 'constraints[' + headIndex + ']', 'return callback()').map(indentBy(l)))
+        self.parts.push(
+          ''
+        )
+      }
+    })
+    // end: destructuring_other_constraints
+  }
+
+  // start: guards
+  if (ruleObj.guard && ruleObj.guard.length > 0) {
+    this.addGuards(l, ruleObj, Compiler.getContinuationReference(name, arity, no+1))
+  }
+  // end: guards
+
+  // TODO: Add to propagation history
+  this.parts.push(
+    indent(l) + '// TODO: Add to propagation history (possibly)',
+    ''
+  )
+
+  // start: remove_constraints
+  if (ruleObj.r < ruleObj.head.length) {
+    for (var k = ruleObj.r + 1; k <= ruleObj.head.length; k++) {
+      if ((k-1) === headNo) {
+        // do nothing - this is handled
+        //   by not adding the active constraint
+        //   via cont
+      } else {
+        // remove constraint from Store
+        this.parts.push(
+          indent(l) + 'chr.Store.remove(constraints[' + (k - 1) + '])'
+        )
+      }
+    }
+    this.parts.push(
+      ''
+    )
+  }
+  // end: remove_constraints
+
+  // start: tells
+  if (ruleObj.body.length > 0) {
+    ruleObj.body.forEach(function (body) {
+      self.addTell(l, body)
+    })
+  }
+  // end: tells
+
+  this.parts.push(
+    indent(l) + '// done :)'
+  )
+
+  l--
+  this.parts.push(
+    indent(l) + '}',
+    ''
+  )
+
+  this.constraints[name][arity]++
+}
+
+Compiler.prototype.addTell = function (level, body) {
+  var self = this
+  var l = level || 0
+
+  if (body.type === 'Constraint' && body.name === 'true' && body.arity === 0) {
+    return
+  }
+
+  if (body.type === 'Constraint') {
+    var args = body.parameters.map(function (parameter) {
+      return Compiler.generateExpression(parameter)
+    }).join(', ')
+    this.parts.push(
+      indent(l) + '(function () {',
+      indent(l) + '  var _c = new Constraint("' + body.name + '", ' + body.parameters.length + ', [ ' + args + ' ])',
+      indent(l) + '  _c.cont = ' + Compiler.getContinuationReference(body.name, body.parameters.length, 0),
+      indent(l) + '  stack.push(_c)',
+      indent(l) + '})()',
+      ''
+    )
+    return
+  }
+
+  if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
+    this.parts = this.parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
+      if (rowId === 0) {
+        return 'return ' + row
+      }
+      return indent(l) + row
+    }))
+    return
+  }
+
+  var params
+  var lastParamName
+
+  if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
+    // get parameters via dependency injection
+    params = util.getFunctionParameters(self.replacements[body.num])
+    lastParamName = util.getLastParamName(params)
+
+    // sync
+    this.parts.push(
+      indent(l) + 'return new Promise(function (s) {',
+      indent(l) + '  replacements["' + body.num + '"].apply(self, [' + params + '])',
+      indent(l) + '  s()',
+      indent(l) + '})',
+    )
+    return
+  }
+
+  if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
+    var func = eval(body.func) // eslint-disable-line
+    params = util.getFunctionParameters(func)
+    lastParamName = util.getLastParamName(params, true)
+
+    if (lastParamName && self.opts.defaultCallbackNames.indexOf(lastParamName) > -1) {
+      // sync
+      this.parts.push(
+        indent(l) + 'return new Promise(function (s) {',
+        indent(l) + '  (' + body.func + ').apply(self, [' + params + '])',
+        indent(l) + '  s()',
+        indent(l) + '})',
+      )
+    }
+  }
+}
+
+Compiler.prototype.addLastHeadFunctions = function (level) {
+  var self = this
+  var l = level || 0
+
+  for (var constraintName in self.constraints) {
+    for (var arity in self.constraints[constraintName]) {
+      this.parts.push(
+        indent(l) + 'function ' + Compiler.getContinuationReference(constraintName, arity, self.constraints[constraintName][arity]) + ' (constraint) {',
+        indent(l) + '  constraint.cont = null',
+        indent(l) + '  chr.Store.add(constraint)',
+        indent(l) + '}',
+        ''
+      )
+    }
+  }
+}
+
+Compiler.prototype.addConstraintCallers = function (level) {
+  var self = this
   var l = level || 0
 
   // create functions
-  Object.keys(constraints).forEach(function (constraintName) {
-    parts.push(
+  Object.keys(this.constraints).forEach(function (constraintName) {
+    self.parts.push(
       indent(l) + 'function ' + constraintName + ' () {',
       indent(l) + '  var args = Array.prototype.slice.call(arguments)',
       indent(l) + '  var arity = arguments.length',
@@ -121,58 +330,121 @@ function addConstraintCallers (parts, level, constraints) {
       indent(l) + '  var constraint = new Constraint("gcd", arity, args)'
     )
 
-    addConstraintContinuations(parts, l + 1, constraints, constraintName)
+    self.addConstraintContinuations(l + 1, constraintName)
 
-    parts.push(
+    self.parts.push(
       indent(l) + '  stack.push(constraint)',
       '',
       indent(l) + '  trampoline()',
-      indent(l) + '}'
+      indent(l) + '}',
+      ''
     )
   })
 }
 
-function addConstraintContinuations (parts, level, constraints, constraintName) {
+Compiler.prototype.addConstraintContinuations = function (level, constraintName) {
+  var self = this
   var l = level || 0
 
-  var constraint = constraints[constraintName]
+  var constraint = this.constraints[constraintName]
 
   var arities = Object.keys(constraint)
   if (arities.length === 1) {
-    parts.push(
+    self.parts.push(
       indent(l) + 'if (arity === ' + arities[0] + ') {',
-      indent(l) + '  constraint.cont = ' + getContinuationReference(constraintName, arities[0], 0),
+      indent(l) + '  constraint.cont = ' + Compiler.getContinuationReference(constraintName, arities[0], 0),
       indent(l) + '} else {',
       indent(l) + '  throw new Error("Undefined constraint: " + functor)',
       indent(l) + '}'
     )
   } else {
-    parts.push(
+    self.parts.push(
       indent(l) + 'switch(arity) {'
     )
     arities.sort(function (a, b) { return a - b }).forEach(function (arity) {
-      parts.push(
+      self.parts.push(
         indent(l + 1) + 'case ' + arity + ':',
-        indent(l + 1) + '  constraint.cont = ' + getContinuationReference(constraintName, arity, 0),
+        indent(l + 1) + '  constraint.cont = ' + Compiler.getContinuationReference(constraintName, arity, 0),
         indent(l + 1) + '  break'
       )
     })
-    parts.push(
+    self.parts.push(
       indent(l + 1) + 'default:',
       indent(l + 1) + '  throw new Error("Undefined constraint: " + functor)'
     )
-    parts.push(
+    self.parts.push(
       indent(l) + '}'
     )
   }
 }
 
-function isBuiltIn (functor) {
+Compiler.prototype.addGuards = function (level, ruleObj, cont) {
+  var self = this
+  var l = level || 0
+
+  var expr = 'if (!('
+  var boolExprs = []
+  ruleObj.guard.forEach(function (guard) {
+    if (guard.type !== 'Replacement') {
+      boolExprs.push(Compiler.generateGuard(guard))
+    }
+  })
+  expr += boolExprs.join(' && ')
+  expr += ')) {'
+
+  this.parts.push(
+    indent(l) + expr,
+    indent(l) + '  constraint.cont = ' + cont,
+    indent(l) + '  stack.push(constraint)',
+    indent(l) + '  return',
+    indent(l) + '}',
+    ''
+  )
+}
+
+
+///////////////////////////////////////////////////////////
+
+Compiler.isBuiltIn = function (functor) {
   if (functor === 'true/0') { return true }
 
   return false
 }
 
-function getContinuationReference (name, arity, no) {
+Compiler.getContinuationReference = function (name, arity, no) {
   return '__' + name + '_' + arity + '_' + no
+}
+
+Compiler.generateGuard = function generateGuard (guard) {
+  if (guard.type === 'BinaryExpression') {
+    return Compiler.generateBinaryExpression(guard)
+  }
+
+  return 'false'
+}
+
+Compiler.generateBinaryExpression = function generateBinaryExpression (expr) {
+  return [ 'left', 'right' ].map(function (part) {
+    if (expr[part].type === 'Identifier') {
+      return expr[part].name
+    }
+    if (expr[part].type === 'Literal') {
+      return escape(expr[part].value)
+    }
+    if (expr[part].type === 'BinaryExpression') {
+      return '(' + generateBinaryExpression(expr[part]) + ')'
+    }
+  }).join(' ' + expr.operator + ' ')
+}
+
+Compiler.generateExpression = function generateExpression (parameter) {
+  if (parameter.type === 'Identifier') {
+    return parameter.name
+  }
+  if (parameter.type === 'BinaryExpression') {
+    return this.generateBinaryExpression(parameter)
+  }
+  if (parameter.type === 'Literal') {
+    return escape(parameter.value)
+  }
 }
