@@ -84,6 +84,12 @@ $ node
 
 Functions encapsulated in `${ ... }` are evaluated at rule application, as for JIT compilation too.
 
+In addition to the traditional compilation mode, CHR.js can create an optimized compiled version using only syncronous functions and constraints, resulting in a way better performance of the generated constraint solver. Use the `--optimized` flag:
+
+```sh
+$ chrjs --optimized example.chr
+```
+
 ## REPL
 
 CHR.js provides a REPL (Read-eval-print loop) to use it interactively with the command line. The `CHR >` REPL can be started by calling `node repl.js` from within the project's root directory. Then it is possible to directly define rules and call constraints:
