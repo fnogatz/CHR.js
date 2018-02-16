@@ -7,6 +7,8 @@ var path = require('path')
 var parse = require('../parser.peg.js').parse
 var util = require('./util')
 
+var version = require('../../package.json').version
+
 var indent = util.indent
 var indentBy = util.indentBy
 var destructuring = util.destructuring
@@ -37,6 +39,9 @@ Compiler.prototype.compile = function () {
   var self = this
 
   this.parts = []
+
+  // add notice
+  this.addNotice()
 
   // add optional preamble
   if (this.parsed.preamble) {
@@ -103,6 +108,24 @@ Compiler.prototype.compile = function () {
   )
 
   return this.parts.join('\n')
+}
+
+Compiler.prototype.addNotice = function (level) {
+  var l = level || 0
+
+  this.parts.push(
+    indent(l) + '/**',
+    indent(l) + '  *',
+    indent(l) + '  *  Automatically generated',
+    indent(l) + '  *  Do not edit',
+    indent(l) + '  *',
+    indent(l) + '  *  Created using CHR.js AOT compiler',
+    indent(l) + '  *  (CHR.js version v' + version + ')',
+    indent(l) + '  *  http://github.com/fnogatz/CHR.js',
+    indent(l) + '  *',
+    indent(l) + '  */',
+    ''
+  )
 }
 
 Compiler.prototype.addStatics = function (level) {
