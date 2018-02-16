@@ -15,6 +15,8 @@ function onFinish (err, code) {
 program
   .usage('[options] <file>')
   .option('-O, --optimized', 'Use optimized compilation (only sync code)')
+  .option('-b, --binding [expr]', 'Bind the CHR solver to this expression', 'module.exports')
+  .option('-f, --function [expr]', 'Bind the CHR solver to this function')
   .parse(process.argv)
 
 var file = program.args[0]

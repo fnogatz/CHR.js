@@ -19,6 +19,7 @@ function transform (program, opts) {
 
 function Compiler (program, opts) {
   opts = opts || {}
+  opts.binding = opts.binding || 'module.exports'
   this.opts = opts
 
   var parsed = parse(program, {
@@ -37,18 +38,27 @@ Compiler.prototype.compile = function () {
 
   this.parts = []
 
-  this.parts.push(
-    indent(0) + 'module.exports = (function () {',
-    ''
-  )
-
-  var l = 1
-
   // add optional preamble
   if (this.parsed.preamble) {
-    this.parts.push(indent(l) + this.parsed.preamble)
-    this.parts.push(indent(l))
+    this.parts.push(
+      this.parsed.preamble,
+      ''
+    )
   }
+
+  if (this.opts.function) {
+    this.parts.push(
+      indent(0) + 'function ' + this.opts.function + ' () {',
+      ''
+    )
+  } else {
+    this.parts.push(
+      indent(0) + this.opts.binding + ' = (function () {',
+      ''
+    )
+  }
+
+  var l = 1
 
   this.addStatics(l)
 
@@ -89,7 +99,7 @@ Compiler.prototype.compile = function () {
 
   this.parts.push(
     indent(1) + 'return chr',
-    indent(0) + '})()'
+    indent(0) + '}' + (this.opts.function ? '' : ')()')
   )
 
   return this.parts.join('\n')
@@ -115,7 +125,8 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   var arity = p[1]
   var no = this.constraints[name][arity]
 
-  var currentConstraintGetsRemoved = false
+  var _currentConstraintGetsRemoved = false
+  var _hadLookup = false
 
   this.parts.push(
     indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint, __n) {',
@@ -125,18 +136,13 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   l++
 
   if (head.arity > 0) {
-    var breakCmds = [
-      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no + 1) + ', 0]',
-      'stack.push(constraint)',
-      'return'
-    ]
+    var breakCmds = Compiler.getJumper(name, arity, no, _hadLookup)
 
     this.parts = this.parts.concat(destructuring(head, 'constraint.args', breakCmds).map(indentBy(l)))
     this.parts.push(
       ''
     )
   }
-
   if (ruleObj.head.length > 1) {
     // have to find partner constraints
 
@@ -169,6 +175,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
       indent(l) + 'var constraints = lookupResult.res',
       ''
     )
+    _hadLookup = true
 
     // start: destructuring_other_constraints
     ruleObj.head.forEach(function (head, headIndex) {
@@ -188,7 +195,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
 
   // start: guards
   if (ruleObj.guard && ruleObj.guard.length > 0) {
-    this.addGuards(l, ruleObj, Compiler.getContinuationReference(name, arity, no + 1))
+    this.addGuards(l, ruleObj, name, arity, no, _hadLookup)
   }
   // end: guards
 
@@ -208,7 +215,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
         // do nothing here - this is handled
         //   by not adding the active constraint
         //   via cont
-        currentConstraintGetsRemoved = true
+        _currentConstraintGetsRemoved = true
       } else {
         // remove constraint from Store
         this.parts.push(
@@ -233,14 +240,11 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   }
   // end: tells
 
-  if (!currentConstraintGetsRemoved) {
+  if (!_currentConstraintGetsRemoved) {
     // put the current constraint back on
     //   the stack and continue
-    this.parts.push(
-      indent(l) + 'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no) + ', __n+1]',
-      indent(l) + 'stack.push(constraint)',
-      indent(l) + 'return'
-    )
+
+    this.parts = this.parts.concat(Compiler.getJumper(name, arity, no, _hadLookup).map(indentBy(l)))
   } else {
     this.parts.push(
       indent(l) + '// active constraint gets removed'
@@ -409,7 +413,7 @@ Compiler.prototype.addConstraintContinuations = function (level, constraintName)
   }
 }
 
-Compiler.prototype.addGuards = function (level, ruleObj, cont) {
+Compiler.prototype.addGuards = function (level, ruleObj, name, arity, no, _hadLookup) {
   var l = level || 0
 
   var expr = 'if (!('
@@ -423,10 +427,10 @@ Compiler.prototype.addGuards = function (level, ruleObj, cont) {
   expr += ')) {'
 
   this.parts.push(
-    indent(l) + expr,
-    indent(l) + '  constraint.cont = [' + cont + ', 0]',
-    indent(l) + '  stack.push(constraint)',
-    indent(l) + '  return',
+    indent(l) + expr
+  )
+  this.parts = this.parts.concat(Compiler.getJumper(name, arity, no, _hadLookup).map(indentBy(l + 1)))
+  this.parts.push(
     indent(l) + '}',
     ''
   )
@@ -442,6 +446,27 @@ Compiler.isBuiltIn = function (functor) {
 
 Compiler.getContinuationReference = function (name, arity, no) {
   return '__' + name + '_' + arity + '_' + no
+}
+
+Compiler.getJumper = function (name, arity, no, _hadLookup) {
+  var parts = []
+
+  if (_hadLookup === true) {
+    parts.push(
+      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no) + ', __n + 1]'
+    )
+  } else {
+    parts.push(
+      'constraint.cont = [' + Compiler.getContinuationReference(name, arity, no + 1) + ', 0]'
+    )
+  }
+
+  parts.push(
+    'stack.push(constraint)',
+    'return'
+  )
+
+  return parts
 }
 
 Compiler.generateGuard = function generateGuard (guard) {
