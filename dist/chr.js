@@ -4622,11 +4622,11 @@ function destructuring (constraint, to, thenStmt) {
 
     var name = parameter.name
     if (parameter.type === 'ArrayExpression') {
-      console.log('This feature needs native Destructuring (Array value).')
+      console.log('// This feature needs native Destructuring (Array value).')
 
       name = parameter.original
     } else if (parameter.type === 'ObjectExpression') {
-      console.info('This feature needs native Destructuring (Object value).')
+      console.info('// This feature needs native Destructuring (Object value).')
 
       name = parameter.original
     }
@@ -4884,7 +4884,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.2.0'
+  CHR.version = '3.3.0'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
