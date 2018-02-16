@@ -52,11 +52,11 @@ function destructuring (constraint, to, thenStmt) {
 
     var name = parameter.name
     if (parameter.type === 'ArrayExpression') {
-      console.log('// This feature needs native Destructuring (Array value).')
+      parts.push('', '// Note: This feature needs native Destructuring (Array value).')
 
       name = parameter.original
     } else if (parameter.type === 'ObjectExpression') {
-      console.info('// This feature needs native Destructuring (Object value).')
+      parts.push('', '// Note: This feature needs native Destructuring (Object value).')
 
       name = parameter.original
     }
