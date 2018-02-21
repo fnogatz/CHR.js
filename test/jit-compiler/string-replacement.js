@@ -284,7 +284,7 @@ test('string replacement specified via tag function', function (t) {
     var chr = new CHR()
 
     // should be avoided; see note above
-    chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements)  // eslint-disable-line no-template-curly-in-string
+    chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements) // eslint-disable-line no-template-curly-in-string
 
     chr.a(42).then(function () {
       t.equal(m, 42)

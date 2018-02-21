@@ -109,7 +109,7 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
     }
 
     // check if already in history
-/*
+    /*
     if (history.lookup(rule, resIds)) {
       continue loopng
     }
