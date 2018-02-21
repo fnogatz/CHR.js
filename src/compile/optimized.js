@@ -150,6 +150,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
 
   var _currentConstraintGetsRemoved = false
   var _hadLookup = false
+  var _breakCmds
 
   this.parts.push(
     indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint, __n) {',
@@ -159,9 +160,9 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   l++
 
   if (head.arity > 0) {
-    var breakCmds = Compiler.getJumper(name, arity, no, _hadLookup)
+    _breakCmds = Compiler.getJumper(name, arity, no, _hadLookup)
 
-    this.parts = this.parts.concat(destructuring(head, 'constraint.args', breakCmds).map(indentBy(l)))
+    this.parts = this.parts.concat(destructuring(head, 'constraint.args', _breakCmds).map(indentBy(l)))
     this.parts.push(
       ''
     )
@@ -207,7 +208,8 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
       }
 
       if (head.arity > 0) {
-        self.parts = self.parts.concat(destructuring(head, 'constraints[' + headIndex + '].args', 'return callback()').map(indentBy(l)))
+        _breakCmds = Compiler.getJumper(name, arity, no, _hadLookup)
+        self.parts = self.parts.concat(destructuring(head, 'constraints[' + headIndex + '].args', _breakCmds).map(indentBy(l)))
         self.parts.push(
           ''
         )
