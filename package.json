@@ -49,7 +49,7 @@
     "tape": "^4.2.0",
     "tconsole": "^1.0.0",
     "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
-    "uglifyify": "^4.0.1"
+    "uglifyify": "^5.0.0"
   },
   "dependencies": {
     "char-spinner": "^1.0.1",
