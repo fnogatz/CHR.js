@@ -48,7 +48,7 @@
     "standard": "^12.0.1",
     "tape": "^4.2.0",
     "tconsole": "^1.0.0",
-    "uglify-js": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
+    "uglify-es": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "uglifyify": "^5.0.0"
   },
   "dependencies": {
