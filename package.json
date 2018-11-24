@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "3.3.5",
+  "version": "3.3.6",
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -39,7 +39,7 @@
     "url": "git://github.com/fnogatz/CHR.js"
   },
   "devDependencies": {
-    "browserify": "^16.0.0",
+    "browserify": "^16.2.3",
     "browserify-versionify": "^1.0.6",
     "colors": "^1.0.3",
     "envify": "^4.0.0",
