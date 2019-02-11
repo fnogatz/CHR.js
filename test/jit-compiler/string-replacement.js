@@ -240,6 +240,8 @@ test('string replacement in guard', function (t) {
       t.end()
     })
   })
+
+  t.end()
 })
 
 test('string replacement specified via tag function', function (t) {
