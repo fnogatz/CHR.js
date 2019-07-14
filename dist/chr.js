@@ -164,6 +164,7 @@ function fromByteArray (uint8) {
 }
 
 },{}],3:[function(require,module,exports){
+(function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
  *
@@ -1942,7 +1943,8 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-},{"base64-js":2,"ieee754":8}],4:[function(require,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"base64-js":2,"buffer":3,"ieee754":8}],4:[function(require,module,exports){
 (function (Buffer){
 var clone = (function() {
 'use strict';
@@ -3186,31 +3188,6 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }
 
 },{}],9:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
-
-},{}],10:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -3395,6 +3372,31 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
+
+},{}],10:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
 
 },{}],11:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
@@ -3993,7 +3995,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":11,"_process":10,"inherits":9}],13:[function(require,module,exports){
+},{"./support/isBuffer":11,"_process":9,"inherits":10}],13:[function(require,module,exports){
 var v1 = require('./v1');
 var v4 = require('./v4');
 
@@ -4502,7 +4504,7 @@ function Compiler (rule, opts) {
   this.opts = {
     this: opts.this || 'this',
     helper: opts.helper || 'self.Helper',
-    defaultCallbackNames: opts.defaultCallbackNames || [ 'cb', 'callback' ]
+    defaultCallbackNames: opts.defaultCallbackNames || ['cb', 'callback']
   }
 }
 
@@ -4674,7 +4676,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
   this.rule.guard.forEach(function (guard, guardIndex) {
     var expr = guardIndex === 0 ? indent(1) : ', '
 
-    if (guard.type === 'Replacement' && guard.hasOwnProperty('num')) {
+    if (guard.type === 'Replacement' && typeof guard.num !== 'undefined') {
       // get parameters via dependency injection
       var params = util.getFunctionParameters(self.replacements[guard.num])
       var lastParamName = util.getLastParamName(params)
@@ -4688,7 +4690,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
       return
     }
 
-    if (guard.type === 'Replacement' && guard.hasOwnProperty('expr')) {
+    if (guard.type === 'Replacement' && typeof guard.expr !== 'undefined') {
       parts = parts.concat(fakeScope(self.scope, guard.expr.original, { isGuard: true }).map(function (row, rowId) {
         if (rowId === 0) {
           return expr + row
@@ -4759,7 +4761,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
+    if (body.type === 'Replacement' && typeof body.expr !== 'undefined') {
       parts = parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
         if (rowId === 0) {
           return 'return ' + row
@@ -4773,7 +4775,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
     var params
     var lastParamName
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
+    if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
       // get parameters via dependency injection
       params = util.getFunctionParameters(self.replacements[body.num])
       lastParamName = util.getLastParamName(params)
@@ -4800,7 +4802,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
+    if (body.type === 'Replacement' && typeof body.func !== 'undefined') {
       var func = eval(body.func) // eslint-disable-line
       params = util.getFunctionParameters(func)
       lastParamName = util.getLastParamName(params, true)
@@ -4849,11 +4851,11 @@ Compiler.prototype.generateTell = function generateTell (body) {
     }).join(', ')
     expr += ')'
 
-    return [ expr ]
+    return [expr]
   }
 
   if (body.type === 'Replacement') {
-    if (body.hasOwnProperty('expr')) {
+    if (typeof body.expr !== 'undefined') {
       return fakeScope(self.scope, body.expr.original)
     }
 
@@ -4866,13 +4868,13 @@ Compiler.prototype.generateTell = function generateTell (body) {
     indent(1) + 'return',
     '}'
   ].join('\n')
-  return [ expr ]
+  return [expr]
 }
 
 Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
   var self = this
 
-  return [ 'left', 'right' ].map(function (part) {
+  return ['left', 'right'].map(function (part) {
     if (expr[part].type === 'Identifier') {
       return expr[part].name
     }
@@ -4983,7 +4985,7 @@ function replaceLastParam (params, replacement) {
 }
 
 function isArrowFunction (func) {
-  return !func.hasOwnProperty('prototype')
+  return !Object.prototype.hasOwnProperty.call(func, 'prototype')
 }
 
 function escape (val) {
@@ -5073,7 +5075,7 @@ function History () {
 }
 
 History.prototype.add = function add (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     this._history[rule] = []
   }
 
@@ -5082,7 +5084,7 @@ History.prototype.add = function add (rule, ids) {
 }
 
 History.prototype.notIn = function notIn (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     return true
   }
 
@@ -5092,7 +5094,7 @@ History.prototype.notIn = function notIn (rule, ids) {
 }
 
 History.prototype.has = function has (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     return false
   }
 
@@ -5214,7 +5216,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.3.10'
+  CHR.version = '3.3.11'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
@@ -7328,7 +7330,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 
       var replacementId
 
-      if (el.hasOwnProperty('num')) {
+      if (typeof el.num !== 'undefined') {
         replacementId = el.num
         if (!globalReplacements[replacementId]) {
           throw new Error('There is no replacement with number ' + replacementId)
@@ -7338,7 +7340,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
         return el
       }
 
-      if (el.hasOwnProperty('expr') && globalReplacements && globalReplacements.length > 0) {
+      if (typeof el.expr !== 'undefined' && globalReplacements && globalReplacements.length > 0) {
         // attention: this mutates the globalReplacement parameter!
         var replacement = globalReplacements.shift()
 
@@ -7437,7 +7439,7 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   })
   var ruleName = rule.Name
 
-  if (this.hasOwnProperty(ruleName)) {
+  if (typeof this[ruleName] !== 'undefined') {
     throw new Error('Rule with name "' + ruleName + '" multiple times specified')
   }
 
@@ -7469,7 +7471,7 @@ Rules.prototype.Reset = function reset () {
   var constraintName
   for (var functor in chr.Constraints) {
     constraintName = functor.split('/')[0]
-    if (chr.hasOwnProperty(constraintName)) {
+    if (typeof chr[constraintName] !== 'undefined') {
       delete chr[constraintName]
     }
   }
@@ -7571,10 +7573,10 @@ Store.prototype._getNewConstraintId = function _getNewConstraintId () {
 
 Store.prototype._addToIndex = function _addToIndex (constraint) {
   var index = this._index
-  if (!index.hasOwnProperty(constraint.name)) {
+  if (typeof index[constraint.name] === 'undefined') {
     index[constraint.name] = {}
   }
-  if (!index[constraint.name].hasOwnProperty(constraint.arity)) {
+  if (typeof index[constraint.name][constraint.arity] === 'undefined') {
     index[constraint.name][constraint.arity] = {}
   }
 
@@ -7600,7 +7602,8 @@ Store.prototype.args = function args (id) {
 Store.prototype.lookup = function lookup (name, arity) {
   var index = this._index
 
-  if (index.hasOwnProperty(name) && index[name].hasOwnProperty(arity)) {
+  if (typeof index[name] !== 'undefined' &&
+    typeof index[name][arity] !== 'undefined') {
     return Object.keys(index[name][arity])
   }
 
