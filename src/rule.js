@@ -86,7 +86,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 
       var replacementId
 
-      if (el.hasOwnProperty('num')) {
+      if (typeof el.num !== 'undefined') {
         replacementId = el.num
         if (!globalReplacements[replacementId]) {
           throw new Error('There is no replacement with number ' + replacementId)
@@ -96,7 +96,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
         return el
       }
 
-      if (el.hasOwnProperty('expr') && globalReplacements && globalReplacements.length > 0) {
+      if (typeof el.expr !== 'undefined' && globalReplacements && globalReplacements.length > 0) {
         // attention: this mutates the globalReplacement parameter!
         var replacement = globalReplacements.shift()
 

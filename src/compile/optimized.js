@@ -84,10 +84,10 @@ Compiler.prototype.compile = function () {
       var p = functor.split('/')
       var name = p[0]
       var arity = p[1]
-      if (!self.constraints.hasOwnProperty(name)) {
+      if (typeof self.constraints[name] === 'undefined') {
         self.constraints[name] = {}
       }
-      if (!self.constraints[name].hasOwnProperty(arity)) {
+      if (typeof self.constraints[name][arity] === 'undefined') {
         self.constraints[name][arity] = 0
       }
     })
@@ -311,7 +311,7 @@ Compiler.prototype.addTell = function (level, body) {
   var params
   var lastParamName
 
-  if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
+  if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
     // get parameters via dependency injection
     params = util.getFunctionParameters(self.replacements[body.num])
     lastParamName = util.getLastParamName(params)
@@ -326,7 +326,7 @@ Compiler.prototype.addTell = function (level, body) {
     return
   }
 
-  if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
+  if (body.type === 'Replacement' && typeof body.func !== 'undefined') {
     var func = eval(body.func) // eslint-disable-line
     params = util.getFunctionParameters(func)
     lastParamName = util.getLastParamName(params, true)
@@ -503,7 +503,7 @@ Compiler.generateGuard = function generateGuard (guard) {
 }
 
 Compiler.generateBinaryExpression = function generateBinaryExpression (expr) {
-  return [ 'left', 'right' ].map(function (part) {
+  return ['left', 'right'].map(function (part) {
     if (expr[part].type === 'Identifier') {
       return expr[part].name
     }

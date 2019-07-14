@@ -83,7 +83,7 @@ function replaceLastParam (params, replacement) {
 }
 
 function isArrowFunction (func) {
-  return !func.hasOwnProperty('prototype')
+  return !Object.prototype.hasOwnProperty.call(func, 'prototype')
 }
 
 function escape (val) {

@@ -3,8 +3,8 @@ var Store = require('../src/store')
 
 module.exports = {
   fields: {
-    'Constraint': function () { return this.toString() },
-    'ID': function () { return this.id }
+    Constraint: function () { return this.toString() },
+    ID: function () { return this.id }
   },
   defaultFields: [
     'Constraint'

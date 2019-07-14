@@ -6,7 +6,8 @@ for (var key in store) {
 }
 
 config.test = function () {
-  return this.hasOwnProperty('Store') && this.hasOwnProperty('History')
+  return (typeof this.Store !== 'undefined' &&
+    typeof this.History !== 'undefined')
 }
 
 config.insert = function (table, object, fields) {

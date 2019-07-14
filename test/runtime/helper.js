@@ -3,7 +3,7 @@ var test = require('tape')
 var Helper = require('../../runtime').Helper
 
 test('Runtime.Helper.allDifferent', function (t) {
-  t.ok(Helper.hasOwnProperty('allDifferent'))
+  t.ok(typeof Helper.allDifferent === 'function')
 
   t.ok(Helper.allDifferent([1, 2, 3]))
   t.ok(Helper.allDifferent([1, 2, 'a']))
@@ -18,7 +18,7 @@ test('Runtime.Helper.allDifferent', function (t) {
 })
 
 test('Runtime.Helper.forEach', function (t) {
-  t.ok(Helper.hasOwnProperty('forEach'))
+  t.ok(typeof Helper.forEach === 'function')
 
   t.test('Single single-element array', function (t) {
     var input = [['3']]

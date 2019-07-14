@@ -34,7 +34,7 @@ function Store () {
 }
 
 Store.prototype.add = function (constraint) {
-  if (!this._index.hasOwnProperty(constraint.functor)) {
+  if (typeof this._index[constraint.functor] === 'undefined') {
     this._index[constraint.functor] = []
   }
   constraint.id = this._nextId
@@ -73,8 +73,8 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
   for (i = 0; i <= lastPattern; i++) {
     if (patterns[i] === '_') {
       // "_" is a placeholder for the given `constraint`
-      arr[i] = [ constraint ]
-    } else if (this._index.hasOwnProperty(patterns[i])) {
+      arr[i] = [constraint]
+    } else if (typeof this._index[patterns[i]] !== 'undefined') {
       arr[i] = this._index[patterns[i]]
     } else {
       // not a single element for this functor

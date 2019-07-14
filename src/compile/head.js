@@ -19,7 +19,7 @@ function Compiler (rule, opts) {
   this.opts = {
     this: opts.this || 'this',
     helper: opts.helper || 'self.Helper',
-    defaultCallbackNames: opts.defaultCallbackNames || [ 'cb', 'callback' ]
+    defaultCallbackNames: opts.defaultCallbackNames || ['cb', 'callback']
   }
 }
 
@@ -191,7 +191,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
   this.rule.guard.forEach(function (guard, guardIndex) {
     var expr = guardIndex === 0 ? indent(1) : ', '
 
-    if (guard.type === 'Replacement' && guard.hasOwnProperty('num')) {
+    if (guard.type === 'Replacement' && typeof guard.num !== 'undefined') {
       // get parameters via dependency injection
       var params = util.getFunctionParameters(self.replacements[guard.num])
       var lastParamName = util.getLastParamName(params)
@@ -205,7 +205,7 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
       return
     }
 
-    if (guard.type === 'Replacement' && guard.hasOwnProperty('expr')) {
+    if (guard.type === 'Replacement' && typeof guard.expr !== 'undefined') {
       parts = parts.concat(fakeScope(self.scope, guard.expr.original, { isGuard: true }).map(function (row, rowId) {
         if (rowId === 0) {
           return expr + row
@@ -276,7 +276,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('expr')) {
+    if (body.type === 'Replacement' && typeof body.expr !== 'undefined') {
       parts = parts.concat(fakeScope(self.scope, body.expr.original).map(function (row, rowId) {
         if (rowId === 0) {
           return 'return ' + row
@@ -290,7 +290,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
     var params
     var lastParamName
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('num')) {
+    if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
       // get parameters via dependency injection
       params = util.getFunctionParameters(self.replacements[body.num])
       lastParamName = util.getLastParamName(params)
@@ -317,7 +317,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    if (body.type === 'Replacement' && body.hasOwnProperty('func')) {
+    if (body.type === 'Replacement' && typeof body.func !== 'undefined') {
       var func = eval(body.func) // eslint-disable-line
       params = util.getFunctionParameters(func)
       lastParamName = util.getLastParamName(params, true)
@@ -366,11 +366,11 @@ Compiler.prototype.generateTell = function generateTell (body) {
     }).join(', ')
     expr += ')'
 
-    return [ expr ]
+    return [expr]
   }
 
   if (body.type === 'Replacement') {
-    if (body.hasOwnProperty('expr')) {
+    if (typeof body.expr !== 'undefined') {
       return fakeScope(self.scope, body.expr.original)
     }
 
@@ -383,13 +383,13 @@ Compiler.prototype.generateTell = function generateTell (body) {
     indent(1) + 'return',
     '}'
   ].join('\n')
-  return [ expr ]
+  return [expr]
 }
 
 Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
   var self = this
 
-  return [ 'left', 'right' ].map(function (part) {
+  return ['left', 'right'].map(function (part) {
     if (expr[part].type === 'Identifier') {
       return expr[part].name
     }

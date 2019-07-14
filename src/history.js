@@ -5,7 +5,7 @@ function History () {
 }
 
 History.prototype.add = function add (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     this._history[rule] = []
   }
 
@@ -14,7 +14,7 @@ History.prototype.add = function add (rule, ids) {
 }
 
 History.prototype.notIn = function notIn (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     return true
   }
 
@@ -24,7 +24,7 @@ History.prototype.notIn = function notIn (rule, ids) {
 }
 
 History.prototype.has = function has (rule, ids) {
-  if (!this._history.hasOwnProperty(rule)) {
+  if (typeof this._history[rule] === 'undefined') {
     return false
   }
 

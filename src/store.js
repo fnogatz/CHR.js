@@ -63,10 +63,10 @@ Store.prototype._getNewConstraintId = function _getNewConstraintId () {
 
 Store.prototype._addToIndex = function _addToIndex (constraint) {
   var index = this._index
-  if (!index.hasOwnProperty(constraint.name)) {
+  if (typeof index[constraint.name] === 'undefined') {
     index[constraint.name] = {}
   }
-  if (!index[constraint.name].hasOwnProperty(constraint.arity)) {
+  if (typeof index[constraint.name][constraint.arity] === 'undefined') {
     index[constraint.name][constraint.arity] = {}
   }
 
@@ -92,7 +92,8 @@ Store.prototype.args = function args (id) {
 Store.prototype.lookup = function lookup (name, arity) {
   var index = this._index
 
-  if (index.hasOwnProperty(name) && index[name].hasOwnProperty(arity)) {
+  if (typeof index[name] !== 'undefined' &&
+    typeof index[name][arity] !== 'undefined') {
     return Object.keys(index[name][arity])
   }
 

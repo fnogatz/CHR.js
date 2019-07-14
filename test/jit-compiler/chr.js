@@ -43,12 +43,11 @@ test('chr.Constraints', function (t) {
     chr('first @ a ==> b, a(1)')
 
     ;['a/0', 'a/1', 'b/0'].forEach(function (functor) {
-      t.ok(chr.Constraints.hasOwnProperty(functor))
       t.equal(typeof chr.Constraints[functor], 'object')
       t.ok(chr.Constraints[functor] instanceof Array)
     })
 
-    t.deepEqual(chr.Constraints['a/0'], [ 'first' ], 'a/0 is only in the head of rule "first"')
+    t.deepEqual(chr.Constraints['a/0'], ['first'], 'a/0 is only in the head of rule "first"')
     t.deepEqual(chr.Constraints['a/1'], [], 'a/1 is in no rule head')
     t.deepEqual(chr.Constraints['b/0'], [], 'b/0 is in no rule head')
 
@@ -73,14 +72,13 @@ test('chr()', function (t) {
     chr('a, b ==> c')
 
     ;['a', 'b', 'c'].forEach(function (constraintName) {
-      t.ok(chr.hasOwnProperty(constraintName))
       t.equal(typeof chr[constraintName], 'function', 'constraint caller is a function')
     })
 
-    t.notOk(chr.hasOwnProperty('d'), 'constraint d not yet defined')
+    t.equal(typeof chr.d, 'undefined', 'constraint d not yet defined')
 
     chr('d ==> a')
-    t.ok(chr.hasOwnProperty('d'), 'constraint d now defined')
+    t.ok(chr.d, 'constraint d now defined')
 
     t.end()
   })

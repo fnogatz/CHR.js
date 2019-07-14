@@ -18,7 +18,7 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   })
   var ruleName = rule.Name
 
-  if (this.hasOwnProperty(ruleName)) {
+  if (typeof this[ruleName] !== 'undefined') {
     throw new Error('Rule with name "' + ruleName + '" multiple times specified')
   }
 
@@ -50,7 +50,7 @@ Rules.prototype.Reset = function reset () {
   var constraintName
   for (var functor in chr.Constraints) {
     constraintName = functor.split('/')[0]
-    if (chr.hasOwnProperty(constraintName)) {
+    if (typeof chr[constraintName] !== 'undefined') {
       delete chr[constraintName]
     }
   }

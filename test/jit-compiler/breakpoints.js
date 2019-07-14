@@ -50,7 +50,7 @@ test('Rule.Brekpoints.onTry', function (t) {
     chr('r3 @ a ==> d')
 
     var called = []
-    var expected = [ 'r1', 'r2', 'r3' ]
+    var expected = ['r1', 'r2', 'r3']
 
     chr.Rules.r1.Breakpoints.onTry = function (data, callback) {
       called.push(data.rule)

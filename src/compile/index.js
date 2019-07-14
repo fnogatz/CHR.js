@@ -53,7 +53,8 @@ function transform (program, opts) {
     // replace replacements
     ;['guard', 'body'].forEach(function (location) {
       ruleObj[location] = ruleObj[location].map(function (element) {
-        if (element.type !== 'Replacement' || !element.hasOwnProperty('original')) {
+        if (element.type !== 'Replacement' ||
+          typeof element.hasOwnProperty.original === 'undefined') {
           return element
         }
 
