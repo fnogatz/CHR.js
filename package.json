@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "char-spinner": "^1.0.1",
-    "commander": "^2.20.0",
+    "commander": "^3.0.0",
     "concat-stream": "^2.0.0",
     "easy-table": "^1.0.0",
     "uuid": "^3.2.1"
