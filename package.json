@@ -44,7 +44,7 @@
     "colors": "^1.0.3",
     "envify": "^4.0.0",
     "pegjs": "^0.10.0",
-    "standard": "^13.0.2",
+    "standard": "^14.1.0",
     "tape": "^4.10.0",
     "tconsole": "^1.0.0",
     "uglify-es": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
