@@ -1,6 +1,6 @@
 # CHR.js
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/fnogatz/CHR.js.svg)](https://greenkeeper.io/)
+
 
 Compile and run Constraint Handling Rules (CHR) in JavaScript.
 
