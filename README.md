@@ -1,7 +1,5 @@
 # CHR.js
 
-
-
 Compile and run Constraint Handling Rules (CHR) in JavaScript.
 
 CHR.js is a just-in-time (JIT) compiler for Constraint Handling Rules, embedded in JavaScript. For better runtime performance it supports ahead-of-time (AOT) compilation too, either by its command line tool `chrjs` or [babel-plugin-chr](https://github.com/fnogatz/babel-plugin-chr), a plugin for Babel.
