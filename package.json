@@ -45,17 +45,17 @@
     "envify": "^4.0.0",
     "pegjs": "^0.10.0",
     "standard": "^14.1.0",
-    "tape": "^4.10.0",
+    "tape": "^5.0.1",
     "tconsole": "^1.0.0",
     "uglify-es": "git+https://github.com/mishoo/UglifyJS2.git#harmony",
     "uglifyify": "^5.0.0"
   },
   "dependencies": {
     "char-spinner": "^1.0.1",
-    "commander": "^4.0.0",
+    "commander": "^6.0.0",
     "concat-stream": "^2.0.0",
     "easy-table": "^1.1.1",
-    "uuid": "^7.0.3"
+    "uuid": "^8.3.0"
   },
   "standard": {
     "ignore": [
