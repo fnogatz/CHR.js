@@ -178,10 +178,6 @@ function fromByteArray (uint8) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
-var customInspectSymbol =
-  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
-    ? Symbol.for('nodejs.util.inspect.custom')
-    : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -218,9 +214,7 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    var proto = { foo: function () { return 42 } }
-    Object.setPrototypeOf(proto, Uint8Array.prototype)
-    Object.setPrototypeOf(arr, proto)
+    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
     return arr.foo() === 42
   } catch (e) {
     return false
@@ -249,7 +243,7 @@ function createBuffer (length) {
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  Object.setPrototypeOf(buf, Buffer.prototype)
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -299,7 +293,7 @@ function from (value, encodingOrOffset, length) {
   }
 
   if (value == null) {
-    throw new TypeError(
+    throw TypeError(
       'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
       'or Array-like Object. Received type ' + (typeof value)
     )
@@ -307,12 +301,6 @@ function from (value, encodingOrOffset, length) {
 
   if (isInstance(value, ArrayBuffer) ||
       (value && isInstance(value.buffer, ArrayBuffer))) {
-    return fromArrayBuffer(value, encodingOrOffset, length)
-  }
-
-  if (typeof SharedArrayBuffer !== 'undefined' &&
-      (isInstance(value, SharedArrayBuffer) ||
-      (value && isInstance(value.buffer, SharedArrayBuffer)))) {
     return fromArrayBuffer(value, encodingOrOffset, length)
   }
 
@@ -357,8 +345,8 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
-Object.setPrototypeOf(Buffer, Uint8Array)
+Buffer.prototype.__proto__ = Uint8Array.prototype
+Buffer.__proto__ = Uint8Array
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -462,8 +450,7 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(buf, Buffer.prototype)
-
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -785,9 +772,6 @@ Buffer.prototype.inspect = function inspect () {
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
 }
-if (customInspectSymbol) {
-  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
-}
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
   if (isInstance(target, Uint8Array)) {
@@ -913,7 +897,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -1242,7 +1226,7 @@ function hexSlice (buf, start, end) {
 
   var out = ''
   for (var i = start; i < end; ++i) {
-    out += hexSliceLookupTable[buf[i]]
+    out += toHex(buf[i])
   }
   return out
 }
@@ -1279,8 +1263,7 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(newBuf, Buffer.prototype)
-
+  newBuf.__proto__ = Buffer.prototype
   return newBuf
 }
 
@@ -1769,8 +1752,6 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
     }
   } else if (typeof val === 'number') {
     val = val & 255
-  } else if (typeof val === 'boolean') {
-    val = Number(val)
   }
 
   // Invalid ranges are not set to a default, so can range check early.
@@ -1826,6 +1807,11 @@ function base64clean (str) {
     str = str + '='
   }
   return str
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
 }
 
 function utf8ToBytes (string, units) {
@@ -1957,20 +1943,6 @@ function numberIsNaN (obj) {
   // For IE11 support
   return obj !== obj // eslint-disable-line no-self-compare
 }
-
-// Create lookup table for `toString('hex')`
-// See: https://github.com/feross/buffer/issues/219
-var hexSliceLookupTable = (function () {
-  var alphabet = '0123456789abcdef'
-  var table = new Array(256)
-  for (var i = 0; i < 16; ++i) {
-    var i16 = i * 16
-    for (var j = 0; j < 16; ++j) {
-      table[i16 + j] = alphabet[i] + alphabet[j]
-    }
-  }
-  return table
-})()
 
 }).call(this,require("buffer").Buffer)
 },{"base64-js":2,"buffer":3,"ieee754":8}],4:[function(require,module,exports){
@@ -2605,7 +2577,7 @@ Table.prototype.log = function() {
   console.log(this.toString())
 }
 
-},{"ansi-regex":1,"wcwidth":24}],7:[function(require,module,exports){
+},{"ansi-regex":1,"wcwidth":29}],7:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -4030,34 +4002,6 @@ function hasOwnProperty(obj, prop) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex; // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
-
-  return [bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], '-', bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]], bth[buf[i++]]].join('');
-}
-
-var _default = bytesToUuid;
-exports.default = _default;
-module.exports = exports.default;
-},{}],14:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 Object.defineProperty(exports, "v1", {
   enumerable: true,
   get: function () {
@@ -4082,6 +4026,36 @@ Object.defineProperty(exports, "v5", {
     return _v4.default;
   }
 });
+Object.defineProperty(exports, "NIL", {
+  enumerable: true,
+  get: function () {
+    return _nil.default;
+  }
+});
+Object.defineProperty(exports, "version", {
+  enumerable: true,
+  get: function () {
+    return _version.default;
+  }
+});
+Object.defineProperty(exports, "validate", {
+  enumerable: true,
+  get: function () {
+    return _validate.default;
+  }
+});
+Object.defineProperty(exports, "stringify", {
+  enumerable: true,
+  get: function () {
+    return _stringify.default;
+  }
+});
+Object.defineProperty(exports, "parse", {
+  enumerable: true,
+  get: function () {
+    return _parse.default;
+  }
+});
 
 var _v = _interopRequireDefault(require("./v1.js"));
 
@@ -4091,8 +4065,18 @@ var _v3 = _interopRequireDefault(require("./v4.js"));
 
 var _v4 = _interopRequireDefault(require("./v5.js"));
 
+var _nil = _interopRequireDefault(require("./nil.js"));
+
+var _version = _interopRequireDefault(require("./version.js"));
+
+var _validate = _interopRequireDefault(require("./validate.js"));
+
+var _stringify = _interopRequireDefault(require("./stringify.js"));
+
+var _parse = _interopRequireDefault(require("./parse.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-},{"./v1.js":18,"./v3.js":19,"./v4.js":21,"./v5.js":22}],15:[function(require,module,exports){
+},{"./nil.js":15,"./parse.js":16,"./stringify.js":20,"./v1.js":21,"./v3.js":22,"./v4.js":24,"./v5.js":25,"./validate.js":26,"./version.js":27}],14:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4121,12 +4105,14 @@ exports.default = void 0;
  * See http://pajhome.org.uk/crypt/md5 for more info.
  */
 function md5(bytes) {
-  if (typeof bytes == 'string') {
-    var msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
+  if (typeof bytes === 'string') {
+    const msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
 
-    bytes = new Array(msg.length);
+    bytes = new Uint8Array(msg.length);
 
-    for (var i = 0; i < msg.length; i++) bytes[i] = msg.charCodeAt(i);
+    for (let i = 0; i < msg.length; ++i) {
+      bytes[i] = msg.charCodeAt(i);
+    }
   }
 
   return md5ToHexEncodedArray(wordsToMd5(bytesToWords(bytes), bytes.length * 8));
@@ -4137,20 +4123,25 @@ function md5(bytes) {
 
 
 function md5ToHexEncodedArray(input) {
-  var i;
-  var x;
-  var output = [];
-  var length32 = input.length * 32;
-  var hexTab = '0123456789abcdef';
-  var hex;
+  const output = [];
+  const length32 = input.length * 32;
+  const hexTab = '0123456789abcdef';
 
-  for (i = 0; i < length32; i += 8) {
-    x = input[i >> 5] >>> i % 32 & 0xff;
-    hex = parseInt(hexTab.charAt(x >>> 4 & 0x0f) + hexTab.charAt(x & 0x0f), 16);
+  for (let i = 0; i < length32; i += 8) {
+    const x = input[i >> 5] >>> i % 32 & 0xff;
+    const hex = parseInt(hexTab.charAt(x >>> 4 & 0x0f) + hexTab.charAt(x & 0x0f), 16);
     output.push(hex);
   }
 
   return output;
+}
+/**
+ * Calculate output length with padding and bit length
+ */
+
+
+function getOutputLength(inputLength8) {
+  return (inputLength8 + 64 >>> 9 << 4) + 14 + 1;
 }
 /*
  * Calculate the MD5 of an array of little-endian words, and a bit length.
@@ -4160,22 +4151,17 @@ function md5ToHexEncodedArray(input) {
 function wordsToMd5(x, len) {
   /* append padding */
   x[len >> 5] |= 0x80 << len % 32;
-  x[(len + 64 >>> 9 << 4) + 14] = len;
-  var i;
-  var olda;
-  var oldb;
-  var oldc;
-  var oldd;
-  var a = 1732584193;
-  var b = -271733879;
-  var c = -1732584194;
-  var d = 271733878;
+  x[getOutputLength(len) - 1] = len;
+  let a = 1732584193;
+  let b = -271733879;
+  let c = -1732584194;
+  let d = 271733878;
 
-  for (i = 0; i < x.length; i += 16) {
-    olda = a;
-    oldb = b;
-    oldc = c;
-    oldd = d;
+  for (let i = 0; i < x.length; i += 16) {
+    const olda = a;
+    const oldb = b;
+    const oldc = c;
+    const oldd = d;
     a = md5ff(a, b, c, d, x[i], 7, -680876936);
     d = md5ff(d, a, b, c, x[i + 1], 12, -389564586);
     c = md5ff(c, d, a, b, x[i + 2], 17, 606105819);
@@ -4255,17 +4241,14 @@ function wordsToMd5(x, len) {
 
 
 function bytesToWords(input) {
-  var i;
-  var output = [];
-  output[(input.length >> 2) - 1] = undefined;
-
-  for (i = 0; i < output.length; i += 1) {
-    output[i] = 0;
+  if (input.length === 0) {
+    return [];
   }
 
-  var length8 = input.length * 8;
+  const length8 = input.length * 8;
+  const output = new Uint32Array(getOutputLength(length8));
 
-  for (i = 0; i < length8; i += 8) {
+  for (let i = 0; i < length8; i += 8) {
     output[i >> 5] |= (input[i / 8] & 0xff) << i % 32;
   }
 
@@ -4278,8 +4261,8 @@ function bytesToWords(input) {
 
 
 function safeAdd(x, y) {
-  var lsw = (x & 0xffff) + (y & 0xffff);
-  var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+  const lsw = (x & 0xffff) + (y & 0xffff);
+  const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
   return msw << 16 | lsw & 0xffff;
 }
 /*
@@ -4317,8 +4300,71 @@ function md5ii(a, b, c, d, x, s, t) {
 
 var _default = md5;
 exports.default = _default;
-module.exports = exports.default;
+},{}],15:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = '00000000-0000-0000-0000-000000000000';
+exports.default = _default;
 },{}],16:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(require("./validate.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function parse(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  let v;
+  const arr = new Uint8Array(16); // Parse ########-....-....-....-............
+
+  arr[0] = (v = parseInt(uuid.slice(0, 8), 16)) >>> 24;
+  arr[1] = v >>> 16 & 0xff;
+  arr[2] = v >>> 8 & 0xff;
+  arr[3] = v & 0xff; // Parse ........-####-....-....-............
+
+  arr[4] = (v = parseInt(uuid.slice(9, 13), 16)) >>> 8;
+  arr[5] = v & 0xff; // Parse ........-....-####-....-............
+
+  arr[6] = (v = parseInt(uuid.slice(14, 18), 16)) >>> 8;
+  arr[7] = v & 0xff; // Parse ........-....-....-####-............
+
+  arr[8] = (v = parseInt(uuid.slice(19, 23), 16)) >>> 8;
+  arr[9] = v & 0xff; // Parse ........-....-....-....-############
+  // (Use "/" to avoid 32-bit truncation when bit-shifting high-order bytes)
+
+  arr[10] = (v = parseInt(uuid.slice(24, 36), 16)) / 0x10000000000 & 0xff;
+  arr[11] = v / 0x100000000 & 0xff;
+  arr[12] = v >>> 24 & 0xff;
+  arr[13] = v >>> 16 & 0xff;
+  arr[14] = v >>> 8 & 0xff;
+  arr[15] = v & 0xff;
+  return arr;
+}
+
+var _default = parse;
+exports.default = _default;
+},{"./validate.js":26}],17:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var _default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+exports.default = _default;
+},{}],18:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4330,8 +4376,8 @@ exports.default = rng;
 // generators (like Math.random()).
 // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation. Also,
 // find the complete implementation of crypto (msCrypto) on IE11.
-var getRandomValues = typeof crypto != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto != 'undefined' && typeof msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto);
-var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+const getRandomValues = typeof crypto !== 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto) || typeof msCrypto !== 'undefined' && typeof msCrypto.getRandomValues === 'function' && msCrypto.getRandomValues.bind(msCrypto);
+const rnds8 = new Uint8Array(16);
 
 function rng() {
   if (!getRandomValues) {
@@ -4340,9 +4386,7 @@ function rng() {
 
   return getRandomValues(rnds8);
 }
-
-module.exports = exports.default;
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4373,52 +4417,61 @@ function ROTL(x, n) {
 }
 
 function sha1(bytes) {
-  var K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
-  var H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
+  const K = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
+  const H = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
 
-  if (typeof bytes == 'string') {
-    var msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
+  if (typeof bytes === 'string') {
+    const msg = unescape(encodeURIComponent(bytes)); // UTF8 escape
 
-    bytes = new Array(msg.length);
+    bytes = [];
 
-    for (var i = 0; i < msg.length; i++) bytes[i] = msg.charCodeAt(i);
+    for (let i = 0; i < msg.length; ++i) {
+      bytes.push(msg.charCodeAt(i));
+    }
+  } else if (!Array.isArray(bytes)) {
+    // Convert Array-like to Array
+    bytes = Array.prototype.slice.call(bytes);
   }
 
   bytes.push(0x80);
-  var l = bytes.length / 4 + 2;
-  var N = Math.ceil(l / 16);
-  var M = new Array(N);
+  const l = bytes.length / 4 + 2;
+  const N = Math.ceil(l / 16);
+  const M = new Array(N);
 
-  for (var i = 0; i < N; i++) {
-    M[i] = new Array(16);
+  for (let i = 0; i < N; ++i) {
+    const arr = new Uint32Array(16);
 
-    for (var j = 0; j < 16; j++) {
-      M[i][j] = bytes[i * 64 + j * 4] << 24 | bytes[i * 64 + j * 4 + 1] << 16 | bytes[i * 64 + j * 4 + 2] << 8 | bytes[i * 64 + j * 4 + 3];
+    for (let j = 0; j < 16; ++j) {
+      arr[j] = bytes[i * 64 + j * 4] << 24 | bytes[i * 64 + j * 4 + 1] << 16 | bytes[i * 64 + j * 4 + 2] << 8 | bytes[i * 64 + j * 4 + 3];
     }
+
+    M[i] = arr;
   }
 
   M[N - 1][14] = (bytes.length - 1) * 8 / Math.pow(2, 32);
   M[N - 1][14] = Math.floor(M[N - 1][14]);
   M[N - 1][15] = (bytes.length - 1) * 8 & 0xffffffff;
 
-  for (var i = 0; i < N; i++) {
-    var W = new Array(80);
+  for (let i = 0; i < N; ++i) {
+    const W = new Uint32Array(80);
 
-    for (var t = 0; t < 16; t++) W[t] = M[i][t];
+    for (let t = 0; t < 16; ++t) {
+      W[t] = M[i][t];
+    }
 
-    for (var t = 16; t < 80; t++) {
+    for (let t = 16; t < 80; ++t) {
       W[t] = ROTL(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
     }
 
-    var a = H[0];
-    var b = H[1];
-    var c = H[2];
-    var d = H[3];
-    var e = H[4];
+    let a = H[0];
+    let b = H[1];
+    let c = H[2];
+    let d = H[3];
+    let e = H[4];
 
-    for (var t = 0; t < 80; t++) {
-      var s = Math.floor(t / 20);
-      var T = ROTL(a, 5) + f(s, b, c, d) + e + K[s] + W[t] >>> 0;
+    for (let t = 0; t < 80; ++t) {
+      const s = Math.floor(t / 20);
+      const T = ROTL(a, 5) + f(s, b, c, d) + e + K[s] + W[t] >>> 0;
       e = d;
       d = c;
       c = ROTL(b, 30) >>> 0;
@@ -4438,8 +4491,47 @@ function sha1(bytes) {
 
 var _default = sha1;
 exports.default = _default;
-module.exports = exports.default;
-},{}],18:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(require("./validate.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+const byteToHex = [];
+
+for (let i = 0; i < 256; ++i) {
+  byteToHex.push((i + 0x100).toString(16).substr(1));
+}
+
+function stringify(arr, offset = 0) {
+  // Note: Be careful editing this code!  It's been tuned for performance
+  // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
+  const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + '-' + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + '-' + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + '-' + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + '-' + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase(); // Consistency check for valid UUID.  If this throws, it's likely due to one
+  // of the following:
+  // - One or more input array values don't map to a hex octet (leading to
+  // "undefined" in the uuid)
+  // - Invalid input values for the RFC `version` or `variant` fields
+
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Stringified UUID is invalid');
+  }
+
+  return uuid;
+}
+
+var _default = stringify;
+exports.default = _default;
+},{"./validate.js":26}],21:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4449,7 +4541,7 @@ exports.default = void 0;
 
 var _rng = _interopRequireDefault(require("./rng.js"));
 
-var _bytesToUuid = _interopRequireDefault(require("./bytesToUuid.js"));
+var _stringify = _interopRequireDefault(require("./stringify.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4457,25 +4549,25 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 //
 // Inspired by https://github.com/LiosK/UUID.js
 // and http://docs.python.org/library/uuid.html
-var _nodeId;
+let _nodeId;
 
-var _clockseq; // Previous uuid creation time
+let _clockseq; // Previous uuid creation time
 
 
-var _lastMSecs = 0;
-var _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
+let _lastMSecs = 0;
+let _lastNSecs = 0; // See https://github.com/uuidjs/uuid for API details
 
 function v1(options, buf, offset) {
-  var i = buf && offset || 0;
-  var b = buf || [];
+  let i = buf && offset || 0;
+  const b = buf || new Array(16);
   options = options || {};
-  var node = options.node || _nodeId;
-  var clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
+  let node = options.node || _nodeId;
+  let clockseq = options.clockseq !== undefined ? options.clockseq : _clockseq; // node and clockseq need to be initialized to random values if they're not
   // specified.  We do this lazily to minimize issues related to insufficient
   // system entropy.  See #189
 
   if (node == null || clockseq == null) {
-    var seedBytes = options.random || (options.rng || _rng.default)();
+    const seedBytes = options.random || (options.rng || _rng.default)();
 
     if (node == null) {
       // Per 4.5, create and 48-bit node id, (47 random bits + multicast bit = 1)
@@ -4492,12 +4584,12 @@ function v1(options, buf, offset) {
   // (100-nanoseconds offset from msecs) since unix epoch, 1970-01-01 00:00.
 
 
-  var msecs = options.msecs !== undefined ? options.msecs : new Date().getTime(); // Per 4.2.1.2, use count of uuid's generated during the current clock
+  let msecs = options.msecs !== undefined ? options.msecs : Date.now(); // Per 4.2.1.2, use count of uuid's generated during the current clock
   // cycle to simulate higher resolution clock
 
-  var nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
+  let nsecs = options.nsecs !== undefined ? options.nsecs : _lastNSecs + 1; // Time since last uuid creation (in msecs)
 
-  var dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
+  const dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 10000; // Per 4.2.1.2, Bump clockseq on clock regression
 
   if (dt < 0 && options.clockseq === undefined) {
     clockseq = clockseq + 1 & 0x3fff;
@@ -4520,13 +4612,13 @@ function v1(options, buf, offset) {
 
   msecs += 12219292800000; // `time_low`
 
-  var tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
+  const tl = ((msecs & 0xfffffff) * 10000 + nsecs) % 0x100000000;
   b[i++] = tl >>> 24 & 0xff;
   b[i++] = tl >>> 16 & 0xff;
   b[i++] = tl >>> 8 & 0xff;
   b[i++] = tl & 0xff; // `time_mid`
 
-  var tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
+  const tmh = msecs / 0x100000000 * 10000 & 0xfffffff;
   b[i++] = tmh >>> 8 & 0xff;
   b[i++] = tmh & 0xff; // `time_high_and_version`
 
@@ -4538,17 +4630,16 @@ function v1(options, buf, offset) {
 
   b[i++] = clockseq & 0xff; // `node`
 
-  for (var n = 0; n < 6; ++n) {
+  for (let n = 0; n < 6; ++n) {
     b[i + n] = node[n];
   }
 
-  return buf ? buf : (0, _bytesToUuid.default)(b);
+  return buf || (0, _stringify.default)(b);
 }
 
 var _default = v1;
 exports.default = _default;
-module.exports = exports.default;
-},{"./bytesToUuid.js":13,"./rng.js":16}],19:[function(require,module,exports){
+},{"./rng.js":18,"./stringify.js":20}],22:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4565,8 +4656,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const v3 = (0, _v.default)('v3', 0x30, _md.default);
 var _default = v3;
 exports.default = _default;
-module.exports = exports.default;
-},{"./md5.js":15,"./v35.js":20}],20:[function(require,module,exports){
+},{"./md5.js":14,"./v35.js":23}],23:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4575,26 +4665,19 @@ Object.defineProperty(exports, "__esModule", {
 exports.default = _default;
 exports.URL = exports.DNS = void 0;
 
-var _bytesToUuid = _interopRequireDefault(require("./bytesToUuid.js"));
+var _stringify = _interopRequireDefault(require("./stringify.js"));
+
+var _parse = _interopRequireDefault(require("./parse.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function uuidToBytes(uuid) {
-  // Note: We assume we're being passed a valid uuid string
-  var bytes = [];
-  uuid.replace(/[a-fA-F0-9]{2}/g, function (hex) {
-    bytes.push(parseInt(hex, 16));
-  });
-  return bytes;
-}
 
 function stringToBytes(str) {
   str = unescape(encodeURIComponent(str)); // UTF8 escape
 
-  var bytes = new Array(str.length);
+  const bytes = [];
 
-  for (var i = 0; i < str.length; i++) {
-    bytes[i] = str.charCodeAt(i);
+  for (let i = 0; i < str.length; ++i) {
+    bytes.push(str.charCodeAt(i));
   }
 
   return bytes;
@@ -4606,29 +4689,45 @@ const URL = '6ba7b811-9dad-11d1-80b4-00c04fd430c8';
 exports.URL = URL;
 
 function _default(name, version, hashfunc) {
-  var generateUUID = function (value, namespace, buf, offset) {
-    var off = buf && offset || 0;
-    if (typeof value == 'string') value = stringToBytes(value);
-    if (typeof namespace == 'string') namespace = uuidToBytes(namespace);
-    if (!Array.isArray(value)) throw TypeError('value must be an array of bytes');
-    if (!Array.isArray(namespace) || namespace.length !== 16) throw TypeError('namespace must be uuid string or an Array of 16 byte values'); // Per 4.3
+  function generateUUID(value, namespace, buf, offset) {
+    if (typeof value === 'string') {
+      value = stringToBytes(value);
+    }
 
-    var bytes = hashfunc(namespace.concat(value));
+    if (typeof namespace === 'string') {
+      namespace = (0, _parse.default)(namespace);
+    }
+
+    if (namespace.length !== 16) {
+      throw TypeError('Namespace must be array-like (16 iterable integer values, 0-255)');
+    } // Compute hash of namespace and value, Per 4.3
+    // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
+    // hashfunc([...namespace, ... value])`
+
+
+    let bytes = new Uint8Array(16 + value.length);
+    bytes.set(namespace);
+    bytes.set(value, namespace.length);
+    bytes = hashfunc(bytes);
     bytes[6] = bytes[6] & 0x0f | version;
     bytes[8] = bytes[8] & 0x3f | 0x80;
 
     if (buf) {
-      for (var idx = 0; idx < 16; ++idx) {
-        buf[off + idx] = bytes[idx];
+      offset = offset || 0;
+
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = bytes[i];
       }
+
+      return buf;
     }
 
-    return buf || (0, _bytesToUuid.default)(bytes);
-  }; // Function#name is not settable on some platforms (#270)
+    return (0, _stringify.default)(bytes);
+  } // Function#name is not settable on some platforms (#270)
 
 
   try {
-    generateUUID.name = name;
+    generateUUID.name = name; // eslint-disable-next-line no-empty
   } catch (err) {} // For CommonJS default export support
 
 
@@ -4636,7 +4735,7 @@ function _default(name, version, hashfunc) {
   generateUUID.URL = URL;
   return generateUUID;
 }
-},{"./bytesToUuid.js":13}],21:[function(require,module,exports){
+},{"./parse.js":16,"./stringify.js":20}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4646,39 +4745,35 @@ exports.default = void 0;
 
 var _rng = _interopRequireDefault(require("./rng.js"));
 
-var _bytesToUuid = _interopRequireDefault(require("./bytesToUuid.js"));
+var _stringify = _interopRequireDefault(require("./stringify.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof options == 'string') {
-    buf = options === 'binary' ? new Array(16) : null;
-    options = null;
-  }
-
   options = options || {};
 
-  var rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  const rnds = options.random || (options.rng || _rng.default)(); // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
 
 
   rnds[6] = rnds[6] & 0x0f | 0x40;
   rnds[8] = rnds[8] & 0x3f | 0x80; // Copy bytes to buffer, if provided
 
   if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
+    offset = offset || 0;
+
+    for (let i = 0; i < 16; ++i) {
+      buf[offset + i] = rnds[i];
     }
+
+    return buf;
   }
 
-  return buf || (0, _bytesToUuid.default)(rnds);
+  return (0, _stringify.default)(rnds);
 }
 
 var _default = v4;
 exports.default = _default;
-module.exports = exports.default;
-},{"./bytesToUuid.js":13,"./rng.js":16}],22:[function(require,module,exports){
+},{"./rng.js":18,"./stringify.js":20}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4695,8 +4790,47 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const v5 = (0, _v.default)('v5', 0x50, _sha.default);
 var _default = v5;
 exports.default = _default;
-module.exports = exports.default;
-},{"./sha1.js":17,"./v35.js":20}],23:[function(require,module,exports){
+},{"./sha1.js":19,"./v35.js":23}],26:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _regex = _interopRequireDefault(require("./regex.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function validate(uuid) {
+  return typeof uuid === 'string' && _regex.default.test(uuid);
+}
+
+var _default = validate;
+exports.default = _default;
+},{"./regex.js":17}],27:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _validate = _interopRequireDefault(require("./validate.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function version(uuid) {
+  if (!(0, _validate.default)(uuid)) {
+    throw TypeError('Invalid UUID');
+  }
+
+  return parseInt(uuid.substr(14, 1), 16);
+}
+
+var _default = version;
+exports.default = _default;
+},{"./validate.js":26}],28:[function(require,module,exports){
 module.exports = [
     [ 0x0300, 0x036F ], [ 0x0483, 0x0486 ], [ 0x0488, 0x0489 ],
     [ 0x0591, 0x05BD ], [ 0x05BF, 0x05BF ], [ 0x05C1, 0x05C2 ],
@@ -4748,7 +4882,7 @@ module.exports = [
     [ 0xE0100, 0xE01EF ]
 ]
 
-},{}],24:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 "use strict"
 
 var defaults = require('defaults')
@@ -4849,7 +4983,7 @@ function bisearch(ucs) {
   return false
 }
 
-},{"./combining":23,"defaults":5}],25:[function(require,module,exports){
+},{"./combining":28,"defaults":5}],30:[function(require,module,exports){
 var History = require('./src/history')
 var Store = require('./src/store')
 var Constraint = require('./src/constraint')
@@ -4929,7 +5063,7 @@ function forEachOnIndex (arr, indexes, iterator, onEnd) {
   iterator(values, next)
 }
 
-},{"./src/constraint":29,"./src/dynamic-caller":30,"./src/history":31,"./src/store":37}],26:[function(require,module,exports){
+},{"./src/constraint":34,"./src/dynamic-caller":35,"./src/history":36,"./src/store":42}],31:[function(require,module,exports){
 module.exports = fakeScope
 
 var util = require('./util')
@@ -4969,7 +5103,7 @@ function fakeScope (scope, expr, opts) {
 
 
 
-},{"./util":28}],27:[function(require,module,exports){
+},{"./util":33}],32:[function(require,module,exports){
 module.exports = Compiler
 
 var util = require('./util')
@@ -5386,7 +5520,7 @@ Compiler.prototype.generateExpression = function generateExpression (parameter) 
   }
 }
 
-},{"./fake-scope":26,"./util":28}],28:[function(require,module,exports){
+},{"./fake-scope":31,"./util":33}],33:[function(require,module,exports){
 module.exports = {}
 module.exports.indent = indent
 module.exports.indentBy = indentBy
@@ -5486,7 +5620,7 @@ function escape (val) {
   return val
 }
 
-},{}],29:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 module.exports = Constraint
 
 function Constraint (name, arity, args) {
@@ -5519,7 +5653,7 @@ function escape (val) {
   return res
 }
 
-},{}],30:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 module.exports = dynamicCaller
 
 var Constraint = require('./constraint')
@@ -5554,7 +5688,7 @@ function dynamicCaller (name) {
   }
 }
 
-},{"./constraint":29}],31:[function(require,module,exports){
+},{"./constraint":34}],36:[function(require,module,exports){
 module.exports = History
 
 function History () {
@@ -5594,7 +5728,7 @@ function hash (ids) {
   return ids.join('_')
 }
 
-},{}],32:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 ;(function () {
   var root = this
   var prevCHR
@@ -5703,7 +5837,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.3.15'
+  CHR.version = '3.3.16'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
@@ -5725,7 +5859,7 @@ function hash (ids) {
   }
 }).call(this)
 
-},{"../runtime":25,"./join-parts":33,"./parser.peg.js":34,"./rule":35,"./rules":36}],33:[function(require,module,exports){
+},{"../runtime":30,"./join-parts":38,"./parser.peg.js":39,"./rule":40,"./rules":41}],38:[function(require,module,exports){
 module.exports = joinParts
 
 function joinParts (arr) {
@@ -5802,7 +5936,7 @@ function isPipe (str) {
   return str.match(/^\s*\|\s*$/)
 }
 
-},{}],34:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*
  * Generated by PEG.js 0.10.0.
  *
@@ -7728,7 +7862,7 @@ module.exports = {
   parse:       peg$parse
 };
 
-},{}],35:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 module.exports = Rule
 
 var uuid = require('uuid').v1
@@ -7905,7 +8039,7 @@ function callback2Promise () {
   }
 }
 
-},{"./compile/head":27,"uuid":14}],36:[function(require,module,exports){
+},{"./compile/head":32,"uuid":13}],41:[function(require,module,exports){
 module.exports = Rules
 
 var dynamicCaller = require('./dynamic-caller')
@@ -7994,7 +8128,7 @@ Rules.prototype.RemoveBreakpoints = function removeBreakpoints (f) {
   this.SetBreakpoints(undefined)
 }
 
-},{"./dynamic-caller":30,"./rule":35}],37:[function(require,module,exports){
+},{"./dynamic-caller":35,"./rule":40}],42:[function(require,module,exports){
 module.exports = Store
 
 var util = require('util')
@@ -8132,5 +8266,5 @@ Store.prototype.toString = function () {
   return t.toString()
 }
 
-},{"easy-table":6,"events":7,"util":12}]},{},[32])(32)
+},{"easy-table":6,"events":7,"util":12}]},{},[37])(37)
 });
