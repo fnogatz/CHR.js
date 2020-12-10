@@ -1,6 +1,6 @@
 {
   "name": "chr",
-  "version": "3.3.17",
+  "version": "3.3.18",
   "description": "Interpreter for Constraint Handling Rules (CHR) in JavaScript",
   "main": "src/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "test": "npm run standard && npm run tape"
   },
   "bin": {
-    "chrjs": "./bin/chr.js"
+    "chrjs": "bin/chr.js"
   },
   "engines": {
     "node": "10"
