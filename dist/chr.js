@@ -5841,7 +5841,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.3.18'
+  CHR.version = '3.3.19'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
