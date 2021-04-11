@@ -17,6 +17,7 @@ program
   .option('-O, --optimized', 'Use optimized compilation (only sync code)')
   .option('-b, --binding [expr]', 'Bind the CHR solver to this expression', 'module.exports')
   .option('-f, --function [expr]', 'Bind the CHR solver to this function')
+  .option('-r, --runtime [expr]', 'Bind the CHR runtime to this function', "require('chr/runtime')")
   .parse(process.argv)
 
 var file = program.args[0]

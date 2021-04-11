@@ -17,7 +17,9 @@
     "standard": "standard",
     "tape": "tape 'test/**/*.js'",
     "pretest": "npm run peg; npm run browserify",
-    "test": "npm run standard && npm run tape"
+    "test": "npm run standard && npm run tape && npm run test-cli",
+    "test-cli": "node ./bin/chr.js --runtime \"require('../../runtime')\" test/cli/gcd.chr | cmp -s test/cli/gcd.js -",
+    "create-test-cli": "node ./bin/chr.js --runtime \"require('../../runtime')\" test/cli/gcd.chr > test/cli/gcd.js"
   },
   "bin": {
     "chrjs": "bin/chr.js"
@@ -61,7 +63,8 @@
     "ignore": [
       "src/parser.js",
       "src/compile/fake-scope.js",
-      "dist/**.js"
+      "dist/**.js",
+      "test/cli/**.js"
     ]
   }
 }
