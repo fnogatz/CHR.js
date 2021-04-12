@@ -1,12 +1,12 @@
 module.exports = Compiler
 
-var util = require('./util')
-var fakeScope = require('./fake-scope')
+const util = require('./util')
+const fakeScope = require('./fake-scope')
 
-var indent = util.indent
-var indentBy = util.indentBy
-var destructuring = util.destructuring
-var escape = util.escape
+const indent = util.indent
+const indentBy = util.indentBy
+const destructuring = util.destructuring
+const escape = util.escape
 
 function Compiler (rule, opts) {
   opts = opts || {}
@@ -24,22 +24,22 @@ function Compiler (rule, opts) {
 }
 
 Compiler.prototype.headNo = function compileHeadNo (headNo) {
-  var self = this
+  const self = this
   headNo = headNo || 0
-  var rule = this.rule
-  var opts = this.opts
+  const rule = this.rule
+  const opts = this.opts
 
   if (!rule.head[headNo]) {
     throw new Error('No constraint with number ' + headNo + ' in this rule head')
   }
 
-  var constraint = rule.head[headNo]
+  const constraint = rule.head[headNo]
   if (constraint.type !== 'Constraint') {
     throw new Error('No constraint at number ' + headNo)
   }
 
-  var parts = []
-  var level = 0
+  let parts = []
+  let level = 0
 
   parts.push(
     indent(level) + 'var self = ' + opts.this,
@@ -59,7 +59,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
   )
 
   rule.head.forEach(function (head, headIndex) {
-    var line = headIndex === 0 ? indent(1) : ', '
+    let line = headIndex === 0 ? indent(1) : ', '
     if (headIndex === headNo) {
       line += '[ constraint.id ]'
     } else {
@@ -136,7 +136,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
   parts.push(
     indent(level) + 'self.History.add("' + rule.name + '", ids)'
   )
-  for (var k = rule.r + 1; k <= rule.head.length; k++) {
+  for (let k = rule.r + 1; k <= rule.head.length; k++) {
     // remove constraints
     parts.push(
       indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])'
@@ -181,20 +181,20 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
 }
 
 Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesArray () {
-  var self = this
-  var parts = []
+  const self = this
+  let parts = []
 
   parts.push(
     'var guards = ['
   )
 
   this.rule.guard.forEach(function (guard, guardIndex) {
-    var expr = guardIndex === 0 ? indent(1) : ', '
+    const expr = guardIndex === 0 ? indent(1) : ', '
 
     if (guard.type === 'Replacement' && typeof guard.num !== 'undefined') {
       // get parameters via dependency injection
-      var params = util.getFunctionParameters(self.replacements[guard.num])
-      var lastParamName = util.getLastParamName(params)
+      const params = util.getFunctionParameters(self.replacements[guard.num])
+      const lastParamName = util.getLastParamName(params)
       parts.push(
         expr + 'new Promise(function (s, j) {',
         indent(2) + 'var ' + lastParamName + ' = function (e, r) { (e || !r) ? j() : s() }',
@@ -229,11 +229,11 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
 }
 
 Compiler.prototype.generateGuards = function generateGuards () {
-  var self = this
-  var rule = this.rule
+  const self = this
+  const rule = this.rule
 
-  var expr = 'if ('
-  var boolExprs = []
+  let expr = 'if ('
+  const boolExprs = []
   rule.guard.forEach(function (guard) {
     if (guard.type !== 'Replacement') {
       boolExprs.push(self.generateGuard(guard))
@@ -253,8 +253,8 @@ Compiler.prototype.generateGuard = function generateGuard (guard) {
 }
 
 Compiler.prototype.generateTellPromises = function generateTellPromises () {
-  var self = this
-  var parts = []
+  const self = this
+  let parts = []
 
   parts.push('Promise.resolve()')
 
@@ -266,7 +266,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
     parts.push('.then(function () {')
 
     if (body.type === 'Constraint') {
-      var expr = indent(1) + 'return self.' + body.name + '('
+      let expr = indent(1) + 'return self.' + body.name + '('
       expr += body.parameters.map(function (parameter) {
         return self.generateExpression(parameter)
       }).join(', ')
@@ -287,8 +287,8 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    var params
-    var lastParamName
+    let params
+    let lastParamName
 
     if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
       // get parameters via dependency injection
@@ -356,9 +356,9 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
 }
 
 Compiler.prototype.generateTell = function generateTell (body) {
-  var self = this
+  const self = this
 
-  var expr = ''
+  let expr = ''
   if (body.type === 'Constraint') {
     expr += 'self.' + body.name + '('
     expr += body.parameters.map(function (parameter) {
@@ -387,7 +387,7 @@ Compiler.prototype.generateTell = function generateTell (body) {
 }
 
 Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
-  var self = this
+  const self = this
 
   return ['left', 'right'].map(function (part) {
     if (expr[part].type === 'Identifier') {
@@ -399,6 +399,7 @@ Compiler.prototype.generateBinaryExpression = function generateBinaryExpression 
     if (expr[part].type === 'BinaryExpression') {
       return '(' + self.generateBinaryExpression(expr[part]) + ')'
     }
+    return ''
   }).join(' ' + expr.operator + ' ')
 }
 

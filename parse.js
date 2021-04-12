@@ -1,11 +1,11 @@
 module.exports = parse
 module.exports.element = getElementParser
 
-var path = require('path')
-var fs = require('fs')
-var PEG = require('pegjs')
+const path = require('path')
+const fs = require('fs')
+const PEG = require('pegjs')
 
-var parser = require('./src/parser.peg.js')
+const parser = require('./src/parser.peg.js')
 
 function parse (src, elementName) {
   if (elementName) {
@@ -16,9 +16,9 @@ function parse (src, elementName) {
 }
 
 function getElementParser (elementName) {
-  var parserSource = fs.readFileSync(path.join(__dirname, 'src', 'parser.pegjs'), 'utf8')
+  const parserSource = fs.readFileSync(path.join(__dirname, 'src', 'parser.pegjs'), 'utf8')
 
-  var customParser = PEG.generate(parserSource, {
+  const customParser = PEG.generate(parserSource, {
     allowedStartRules: [
       elementName
     ]

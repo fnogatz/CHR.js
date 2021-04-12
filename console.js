@@ -1,10 +1,10 @@
-var required = {
+const required = {
   chr: require('./console/chr'),
   store: require('./console/store')
 }
 
-var config = {}
-for (var key in required) {
+const config = {}
+for (const key in required) {
   config[key.replace(/^array\./, 'array:')] = required[key]
 }
 

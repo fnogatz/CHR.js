@@ -1,7 +1,7 @@
-var History = require('./src/history')
-var Store = require('./src/store')
-var Constraint = require('./src/constraint')
-var dynamicCaller = require('./src/dynamic-caller')
+const History = require('./src/history')
+const Store = require('./src/store')
+const Constraint = require('./src/constraint')
+const dynamicCaller = require('./src/dynamic-caller')
 
 module.exports = {
   History: History,
@@ -23,18 +23,18 @@ function allDifferent (arr) {
 }
 
 function forEach (arr, iterator, onEnd) {
-  var indexes = Array.apply(null, Array(arr.length)).map(Number.prototype.valueOf, 0)
+  const indexes = Array.apply(null, Array(arr.length)).map(Number.prototype.valueOf, 0)
   forEachOnIndex(arr, indexes, iterator, onEnd)
 }
 
 function forEachOnIndex (arr, indexes, iterator, onEnd) {
-  var iterablePosition = -1
-  var values = []
-  var value
-  var ix
+  let iterablePosition = -1
+  const values = []
+  let value
+  let ix
 
-  var disjoint = true
-  for (var position = 0; position < indexes.length; position++) {
+  let disjoint = true
+  for (let position = 0; position < indexes.length; position++) {
     ix = indexes[position]
 
     if (typeof arr[position][ix] === 'undefined') {
@@ -62,7 +62,7 @@ function forEachOnIndex (arr, indexes, iterator, onEnd) {
     // calculate next indexes
     if (iterablePosition > -1) {
       indexes[iterablePosition] += 1
-      for (var ix = iterablePosition + 1; ix < indexes.length; ix++) {
+      for (let ix = iterablePosition + 1; ix < indexes.length; ix++) {
         indexes[ix] = 0
       }
     }

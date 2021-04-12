@@ -1,6 +1,6 @@
-var test = require('tape')
+const test = require('tape')
 
-var Runtime = require('../../runtime')
+const Runtime = require('../../runtime')
 
 test('Runtime.Store', function (t) {
   t.ok(typeof Runtime.Store === 'function')

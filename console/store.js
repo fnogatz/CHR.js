@@ -1,5 +1,5 @@
-var colors = require('colors') // eslint-disable-line no-unused-vars
-var Store = require('../src/store')
+const colors = require('colors') // eslint-disable-line no-unused-vars
+const Store = require('../src/store')
 
 module.exports = {
   fields: {
@@ -17,9 +17,9 @@ module.exports = {
       return false
     }
 
-    var store = this._store
-    for (var id in store) {
-      var tableRow = fields.map(function cell (fieldName, rowNo) {
+    const store = this._store
+    for (const id in store) {
+      const tableRow = fields.map(function cell (fieldName, rowNo) {
         return object.fields[fieldName].call(store[id], rowNo)
       })
       table.push(tableRow)

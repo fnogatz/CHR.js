@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-var program = require('commander')
-var concat = require('concat-stream')
-var compile = require('../compile')
+const program = require('commander')
+const concat = require('concat-stream')
+const compile = require('../compile')
 
 function onFinish (err, code) {
   if (err) {
@@ -20,14 +20,14 @@ program
   .option('-r, --runtime [expr]', 'Bind the CHR runtime to this function', "require('chr/runtime')")
   .parse(process.argv)
 
-var file = program.args[0]
-var opts = program
+const file = program.args[0]
+const opts = program
 
 if (file) {
   compile.fromFile(file, opts, onFinish)
 } else {
   process.stdin.pipe(concat({ encoding: 'string' }, function (source) {
-    var code = compile(source, opts)
+    const code = compile(source, opts)
     onFinish(null, code)
   }))
 }

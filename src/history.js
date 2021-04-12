@@ -9,7 +9,7 @@ History.prototype.add = function add (rule, ids) {
     this._history[rule] = []
   }
 
-  var str = hash(ids)
+  const str = hash(ids)
   this._history[rule].push(str)
 }
 
@@ -18,8 +18,8 @@ History.prototype.notIn = function notIn (rule, ids) {
     return true
   }
 
-  var str = hash(ids)
-  var found = (this._history[rule].indexOf(str) >= 0)
+  const str = hash(ids)
+  const found = (this._history[rule].indexOf(str) >= 0)
   return !found
 }
 
@@ -28,8 +28,8 @@ History.prototype.has = function has (rule, ids) {
     return false
   }
 
-  var str = hash(ids)
-  var found = (this._history[rule].indexOf(str) >= 0)
+  const str = hash(ids)
+  const found = (this._history[rule].indexOf(str) >= 0)
   return found
 }
 

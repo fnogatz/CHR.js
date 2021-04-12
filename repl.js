@@ -1,21 +1,21 @@
 module.exports = Repl
 
-var repl = require('repl')
-var spinner = require('char-spinner')
-var CHR = require('./src/index')
-var parse = require('./src/repl.peg.js').parse
+const repl = require('repl')
+const spinner = require('char-spinner')
+const CHR = require('./src/index')
+const parse = require('./src/repl.peg.js').parse
 
 function Repl () {
-  var chr = new CHR()
+  const chr = new CHR()
 
-  var r = repl.start({
+  const r = repl.start({
     prompt: 'CHR > ',
     input: process.stdin,
     output: process.stdout,
     eval: function (cmd, context, filename, callback) {
       cmd = cmd.trim()
-      var re
-      var ruleName
+      let re
+      let ruleName
 
       // is it a special command?
       if (cmd === '/exit') {
@@ -44,14 +44,14 @@ function Repl () {
       if (re.test(cmd)) {
         // e.g. `/rule-functor rule-name functor-name`
         ruleName = cmd.replace(re, '$1')
-        var functor = cmd.replace(re, '$2')
+        let functor = cmd.replace(re, '$2')
 
         if (!chr.Rules[ruleName]) {
           r.output.write('No rule with name ' + ruleName)
           return callback()
         }
 
-        var occurrence = null
+        let occurrence = null
         re = /^(.*)\[([0-9]+)\]$/
         if (re.test(cmd)) {
           // has occurrence number
@@ -79,12 +79,13 @@ function Repl () {
       }
 
       // try Program
+      let rules, queries
       try {
-        var rules = parse(cmd, { startRule: 'Program' })
+        rules = parse(cmd, { startRule: 'Program' })
       } catch (e) {
         // try Query
         try {
-          var queries = parse(cmd, { startRule: 'Query' })
+          queries = parse(cmd, { startRule: 'Query' })
         } catch (e) {
           // no query
           var res = eval(cmd) // eslint-disable-line
@@ -94,13 +95,13 @@ function Repl () {
         }
 
         // run query
-        var spin = spinner({
+        const spin = spinner({
           stream: r.outputStream
         })
 
-        var queryPromise = queries.reduce(function (promise, query) {
+        const queryPromise = queries.reduce(function (promise, query) {
           return promise.then(function () {
-            var chrCmd = 'chr.' + query.original
+            let chrCmd = 'chr.' + query.original
             if (query.original.slice(-1)[0] !== ')') {
               chrCmd += '()'
             }
@@ -138,7 +139,7 @@ function errorMsg (e) {
   e = e.toString()
 
   if (e.match(/^TypeError: chr\..* is not a function$/)) {
-    var constraint = e.replace(/^TypeError: chr\.(.*) is not a function$/, '$1')
+    const constraint = e.replace(/^TypeError: chr\.(.*) is not a function$/, '$1')
     return 'Undefined constraint: ' + constraint
   }
 

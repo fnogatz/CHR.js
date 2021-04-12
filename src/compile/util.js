@@ -37,7 +37,7 @@ function indentBy (level, spaces) {
 function destructuring (constraint, to, thenStmt) {
   thenStmt = thenStmt || 'return Promise.resolve()'
 
-  var parts = []
+  let parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
       parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
@@ -50,7 +50,7 @@ function destructuring (constraint, to, thenStmt) {
       return
     }
 
-    var name = parameter.name
+    let name = parameter.name
     if (parameter.type === 'ArrayExpression') {
       parts.push('', '// Note: This feature needs native Destructuring (Array value).')
 

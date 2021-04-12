@@ -1,7 +1,7 @@
 module.exports = Rules
 
-var dynamicCaller = require('./dynamic-caller')
-var Rule = require('./rule')
+const dynamicCaller = require('./dynamic-caller')
+const Rule = require('./rule')
 
 function Rules (chr) {
   this._chr = chr
@@ -10,13 +10,13 @@ function Rules (chr) {
 }
 
 Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
-  var self = this
+  const self = this
 
-  var rule = new Rule(ruleObj, {
+  const rule = new Rule(ruleObj, {
     replacements: globalReplacements,
     scope: self._chr.Scope
   })
-  var ruleName = rule.Name
+  const ruleName = rule.Name
 
   if (typeof this[ruleName] !== 'undefined') {
     throw new Error('Rule with name "' + ruleName + '" multiple times specified')
@@ -25,7 +25,7 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   this[ruleName] = rule
   this.Order.push(rule.Name)
 
-  var constraintName
+  let constraintName
   ruleObj.constraints.forEach(function (functor) {
     // add callers if not present
     constraintName = functor.split('/')[0]
@@ -44,11 +44,11 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
 }
 
 Rules.prototype.Reset = function reset () {
-  var self = this
-  var chr = this._chr
+  const self = this
+  const chr = this._chr
 
-  var constraintName
-  for (var functor in chr.Constraints) {
+  let constraintName
+  for (const functor in chr.Constraints) {
     constraintName = functor.split('/')[0]
     if (typeof chr[constraintName] !== 'undefined') {
       delete chr[constraintName]
@@ -63,7 +63,7 @@ Rules.prototype.Reset = function reset () {
 }
 
 Rules.prototype.ForEach = function forEach (callback, thisArg) {
-  var self = this
+  const self = this
 
   this.Order.forEach(function (ruleName) {
     callback.call(thisArg, self[ruleName])

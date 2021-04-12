@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var parse = require('../../parse').element('Parameter')
+const parse = require('../../parse').element('Parameter')
 
 test('1', function (t) {
-  var res = parse('1')
+  const res = parse('1')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Literal')
@@ -13,7 +13,7 @@ test('1', function (t) {
 })
 
 test('"1"', function (t) {
-  var res = parse('"1"')
+  const res = parse('"1"')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Literal')
@@ -23,7 +23,7 @@ test('"1"', function (t) {
 })
 
 test('[]', function (t) {
-  var res = parse('[]')
+  const res = parse('[]')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'ArrayExpression')
@@ -34,7 +34,7 @@ test('[]', function (t) {
 })
 
 test('{}', function (t) {
-  var res = parse('{}')
+  const res = parse('{}')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'ObjectExpression')

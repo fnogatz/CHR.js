@@ -1,7 +1,7 @@
-var store = require('./store')
+const store = require('./store')
 
-var config = {}
-for (var key in store) {
+const config = {}
+for (const key in store) {
   config[key] = store[key]
 }
 

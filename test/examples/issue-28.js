@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('null as argument in caller (Issue #28)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(null) ==> b')
 
   chr.a('some').then(function () {
@@ -18,7 +18,7 @@ test('null as argument in caller (Issue #28)', function (t) {
 })
 
 test('null as argument in result (Issue #28)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> b(null)')
 
   chr.a().then(function () {
@@ -29,7 +29,7 @@ test('null as argument in result (Issue #28)', function (t) {
 })
 
 test('null as argument (Issue #28)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(null) ==> b(null)')
 
   chr.a('some').then(function () {

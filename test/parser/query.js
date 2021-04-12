@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var parse = require('../../parse').element('Query')
+const parse = require('../../parse').element('Query')
 
 test('a', function (t) {
-  var res = parse('a')
+  const res = parse('a')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -14,7 +14,7 @@ test('a', function (t) {
 })
 
 test('a,b', function (t) {
-  var res = parse('a,b')
+  const res = parse('a,b')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -25,7 +25,7 @@ test('a,b', function (t) {
 })
 
 test('a b', function (t) {
-  var res = parse('a b')
+  const res = parse('a b')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -36,7 +36,7 @@ test('a b', function (t) {
 })
 
 test('  a   b ', function (t) {
-  var res = parse('  a   b ')
+  const res = parse('  a   b ')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -47,7 +47,7 @@ test('  a   b ', function (t) {
 })
 
 test('a, b', function (t) {
-  var res = parse('a, b')
+  const res = parse('a, b')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -58,7 +58,7 @@ test('a, b', function (t) {
 })
 
 test('a(1,2), b', function (t) {
-  var res = parse('a(1,2), b')
+  const res = parse('a(1,2), b')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -69,7 +69,7 @@ test('a(1,2), b', function (t) {
 })
 
 test('ab', function (t) {
-  var res = parse('ab')
+  const res = parse('ab')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -80,7 +80,7 @@ test('ab', function (t) {
 })
 
 test('ab c ,d', function (t) {
-  var res = parse('ab c ,d')
+  const res = parse('ab c ,d')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -91,7 +91,7 @@ test('ab c ,d', function (t) {
 })
 
 test('a,b,', function (t) {
-  var res = parse('a,b,')
+  const res = parse('a,b,')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -107,7 +107,7 @@ test('a,b,', function (t) {
 })
 
 test('Array as argument', function (t) {
-  var res = parse('a([1,2,3])')
+  const res = parse('a([1,2,3])')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -117,7 +117,7 @@ test('Array as argument', function (t) {
 })
 
 test('Object as argument', function (t) {
-  var res = parse('a({ a: 1, b: 2, "c": 3 })')
+  const res = parse('a({ a: 1, b: 2, "c": 3 })')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -127,7 +127,7 @@ test('Object as argument', function (t) {
 })
 
 test('String as argument, single quotation marks', function (t) {
-  var res = parse("a('1,2,3')")
+  const res = parse("a('1,2,3')")
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -137,7 +137,7 @@ test('String as argument, single quotation marks', function (t) {
 })
 
 test('String as argument, doule quotation marks', function (t) {
-  var res = parse('a("1,2,3")')
+  const res = parse('a("1,2,3")')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -147,7 +147,7 @@ test('String as argument, doule quotation marks', function (t) {
 })
 
 test('Identifier as argument', function (t) {
-  var res = parse('a(fire)')
+  const res = parse('a(fire)')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -157,7 +157,7 @@ test('Identifier as argument', function (t) {
 })
 
 test('Function as argument', function (t) {
-  var res = parse('a(function() {})')
+  const res = parse('a(function() {})')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)
@@ -167,7 +167,7 @@ test('Function as argument', function (t) {
 })
 
 test('Negative number as argument', function (t) {
-  var res = parse('a(-1)')
+  const res = parse('a(-1)')
 
   t.equal(typeof res, 'object')
   t.ok(res instanceof Array)

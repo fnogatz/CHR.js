@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var parse = require('../../parse').element('Constraint')
+const parse = require('../../parse').element('Constraint')
 
 test('a', function (t) {
-  var res = parse('a')
+  const res = parse('a')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Constraint')
@@ -14,7 +14,7 @@ test('a', function (t) {
 })
 
 test('a(1)', function (t) {
-  var res = parse('a(1)')
+  const res = parse('a(1)')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'Constraint')
@@ -26,7 +26,7 @@ test('a(1)', function (t) {
 })
 
 test('a(1,2)', function (t) {
-  var res = parse('a(1,2)')
+  const res = parse('a(1,2)')
 
   t.equal(res.parameters.length, 2)
 
@@ -34,7 +34,7 @@ test('a(1,2)', function (t) {
 })
 
 test('a(1, 2)', function (t) {
-  var res = parse('a(1, 2)')
+  const res = parse('a(1, 2)')
 
   t.equal(res.parameters.length, 2)
 
@@ -42,7 +42,7 @@ test('a(1, 2)', function (t) {
 })
 
 test('a("1")', function (t) {
-  var res = parse('a("1")')
+  const res = parse('a("1")')
 
   t.equal(res.parameters.length, 1)
 

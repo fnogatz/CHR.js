@@ -1,11 +1,11 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('chr.Rules.Add()', function (t) {
   t.test('chr.Rules.Add() is a function', function (t) {
-    var chr = new CHR()
-    var rules = chr.Rules
+    const chr = new CHR()
+    const rules = chr.Rules
 
     t.equal(typeof rules.Add, 'function', 'chr.Rules.Add() is a function')
 
@@ -13,13 +13,13 @@ test('chr.Rules.Add()', function (t) {
   })
 
   t.test('chr.Rules.Add() gives rule name if not specified', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     chr('a ==> b')
 
     t.equal(chr.Rules.Order.length, 1)
 
-    var ruleName = chr.Rules.Order[0]
+    const ruleName = chr.Rules.Order[0]
     t.ok(ruleName)
     t.ok(chr.Rules[ruleName])
     t.equal(ruleName, chr.Rules[ruleName].Name)
@@ -28,7 +28,7 @@ test('chr.Rules.Add()', function (t) {
   })
 
   t.test('chr.Rules.Add() throws for identical rule name', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     chr('first @ a ==> b')
 
@@ -43,8 +43,8 @@ test('chr.Rules.Add()', function (t) {
 })
 
 test('chr.Rules.Order', function (t) {
-  var chr = new CHR()
-  var rules = chr.Rules
+  const chr = new CHR()
+  const rules = chr.Rules
 
   t.equal(typeof rules.Order, 'object', 'chr.Rules.Order is defined')
   t.ok(rules.Order instanceof Array, 'chr.Rules.Order is an Array')
@@ -54,8 +54,8 @@ test('chr.Rules.Order', function (t) {
 
 test('chr.Rules.ForEach()', function (t) {
   t.test('chr.Rules.ForEach() is a function', function (t) {
-    var chr = new CHR()
-    var rules = chr.Rules
+    const chr = new CHR()
+    const rules = chr.Rules
 
     t.equal(typeof rules.ForEach, 'function', 'chr.Rules.ForEach() is a function')
 
@@ -63,21 +63,21 @@ test('chr.Rules.ForEach()', function (t) {
   })
 
   t.test('chr.Rules.ForEach() loops through all rules', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     chr('first  @ a ==> b')
     chr('second @ c ==> d')
     chr('third  @ e ==> f')
 
-    var rules = chr.Rules
-    var found = {}
-    var order = []
+    const rules = chr.Rules
+    const found = {}
+    const order = []
     rules.ForEach(function (rule) {
       found[rule.Name] = 1
       order.push(rule.Name)
     })
 
-    var expected = {
+    const expected = {
       first: 1,
       second: 1,
       third: 1
@@ -90,21 +90,21 @@ test('chr.Rules.ForEach()', function (t) {
   })
 
   t.test('chr.Rules.ForEach() loops in order', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     chr('first  @ a ==> b')
     chr('second @ c ==> d')
     chr('third  @ e ==> f')
 
-    var rules = chr.Rules
-    var order = [
+    const rules = chr.Rules
+    const order = [
       'third',
       'first',
       'second'
     ]
     rules.Order = order
 
-    var found = []
+    const found = []
     rules.ForEach(function (rule) {
       found.push(rule.Name)
     })
@@ -119,8 +119,8 @@ test('chr.Rules.ForEach()', function (t) {
 
 test('chr.Rules.Reset()', function (t) {
   t.test('chr.Rules.Reset() is a function', function (t) {
-    var chr = new CHR()
-    var rules = chr.Rules
+    const chr = new CHR()
+    const rules = chr.Rules
 
     t.equal(typeof rules.Reset, 'function', 'chr.Rules.Reset() is a function')
 
@@ -128,8 +128,8 @@ test('chr.Rules.Reset()', function (t) {
   })
 
   t.test('chr.Rules.Reset() deletes existing rules', function (t) {
-    var chr = new CHR()
-    var rules = chr.Rules
+    const chr = new CHR()
+    const rules = chr.Rules
 
     chr('first @ a ==> b')
     chr('second @ c ==> d')

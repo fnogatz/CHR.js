@@ -1,9 +1,9 @@
 module.exports = Store
 
-var util = require('util')
-var events = require('events')
+const util = require('util')
+const events = require('events')
 
-var Table = require('easy-table')
+const Table = require('easy-table')
 
 function Store () {
   this._lastId = 0
@@ -31,7 +31,7 @@ Store.prototype.reset = function reset () {
  * @return {Id}         ID of the stored Constraint
  */
 Store.prototype.store = Store.prototype.add = function add (constraint) {
-  var id = this._getNewConstraintId()
+  const id = this._getNewConstraintId()
   constraint.id = id
   this._store[id] = constraint
   this._addToIndex(constraint)
@@ -43,7 +43,7 @@ Store.prototype.store = Store.prototype.add = function add (constraint) {
 }
 
 Store.prototype.kill = function kill (id) {
-  var constraint = this._store[id]
+  const constraint = this._store[id]
   if (!constraint) {
     return
   }
@@ -62,7 +62,7 @@ Store.prototype._getNewConstraintId = function _getNewConstraintId () {
 }
 
 Store.prototype._addToIndex = function _addToIndex (constraint) {
-  var index = this._index
+  const index = this._index
   if (typeof index[constraint.name] === 'undefined') {
     index[constraint.name] = {}
   }
@@ -90,7 +90,7 @@ Store.prototype.args = function args (id) {
 }
 
 Store.prototype.lookup = function lookup (name, arity) {
-  var index = this._index
+  const index = this._index
 
   if (typeof index[name] !== 'undefined' &&
     typeof index[name][arity] !== 'undefined') {
@@ -106,14 +106,14 @@ Store.prototype.invalidate = function invalidate () {
 }
 
 Store.prototype.forEach = function (cb) {
-  for (var id in this._store) {
+  for (const id in this._store) {
     cb(this._store[id], id)
   }
 }
 
 Store.prototype.map = function (callback, thisArg) {
-  var res = []
-  for (var id in this._store) {
+  const res = []
+  for (const id in this._store) {
     res.push(callback.call(thisArg, this._store[id], id, this))
   }
   return res
@@ -124,7 +124,7 @@ Store.prototype.toString = function () {
     return '(empty)'
   }
 
-  var t = new Table()
+  const t = new Table()
 
   this.forEach(function (constraint) {
     t.cell('ID', constraint.id)

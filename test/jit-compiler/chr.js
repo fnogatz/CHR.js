@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('chr.Store', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
 
   t.equal(typeof chr.Store, 'object', 'chr.Store is object')
 
@@ -11,7 +11,7 @@ test('chr.Store', function (t) {
 })
 
 test('chr.History', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
 
   t.equal(typeof chr.History, 'object', 'chr.History is object')
 
@@ -19,7 +19,7 @@ test('chr.History', function (t) {
 })
 
 test('chr.Rules', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
 
   t.equal(typeof chr.Rules, 'object', 'chr.Rules is object')
 
@@ -28,7 +28,7 @@ test('chr.Rules', function (t) {
 
 test('chr.Constraints', function (t) {
   t.test('chr.Constraints is object', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     t.equal(typeof chr.Constraints, 'object')
 
@@ -36,7 +36,7 @@ test('chr.Constraints', function (t) {
   })
 
   t.test('chr.Constraints saves defined constraints and their occurences', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     t.deepEqual(chr.Constraints, {}, 'chr.Constraints is initially empty')
 
@@ -59,7 +59,7 @@ test('chr.Constraints', function (t) {
 
 test('chr()', function (t) {
   t.test('CHR instance is a function', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     t.equal(typeof chr, 'function', 'CHR instance is a function')
 
@@ -67,7 +67,7 @@ test('chr()', function (t) {
   })
 
   t.test('chr() adds callers for constraints', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     chr('a, b ==> c')
 

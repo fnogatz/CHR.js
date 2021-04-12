@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var joinParts = require('../src/join-parts')
+const joinParts = require('../src/join-parts')
 
 test('Single string', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b'
   ])
   t.equal(res, 'a ==> b')
@@ -12,7 +12,7 @@ test('Single string', function (t) {
 })
 
 test('Single replacement', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {}
   ])
@@ -22,7 +22,7 @@ test('Single replacement', function (t) {
 })
 
 test('Head ends with space', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> ',
     function () {}
   ])
@@ -32,7 +32,7 @@ test('Head ends with space', function (t) {
 })
 
 test('Single replacement, ending with space', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     ''
@@ -43,7 +43,7 @@ test('Single replacement, ending with space', function (t) {
 })
 
 test('Multiple replacements, separated by comma', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     ',',
@@ -55,7 +55,7 @@ test('Multiple replacements, separated by comma', function (t) {
 })
 
 test('Multiple replacements, separated by comma, ending with empty space', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     ',',
@@ -68,7 +68,7 @@ test('Multiple replacements, separated by comma, ending with empty space', funct
 })
 
 test('Multiple replacements, without comma separation', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     function () {}
@@ -79,7 +79,7 @@ test('Multiple replacements, without comma separation', function (t) {
 })
 
 test('Multiple replacements, without comma separation, ending with empty space', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     function () {},
@@ -91,7 +91,7 @@ test('Multiple replacements, without comma separation, ending with empty space',
 })
 
 test('Mixed constraints and replacement comma sepator', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b,',
     function () {}
   ])
@@ -101,7 +101,7 @@ test('Mixed constraints and replacement comma sepator', function (t) {
 })
 
 test('Mixed constraints and replacement comma sepator, without comma', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b',
     function () {}
   ])
@@ -111,7 +111,7 @@ test('Mixed constraints and replacement comma sepator, without comma', function 
 })
 
 test('Mixed constraints and replacement comma sepator, without comma, ending with constraint', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b',
     function () {},
     'c'
@@ -122,7 +122,7 @@ test('Mixed constraints and replacement comma sepator, without comma, ending wit
 })
 
 test('Constraint prefixed with comma', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b',
     function () {},
     ', c'
@@ -133,7 +133,7 @@ test('Constraint prefixed with comma', function (t) {
 })
 
 test('Mixed constraints and replacement comma sepator, without comma, ending with multiple constraints', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==> b',
     function () {},
     'c, d'
@@ -144,7 +144,7 @@ test('Mixed constraints and replacement comma sepator, without comma, ending wit
 })
 
 test('Also works for simplification rule', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a <=> b',
     function () {},
     'c, d'
@@ -155,7 +155,7 @@ test('Also works for simplification rule', function (t) {
 })
 
 test('Function in guard', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     '|',
@@ -167,7 +167,7 @@ test('Function in guard', function (t) {
 })
 
 test('Mixed content in guard', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     function () {},
@@ -180,7 +180,7 @@ test('Mixed content in guard', function (t) {
 })
 
 test('Mixed content after guard', function (t) {
-  var res = joinParts([
+  const res = joinParts([
     'a ==>',
     function () {},
     '| b',

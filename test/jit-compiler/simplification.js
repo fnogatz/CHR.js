@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('a <=> b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a <=> b')
 
   chr.a().then(function () {
@@ -13,7 +13,7 @@ test('a <=> b', function (t) {
 })
 
 test('a <=> true', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a <=> true')
 
   chr.a().then(function () {
@@ -23,7 +23,7 @@ test('a <=> true', function (t) {
 })
 
 test('a(0) <=> true', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(0) <=> true')
 
   chr.a(0).then(function () {
@@ -33,7 +33,7 @@ test('a(0) <=> true', function (t) {
 })
 
 test('a \\ b <=> true', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a \\ b <=> true')
 
   chr.b().then(function () {

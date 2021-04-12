@@ -1,13 +1,13 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('Rule.Brekpoints.onTry', function (t) {
   t.test('single, simple rule', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
     chr('r1 @ a ==> b')
 
-    var called = false
+    let called = false
 
     chr.Rules.r1.Breakpoints.onTry = function (data, callback) {
       called = true
@@ -24,10 +24,10 @@ test('Rule.Brekpoints.onTry', function (t) {
   })
 
   t.test('given data', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
     chr('r1 @ a ==> b')
 
-    var data
+    let data
 
     chr.Rules.r1.Breakpoints.onTry = function (d, callback) {
       data = d
@@ -44,13 +44,13 @@ test('Rule.Brekpoints.onTry', function (t) {
   })
 
   t.test('multiple Rules', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
     chr('r1 @ a ==> b')
     chr('r2 @ a ==> c')
     chr('r3 @ a ==> d')
 
-    var called = []
-    var expected = ['r1', 'r2', 'r3']
+    const called = []
+    const expected = ['r1', 'r2', 'r3']
 
     chr.Rules.r1.Breakpoints.onTry = function (data, callback) {
       called.push(data.rule)
@@ -75,10 +75,10 @@ test('Rule.Brekpoints.onTry', function (t) {
   })
 
   t.test('via chr.Rules.setBreakpoints()', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
     chr('r1 @ a ==> b')
 
-    var called = false
+    let called = false
 
     chr.Rules.SetBreakpoints(function (data, callback) {
       called = true

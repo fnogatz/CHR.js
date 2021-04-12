@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('a ==> 1 < 2 | b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> 1 < 2 | b')
 
   chr.a().then(function () {
@@ -13,7 +13,7 @@ test('a ==> 1 < 2 | b', function (t) {
 })
 
 test('a ==> 1 > 2 | b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> 1 > 2 | b')
 
   chr.a().then(function () {
@@ -23,7 +23,7 @@ test('a ==> 1 > 2 | b', function (t) {
 })
 
 test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
@@ -33,7 +33,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-temp
 })
 
 test('a ==> ${ () => 1 > 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, 1 > 2) }, '| b')
 
   chr.a().then(function () {
@@ -43,7 +43,7 @@ test('a ==> ${ () => 1 > 2 } | b', function (t) { // eslint-disable-line no-temp
 })
 
 test('Scope', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(N) ==>', function (N, cb) { cb(null, N > 10) }, '| b')
 
   chr.a(1).then(function () {
@@ -61,7 +61,7 @@ test('Guard with user-defined predicate', function (t) {
     onlyIf(null, N > 10)
   }
 
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(N) ==>', greaterThan10, '| b')
 
   chr.a(1).then(function () {

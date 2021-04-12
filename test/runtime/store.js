@@ -1,10 +1,10 @@
-var test = require('tape')
+const test = require('tape')
 
-var Store = require('../../src/store')
-var Constraint = require('../../src/constraint')
+const Store = require('../../src/store')
+const Constraint = require('../../src/constraint')
 
 test('Creation', function (t) {
-  var s = new Store()
+  const s = new Store()
 
   t.ok(s)
 
@@ -12,10 +12,10 @@ test('Creation', function (t) {
 })
 
 test('Add/Remove', function (t) {
-  var s = new Store()
-  var c = new Constraint('a', 0)
+  const s = new Store()
+  const c = new Constraint('a', 0)
 
-  var id = s.add(c)
+  const id = s.add(c)
 
   t.ok(id !== undefined)
   t.equal(s.length, 1)
@@ -27,8 +27,8 @@ test('Add/Remove', function (t) {
 })
 
 test('Event Listeners', function (t) {
-  var s = new Store()
-  var c = new Constraint('a', 0)
+  const s = new Store()
+  const c = new Constraint('a', 0)
 
   s.on('add', function (constraint) {
     t.ok(constraint)
@@ -41,7 +41,7 @@ test('Event Listeners', function (t) {
 })
 
 test('Store.forEach()', function (t) {
-  var s = new Store()
+  const s = new Store()
 
   t.equal(typeof s.forEach, 'function')
 
@@ -49,9 +49,9 @@ test('Store.forEach()', function (t) {
 })
 
 test('Store.map()', function (t) {
-  var s = new Store()
+  const s = new Store()
 
-  var expected = [
+  const expected = [
     'a(1)',
     'b(2,3)',
     'a',
@@ -64,7 +64,7 @@ test('Store.map()', function (t) {
   s.add(new Constraint('a', 0))
   s.add(new Constraint('c', 1, [1]))
 
-  var res = s.map(function (c) {
+  const res = s.map(function (c) {
     return c.toString()
   })
 

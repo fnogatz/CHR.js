@@ -1,15 +1,15 @@
 module.exports = transform
 module.exports.fromFile = transformFile
 
-var fs = require('fs')
+const fs = require('fs')
 
-var parse = require('../parser.peg.js').parse
-var util = require('./util')
-var HeadCompiler = require('./head')
-var transformOptimized = require('./optimized')
+const parse = require('../parser.peg.js').parse
+const util = require('./util')
+const HeadCompiler = require('./head')
+const transformOptimized = require('./optimized')
 
-var indent = util.indent
-var indentBy = util.indentBy
+const indent = util.indent
+const indentBy = util.indentBy
 
 function transform (program, opts) {
   opts = opts || {}
@@ -20,11 +20,11 @@ function transform (program, opts) {
     return transformOptimized(program, opts)
   }
 
-  var parsed = parse(program, {
+  const parsed = parse(program, {
     startRule: 'ProgramWithPreamble'
   })
 
-  var parts = []
+  let parts = []
 
   parts.push(
     'var Runtime = ' + opts.runtime,
@@ -32,23 +32,23 @@ function transform (program, opts) {
   )
 
   parts.push(opts.exports + ' = (function() {')
-  var level = 1
+  const level = 1
 
   if (parsed.preamble) {
     parts.push(indent(level) + parsed.preamble)
     parts.push(indent(level))
   }
 
-  var constraints = {}
-  var constraintNames = {}
-  var replacements = []
+  const constraints = {}
+  const constraintNames = {}
+  const replacements = []
 
-  var rules = parsed.body
+  const rules = parsed.body
   rules.forEach(function (ruleObj) {
-    var head
-    var functor
-    var name
-    var compiled
+    let head
+    let functor
+    let name
+    let compiled
 
     // replace replacements
     ;['guard', 'body'].forEach(function (location) {
@@ -58,13 +58,13 @@ function transform (program, opts) {
           return element
         }
 
-        var src = element.original
+        let src = element.original
         if (location === 'guard') {
           src = 'return ' + src
         }
 
-        var replacementId = replacements.push(src) - 1
-        var newElement = {
+        const replacementId = replacements.push(src) - 1
+        const newElement = {
           type: 'Replacement',
           num: replacementId
         }
@@ -72,11 +72,11 @@ function transform (program, opts) {
       })
     })
 
-    var headCompiler = new HeadCompiler(ruleObj, {
+    const headCompiler = new HeadCompiler(ruleObj, {
       replacements: replacements
     })
 
-    for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+    for (let headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
       head = ruleObj.head[headNo]
       functor = head.functor
 
@@ -95,7 +95,7 @@ function transform (program, opts) {
 
     ruleObj.constraints.forEach(function (functor) {
       // add callers if not present
-      var name = functor.split('/')[0]
+      const name = functor.split('/')[0]
       if (!constraintNames[name]) {
         constraintNames[name] = true
         constraints[functor] = []
@@ -108,12 +108,12 @@ function transform (program, opts) {
     indent(level)
   )
 
-  var activates
-  for (var functor in constraints) {
+  let activates
+  for (const functor in constraints) {
     activates = []
 
     constraints[functor].forEach(function (occurrenceFunctionSource, occurrence) {
-      var functionName = '_' + functor.replace('/', '_') + '_' + occurrence
+      const functionName = '_' + functor.replace('/', '_') + '_' + occurrence
       activates.push(functionName)
 
       parts.push(indent(level) + 'function ' + functionName + ' (constraint) {')
@@ -126,7 +126,7 @@ function transform (program, opts) {
 
     parts.push(indent(level) + '_activators.' + functor.replace('/', '_') + ' = function (constraint) {')
     parts.push(indent(level + 1) + 'return [')
-    activates.map(function (activatorName, ix) {
+    activates.forEach(function (activatorName, ix) {
       parts.push(indent(level + 1) + (ix > 0 ? ', ' : '  ') + activatorName)
     })
     parts.push(indent(level + 1) + '].reduce(function (curr, activator) {')
@@ -143,7 +143,7 @@ function transform (program, opts) {
   parts = parts.concat(generateObject(opts, constraints, replacements).map(indentBy(level)))
   parts.push(indent(level))
 
-  for (var constraintName in constraintNames) {
+  for (const constraintName in constraintNames) {
     parts = parts.concat(generateCaller(opts, constraintName).map(indentBy(level)))
     parts.push(indent(level))
   }
@@ -157,7 +157,7 @@ function transform (program, opts) {
 }
 
 function generateObject (opts, constraints, replacements) {
-  var parts = []
+  const parts = []
 
   parts.push(
     indent(0) + 'var chr = {',
@@ -167,8 +167,8 @@ function generateObject (opts, constraints, replacements) {
     indent(1) + 'Constraints: {'
   )
 
-  var functorNo = 0
-  for (var functor in constraints) {
+  let functorNo = 0
+  for (const functor in constraints) {
     parts.push((functorNo++ > 0 ? indent(1) + ', ' : indent(2)) + '"' + functor + '": [')
     constraints[functor].forEach(function (o, occurrence) {
       parts.push((occurrence > 0 ? indent(2) + ', ' : indent(3)) + '_' + functor.replace('/', '_') + '_' + occurrence + '.bind(chr)')
@@ -198,7 +198,7 @@ function generateObject (opts, constraints, replacements) {
 }
 
 function generateCaller (opts, name) {
-  var parts = []
+  const parts = []
 
   parts.push(
     indent(0) + 'chr.' + name + ' = function() {',
@@ -227,7 +227,7 @@ function transformFile (filename, opts, callback) {
       return callback(err)
     }
 
-    var result
+    let result
     try {
       result = transform(code, opts)
     } catch (err) {

@@ -13,7 +13,7 @@ function Constraint (name, arity, args) {
 }
 
 Constraint.prototype.toString = function toString () {
-  var res = this.name
+  let res = this.name
   if (this.arity > 0) {
     res += '('
     res += this.args.map(escape).join(',')
@@ -23,7 +23,7 @@ Constraint.prototype.toString = function toString () {
 }
 
 function escape (val) {
-  var res = JSON.stringify(val)
+  let res = JSON.stringify(val)
   if (typeof res !== 'string') {
     res = '"' + val.toString() + '"'
   }

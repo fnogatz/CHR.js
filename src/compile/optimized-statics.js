@@ -19,7 +19,7 @@ Constraint.prototype.continue = function () {
 }
 
 Constraint.prototype.toString = function () {
-  var s = this.name
+  let s = this.name
   if (this.arity >= 1) {
     s += '(' + this.args.join(',') + ')'
   }
@@ -45,14 +45,14 @@ Store.prototype.add = function (constraint) {
 
 Store.prototype.remove = function (constraint) {
   constraint.alive = false
-  var ix = this._index[constraint.functor].indexOf(constraint)
+  const ix = this._index[constraint.functor].indexOf(constraint)
   this._index[constraint.functor].splice(ix, 1)
 
   this._size -= 1
 }
 
 Store.prototype.lookup = function (rule, patterns, constraint) {
-  var ret = this.lookupResume(rule, patterns, constraint, 0)
+  const ret = this.lookupResume(rule, patterns, constraint, 0)
   if (!ret || !ret.res) {
     return false
   }
@@ -62,14 +62,14 @@ Store.prototype.lookup = function (rule, patterns, constraint) {
 Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) {
   startFrom = startFrom || 0
 
-  var lastPattern = patterns.length - 1
-  var lengths = []
-  var divs = []
-  var div = 1
-  var i
+  const lastPattern = patterns.length - 1
+  const lengths = []
+  const divs = []
+  let div = 1
+  let i
 
   // build array of arrays
-  var arr = []
+  const arr = []
   for (i = 0; i <= lastPattern; i++) {
     if (patterns[i] === '_') {
       // "_" is a placeholder for the given `constraint`
@@ -87,12 +87,12 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
     divs[i] = div
     div *= arr[i].length
   }
-  var max = divs[0] * arr[0].length
+  const max = divs[0] * arr[0].length
 
-  var res
-  var resIds
-  var curr
-  loopng: for (var n = startFrom; n < max; n++) {
+  let res
+  let resIds
+  let curr
+  loopng: for (let n = startFrom; n < max; n++) {
     res = []
     resIds = []
     curr = n
@@ -136,13 +136,13 @@ Store.prototype.toString = function () {
     return '(empty)'
   }
 
-  var maxLengthC = 'constraint'.length
-  var maxLengthI = 'id'.length
-  var rows = []
-  var functor
+  let maxLengthC = 'constraint'.length
+  let maxLengthI = 'id'.length
+  const rows = []
+  let functor
   for (functor in this._index) {
     this._index[functor].forEach(function (c) {
-      var s = c.toString()
+      const s = c.toString()
       maxLengthC = Math.max(s.length, maxLengthC)
       maxLengthI = Math.max(c.id.toString().length + 1, maxLengthI)
     })
@@ -229,7 +229,7 @@ History.prototype.lookup = function (rule, ids) {
 */
 // trampoline
 function trampoline () { // eslint-disable-line
-  var constraint
+  let constraint
   while (constraint = stack.pop()) { // eslint-disable-line
     constraint.continue()
   }
@@ -239,5 +239,5 @@ var chr = { // eslint-disable-line
   Store: new Store()
 }
 
-var stack = []
+var stack = [] // eslint-disable-line
 // var history = new History()

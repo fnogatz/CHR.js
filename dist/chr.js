@@ -4988,10 +4988,10 @@ function bisearch(ucs) {
 }
 
 },{"./combining":28,"defaults":5}],30:[function(require,module,exports){
-var History = require('./src/history')
-var Store = require('./src/store')
-var Constraint = require('./src/constraint')
-var dynamicCaller = require('./src/dynamic-caller')
+const History = require('./src/history')
+const Store = require('./src/store')
+const Constraint = require('./src/constraint')
+const dynamicCaller = require('./src/dynamic-caller')
 
 module.exports = {
   History: History,
@@ -5013,18 +5013,18 @@ function allDifferent (arr) {
 }
 
 function forEach (arr, iterator, onEnd) {
-  var indexes = Array.apply(null, Array(arr.length)).map(Number.prototype.valueOf, 0)
+  const indexes = Array.apply(null, Array(arr.length)).map(Number.prototype.valueOf, 0)
   forEachOnIndex(arr, indexes, iterator, onEnd)
 }
 
 function forEachOnIndex (arr, indexes, iterator, onEnd) {
-  var iterablePosition = -1
-  var values = []
-  var value
-  var ix
+  let iterablePosition = -1
+  const values = []
+  let value
+  let ix
 
-  var disjoint = true
-  for (var position = 0; position < indexes.length; position++) {
+  let disjoint = true
+  for (let position = 0; position < indexes.length; position++) {
     ix = indexes[position]
 
     if (typeof arr[position][ix] === 'undefined') {
@@ -5052,7 +5052,7 @@ function forEachOnIndex (arr, indexes, iterator, onEnd) {
     // calculate next indexes
     if (iterablePosition > -1) {
       indexes[iterablePosition] += 1
-      for (var ix = iterablePosition + 1; ix < indexes.length; ix++) {
+      for (let ix = iterablePosition + 1; ix < indexes.length; ix++) {
         indexes[ix] = 0
       }
     }
@@ -5110,13 +5110,13 @@ function fakeScope (scope, expr, opts) {
 },{"./util":33}],32:[function(require,module,exports){
 module.exports = Compiler
 
-var util = require('./util')
-var fakeScope = require('./fake-scope')
+const util = require('./util')
+const fakeScope = require('./fake-scope')
 
-var indent = util.indent
-var indentBy = util.indentBy
-var destructuring = util.destructuring
-var escape = util.escape
+const indent = util.indent
+const indentBy = util.indentBy
+const destructuring = util.destructuring
+const escape = util.escape
 
 function Compiler (rule, opts) {
   opts = opts || {}
@@ -5134,22 +5134,22 @@ function Compiler (rule, opts) {
 }
 
 Compiler.prototype.headNo = function compileHeadNo (headNo) {
-  var self = this
+  const self = this
   headNo = headNo || 0
-  var rule = this.rule
-  var opts = this.opts
+  const rule = this.rule
+  const opts = this.opts
 
   if (!rule.head[headNo]) {
     throw new Error('No constraint with number ' + headNo + ' in this rule head')
   }
 
-  var constraint = rule.head[headNo]
+  const constraint = rule.head[headNo]
   if (constraint.type !== 'Constraint') {
     throw new Error('No constraint at number ' + headNo)
   }
 
-  var parts = []
-  var level = 0
+  let parts = []
+  let level = 0
 
   parts.push(
     indent(level) + 'var self = ' + opts.this,
@@ -5169,7 +5169,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
   )
 
   rule.head.forEach(function (head, headIndex) {
-    var line = headIndex === 0 ? indent(1) : ', '
+    let line = headIndex === 0 ? indent(1) : ', '
     if (headIndex === headNo) {
       line += '[ constraint.id ]'
     } else {
@@ -5246,7 +5246,7 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
   parts.push(
     indent(level) + 'self.History.add("' + rule.name + '", ids)'
   )
-  for (var k = rule.r + 1; k <= rule.head.length; k++) {
+  for (let k = rule.r + 1; k <= rule.head.length; k++) {
     // remove constraints
     parts.push(
       indent(level) + 'self.Store.kill(ids[' + (k - 1) + '])'
@@ -5291,20 +5291,20 @@ Compiler.prototype.headNo = function compileHeadNo (headNo) {
 }
 
 Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesArray () {
-  var self = this
-  var parts = []
+  const self = this
+  let parts = []
 
   parts.push(
     'var guards = ['
   )
 
   this.rule.guard.forEach(function (guard, guardIndex) {
-    var expr = guardIndex === 0 ? indent(1) : ', '
+    const expr = guardIndex === 0 ? indent(1) : ', '
 
     if (guard.type === 'Replacement' && typeof guard.num !== 'undefined') {
       // get parameters via dependency injection
-      var params = util.getFunctionParameters(self.replacements[guard.num])
-      var lastParamName = util.getLastParamName(params)
+      const params = util.getFunctionParameters(self.replacements[guard.num])
+      const lastParamName = util.getLastParamName(params)
       parts.push(
         expr + 'new Promise(function (s, j) {',
         indent(2) + 'var ' + lastParamName + ' = function (e, r) { (e || !r) ? j() : s() }',
@@ -5339,11 +5339,11 @@ Compiler.prototype.generateGuardPromisesArray = function generateGuardPromisesAr
 }
 
 Compiler.prototype.generateGuards = function generateGuards () {
-  var self = this
-  var rule = this.rule
+  const self = this
+  const rule = this.rule
 
-  var expr = 'if ('
-  var boolExprs = []
+  let expr = 'if ('
+  const boolExprs = []
   rule.guard.forEach(function (guard) {
     if (guard.type !== 'Replacement') {
       boolExprs.push(self.generateGuard(guard))
@@ -5363,8 +5363,8 @@ Compiler.prototype.generateGuard = function generateGuard (guard) {
 }
 
 Compiler.prototype.generateTellPromises = function generateTellPromises () {
-  var self = this
-  var parts = []
+  const self = this
+  let parts = []
 
   parts.push('Promise.resolve()')
 
@@ -5376,7 +5376,7 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
     parts.push('.then(function () {')
 
     if (body.type === 'Constraint') {
-      var expr = indent(1) + 'return self.' + body.name + '('
+      let expr = indent(1) + 'return self.' + body.name + '('
       expr += body.parameters.map(function (parameter) {
         return self.generateExpression(parameter)
       }).join(', ')
@@ -5397,8 +5397,8 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
       return
     }
 
-    var params
-    var lastParamName
+    let params
+    let lastParamName
 
     if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
       // get parameters via dependency injection
@@ -5466,9 +5466,9 @@ Compiler.prototype.generateTellPromises = function generateTellPromises () {
 }
 
 Compiler.prototype.generateTell = function generateTell (body) {
-  var self = this
+  const self = this
 
-  var expr = ''
+  let expr = ''
   if (body.type === 'Constraint') {
     expr += 'self.' + body.name + '('
     expr += body.parameters.map(function (parameter) {
@@ -5497,7 +5497,7 @@ Compiler.prototype.generateTell = function generateTell (body) {
 }
 
 Compiler.prototype.generateBinaryExpression = function generateBinaryExpression (expr) {
-  var self = this
+  const self = this
 
   return ['left', 'right'].map(function (part) {
     if (expr[part].type === 'Identifier') {
@@ -5509,6 +5509,7 @@ Compiler.prototype.generateBinaryExpression = function generateBinaryExpression 
     if (expr[part].type === 'BinaryExpression') {
       return '(' + self.generateBinaryExpression(expr[part]) + ')'
     }
+    return ''
   }).join(' ' + expr.operator + ' ')
 }
 
@@ -5564,7 +5565,7 @@ function indentBy (level, spaces) {
 function destructuring (constraint, to, thenStmt) {
   thenStmt = thenStmt || 'return Promise.resolve()'
 
-  var parts = []
+  let parts = []
   constraint.parameters.forEach(function (parameter, i) {
     if (parameter.type === 'Literal') {
       parts.push(indent(0) + 'if (' + to + '[' + i + '] !== ' + escape(parameter.value) + ') {')
@@ -5577,7 +5578,7 @@ function destructuring (constraint, to, thenStmt) {
       return
     }
 
-    var name = parameter.name
+    let name = parameter.name
     if (parameter.type === 'ArrayExpression') {
       parts.push('', '// Note: This feature needs native Destructuring (Array value).')
 
@@ -5640,7 +5641,7 @@ function Constraint (name, arity, args) {
 }
 
 Constraint.prototype.toString = function toString () {
-  var res = this.name
+  let res = this.name
   if (this.arity > 0) {
     res += '('
     res += this.args.map(escape).join(',')
@@ -5650,7 +5651,7 @@ Constraint.prototype.toString = function toString () {
 }
 
 function escape (val) {
-  var res = JSON.stringify(val)
+  let res = JSON.stringify(val)
   if (typeof res !== 'string') {
     res = '"' + val.toString() + '"'
   }
@@ -5660,29 +5661,29 @@ function escape (val) {
 },{}],35:[function(require,module,exports){
 module.exports = dynamicCaller
 
-var Constraint = require('./constraint')
+const Constraint = require('./constraint')
 
 function dynamicCaller (name) {
   return function () {
-    var args = Array.prototype.slice.call(arguments)
-    var arity = arguments.length
-    var functor = name + '/' + arity
+    const args = Array.prototype.slice.call(arguments)
+    const arity = arguments.length
+    const functor = name + '/' + arity
 
     if (typeof this.Constraints[functor] === 'undefined') {
       throw new Error('Constraint ' + functor + ' not defined.')
     }
 
-    var constraint = new Constraint(name, arity, args)
+    const constraint = new Constraint(name, arity, args)
     this.Store.add(constraint)
 
-    var rules = []
+    const rules = []
     this.Rules.ForEach(function (rule) {
       if (rule[functor]) {
         rules.push(rule)
       }
     })
 
-    var self = this
+    const self = this
 
     return rules.reduce(function (curr, rule) {
       return curr.then(function () {
@@ -5704,7 +5705,7 @@ History.prototype.add = function add (rule, ids) {
     this._history[rule] = []
   }
 
-  var str = hash(ids)
+  const str = hash(ids)
   this._history[rule].push(str)
 }
 
@@ -5713,8 +5714,8 @@ History.prototype.notIn = function notIn (rule, ids) {
     return true
   }
 
-  var str = hash(ids)
-  var found = (this._history[rule].indexOf(str) >= 0)
+  const str = hash(ids)
+  const found = (this._history[rule].indexOf(str) >= 0)
   return !found
 }
 
@@ -5723,8 +5724,8 @@ History.prototype.has = function has (rule, ids) {
     return false
   }
 
-  var str = hash(ids)
-  var found = (this._history[rule].indexOf(str) >= 0)
+  const str = hash(ids)
+  const found = (this._history[rule].indexOf(str) >= 0)
   return found
 }
 
@@ -5734,18 +5735,18 @@ function hash (ids) {
 
 },{}],37:[function(require,module,exports){
 ;(function () {
-  var root = this
-  var prevCHR
+  const root = this
+  let prevCHR
   if (root && root.CHR) {
     prevCHR = root.CHR
   }
 
-  var Runtime = require('../runtime')
-  var Rules = require('./rules')
-  var Rule = require('./rule')
-  var joinParts = require('./join-parts')
+  const Runtime = require('../runtime')
+  const Rules = require('./rules')
+  const Rule = require('./rule')
+  const joinParts = require('./join-parts')
 
-  var parse
+  let parse
   if ("browser" === 'browserWithoutParser') {
     parse = root.parseCHR
   } else {
@@ -5763,8 +5764,8 @@ function hash (ids) {
      * Adds a number of rules given.
      */
     function tag (chrSource) {
-      var program
-      var replacements
+      let program
+      let replacements
 
       // Examine caller format
       if (typeof chrSource === 'object' && chrSource.type && chrSource.type === 'Program') {
@@ -5781,7 +5782,7 @@ function hash (ids) {
         // called as template tag
         // e.g. tag`a ==> b`
         // or   tag`a ==> ${ function() { console.log('Replacement test') } }`
-        var combined = [
+        const combined = [
           chrSource[0]
         ]
         Array.prototype.slice.call(arguments, 1).forEach(function (repl, ix) {
@@ -5809,7 +5810,7 @@ function hash (ids) {
         program = parse(chrSource)
       }
 
-      var rules = program.body
+      const rules = program.body
       rules.forEach(function (rule) {
         tag.Rules.Add(rule, replacements)
       })
@@ -5867,8 +5868,8 @@ function hash (ids) {
 module.exports = joinParts
 
 function joinParts (arr) {
-  var res = arr[0].trim()
-  var replacementNo = 0
+  let res = arr[0].trim()
+  let replacementNo = 0
 
   arr.forEach(function (el, ix) {
     if (ix === 0) {
@@ -5877,7 +5878,7 @@ function joinParts (arr) {
     }
 
     if (typeof el === 'string') {
-      var str = el.trim()
+      const str = el.trim()
       if (str.length === 0) {
         return
       }
@@ -7869,9 +7870,9 @@ module.exports = {
 },{}],40:[function(require,module,exports){
 module.exports = Rule
 
-var uuid = require('uuid').v1
+const uuid = require('uuid').v1
 
-var HeadCompiler = require('./compile/head')
+const HeadCompiler = require('./compile/head')
 
 function Rule (ruleObj, opts) {
   if (typeof ruleObj.name === 'undefined') {
@@ -7898,17 +7899,17 @@ function Rule (ruleObj, opts) {
 }
 
 Rule.prototype._compile = function compileRule (ruleObj) {
-  var self = this
+  const self = this
 
-  var head
-  var compiled
+  let head
+  let compiled
 
-  var headCompiler = new HeadCompiler(ruleObj, {
+  const headCompiler = new HeadCompiler(ruleObj, {
     replacements: self.Replacements,
     scope: self.Scope
   })
 
-  for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+  for (let headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
     head = ruleObj.head[headNo]
 
     compiled = headCompiler.headNo(headNo).map(function (row) {
@@ -7933,7 +7934,7 @@ Rule.prototype._addConstraintCaller = function (functor, compiled, data) {
     throw e
   }
 
-  for (var key in data) {
+  for (const key in data) {
     compiledFunction[key] = data[key]
   }
 
@@ -7945,7 +7946,7 @@ Rule.prototype._addConstraintCaller = function (functor, compiled, data) {
 }
 
 Rule.prototype._setReplacements = function (globalReplacements) {
-  var self = this
+  const self = this
 
   ;['guard', 'body'].forEach(function (location) {
     self._source[location] = self._source[location].map(function (el) {
@@ -7953,7 +7954,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
         return el
       }
 
-      var replacementId
+      let replacementId
 
       if (typeof el.num !== 'undefined') {
         replacementId = el.num
@@ -7967,14 +7968,14 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 
       if (typeof el.expr !== 'undefined' && globalReplacements && globalReplacements.length > 0) {
         // attention: this mutates the globalReplacement parameter!
-        var replacement = globalReplacements.shift()
+        const replacement = globalReplacements.shift()
 
         // get free uuid
         replacementId = uuid()
         self.Replacements[replacementId] = replacement
 
         // adapt source object
-        var newElement = {
+        const newElement = {
           type: 'Replacement',
           num: replacementId
         }
@@ -7988,9 +7989,9 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 }
 
 Rule.prototype.ForEach = function forEach (callback, thisArg) {
-  var self = this
+  const self = this
 
-  for (var functor in self) {
+  for (const functor in self) {
     if (!functor.match(/^[a-z]/)) {
       continue
     }
@@ -8000,8 +8001,8 @@ Rule.prototype.ForEach = function forEach (callback, thisArg) {
 }
 
 Rule.prototype.Fire = function fireConstraint (chr, constraint) {
-  var self = this
-  var replacements = this.Replacements
+  const self = this
+  const replacements = this.Replacements
 
   return Promise.resolve().then(callback2Promise({
     event: 'rule:try',
@@ -8009,7 +8010,7 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
     location: self._source.location,
     constraint: constraint
   }, this.Breakpoints.onTry)).then(function () {
-    var occurrences = self[constraint.functor].length - 1
+    const occurrences = self[constraint.functor].length - 1
 
     return self[constraint.functor].reduce(function (promise, occurrence, ix) {
       return promise.then(callback2Promise({
@@ -8026,15 +8027,15 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
 }
 
 function callback2Promise () {
-  var f = Array.prototype.slice.call(arguments, -1)[0]
+  const f = Array.prototype.slice.call(arguments, -1)[0]
   if (!f) {
     return function () {
       return Promise.resolve()
     }
   }
 
-  var self = this
-  var data = Array.prototype.slice.call(arguments, 0, -1)
+  const self = this
+  const data = Array.prototype.slice.call(arguments, 0, -1)
   return function () {
     return new Promise(function (resolve) {
       data.push(resolve)
@@ -8046,8 +8047,8 @@ function callback2Promise () {
 },{"./compile/head":32,"uuid":13}],41:[function(require,module,exports){
 module.exports = Rules
 
-var dynamicCaller = require('./dynamic-caller')
-var Rule = require('./rule')
+const dynamicCaller = require('./dynamic-caller')
+const Rule = require('./rule')
 
 function Rules (chr) {
   this._chr = chr
@@ -8056,13 +8057,13 @@ function Rules (chr) {
 }
 
 Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
-  var self = this
+  const self = this
 
-  var rule = new Rule(ruleObj, {
+  const rule = new Rule(ruleObj, {
     replacements: globalReplacements,
     scope: self._chr.Scope
   })
-  var ruleName = rule.Name
+  const ruleName = rule.Name
 
   if (typeof this[ruleName] !== 'undefined') {
     throw new Error('Rule with name "' + ruleName + '" multiple times specified')
@@ -8071,7 +8072,7 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
   this[ruleName] = rule
   this.Order.push(rule.Name)
 
-  var constraintName
+  let constraintName
   ruleObj.constraints.forEach(function (functor) {
     // add callers if not present
     constraintName = functor.split('/')[0]
@@ -8090,11 +8091,11 @@ Rules.prototype.Add = function addRule (ruleObj, globalReplacements) {
 }
 
 Rules.prototype.Reset = function reset () {
-  var self = this
-  var chr = this._chr
+  const self = this
+  const chr = this._chr
 
-  var constraintName
-  for (var functor in chr.Constraints) {
+  let constraintName
+  for (const functor in chr.Constraints) {
     constraintName = functor.split('/')[0]
     if (typeof chr[constraintName] !== 'undefined') {
       delete chr[constraintName]
@@ -8109,7 +8110,7 @@ Rules.prototype.Reset = function reset () {
 }
 
 Rules.prototype.ForEach = function forEach (callback, thisArg) {
-  var self = this
+  const self = this
 
   this.Order.forEach(function (ruleName) {
     callback.call(thisArg, self[ruleName])
@@ -8135,10 +8136,10 @@ Rules.prototype.RemoveBreakpoints = function removeBreakpoints (f) {
 },{"./dynamic-caller":35,"./rule":40}],42:[function(require,module,exports){
 module.exports = Store
 
-var util = require('util')
-var events = require('events')
+const util = require('util')
+const events = require('events')
 
-var Table = require('easy-table')
+const Table = require('easy-table')
 
 function Store () {
   this._lastId = 0
@@ -8166,7 +8167,7 @@ Store.prototype.reset = function reset () {
  * @return {Id}         ID of the stored Constraint
  */
 Store.prototype.store = Store.prototype.add = function add (constraint) {
-  var id = this._getNewConstraintId()
+  const id = this._getNewConstraintId()
   constraint.id = id
   this._store[id] = constraint
   this._addToIndex(constraint)
@@ -8178,7 +8179,7 @@ Store.prototype.store = Store.prototype.add = function add (constraint) {
 }
 
 Store.prototype.kill = function kill (id) {
-  var constraint = this._store[id]
+  const constraint = this._store[id]
   if (!constraint) {
     return
   }
@@ -8197,7 +8198,7 @@ Store.prototype._getNewConstraintId = function _getNewConstraintId () {
 }
 
 Store.prototype._addToIndex = function _addToIndex (constraint) {
-  var index = this._index
+  const index = this._index
   if (typeof index[constraint.name] === 'undefined') {
     index[constraint.name] = {}
   }
@@ -8225,7 +8226,7 @@ Store.prototype.args = function args (id) {
 }
 
 Store.prototype.lookup = function lookup (name, arity) {
-  var index = this._index
+  const index = this._index
 
   if (typeof index[name] !== 'undefined' &&
     typeof index[name][arity] !== 'undefined') {
@@ -8241,14 +8242,14 @@ Store.prototype.invalidate = function invalidate () {
 }
 
 Store.prototype.forEach = function (cb) {
-  for (var id in this._store) {
+  for (const id in this._store) {
     cb(this._store[id], id)
   }
 }
 
 Store.prototype.map = function (callback, thisArg) {
-  var res = []
-  for (var id in this._store) {
+  const res = []
+  for (const id in this._store) {
     res.push(callback.call(thisArg, this._store[id], id, this))
   }
   return res
@@ -8259,7 +8260,7 @@ Store.prototype.toString = function () {
     return '(empty)'
   }
 
-  var t = new Table()
+  const t = new Table()
 
   this.forEach(function (constraint) {
     t.cell('ID', constraint.id)

@@ -1,21 +1,21 @@
 module.exports = transform
 module.exports.Compiler = Compiler
 
-var fs = require('fs')
-var path = require('path')
+const fs = require('fs')
+const path = require('path')
 
-var parse = require('../parser.peg.js').parse
-var util = require('./util')
+const parse = require('../parser.peg.js').parse
+const util = require('./util')
 
-var version = require('../../package.json').version
+const version = require('../../package.json').version
 
-var indent = util.indent
-var indentBy = util.indentBy
-var destructuring = util.destructuring
-var escape = util.escape
+const indent = util.indent
+const indentBy = util.indentBy
+const destructuring = util.destructuring
+const escape = util.escape
 
 function transform (program, opts) {
-  var compiler = new Compiler(program, opts)
+  const compiler = new Compiler(program, opts)
   return compiler.compile()
 }
 
@@ -24,7 +24,7 @@ function Compiler (program, opts) {
   opts.binding = opts.binding || 'module.exports'
   this.opts = opts
 
-  var parsed = parse(program, {
+  const parsed = parse(program, {
     startRule: 'ProgramWithPreamble'
   })
 
@@ -36,7 +36,7 @@ function Compiler (program, opts) {
 }
 
 Compiler.prototype.compile = function () {
-  var self = this
+  const self = this
 
   this.parts = []
 
@@ -63,12 +63,12 @@ Compiler.prototype.compile = function () {
     )
   }
 
-  var l = 1
+  const l = 1
 
   this.addStatics(l)
 
   // handle all rules
-  var rules = this.parsed.body
+  const rules = this.parsed.body
   rules.forEach(function (ruleObj) {
     // add unique id
     ruleObj._id = self.nextRuleId
@@ -81,9 +81,9 @@ Compiler.prototype.compile = function () {
       }
 
       // add callers if not present
-      var p = functor.split('/')
-      var name = p[0]
-      var arity = p[1]
+      const p = functor.split('/')
+      const name = p[0]
+      const arity = p[1]
       if (typeof self.constraints[name] === 'undefined') {
         self.constraints[name] = {}
       }
@@ -93,7 +93,7 @@ Compiler.prototype.compile = function () {
     })
 
     // add functions
-    for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+    for (let headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
       self.addHeadFunction(1, ruleObj, headNo)
     }
   })
@@ -111,7 +111,7 @@ Compiler.prototype.compile = function () {
 }
 
 Compiler.prototype.addNotice = function (level) {
-  var l = level || 0
+  const l = level || 0
 
   this.parts.push(
     indent(l) + '/**',
@@ -129,28 +129,28 @@ Compiler.prototype.addNotice = function (level) {
 }
 
 Compiler.prototype.addStatics = function (level) {
-  var l = level || 0
+  const l = level || 0
 
-  var statics = fs.readFileSync(path.join(__dirname, 'optimized-statics.js'), 'utf8')
+  const statics = fs.readFileSync(path.join(__dirname, 'optimized-statics.js'), 'utf8')
   this.parts = this.parts.concat(statics.split('\n').map(indentBy(l)))
 }
 
 Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
-  var self = this
-  var l = level || 0
-  var _str // only temp str
-  var _sthAdded = false
+  const self = this
+  let l = level || 0
+  let _str // only temp str
+  let _sthAdded = false
 
-  var head = ruleObj.head[headNo]
-  var functor = head.functor
-  var p = functor.split('/')
-  var name = p[0]
-  var arity = p[1]
-  var no = this.constraints[name][arity]
+  const head = ruleObj.head[headNo]
+  const functor = head.functor
+  const p = functor.split('/')
+  const name = p[0]
+  const arity = p[1]
+  const no = this.constraints[name][arity]
 
-  var _currentConstraintGetsRemoved = false
-  var _hadLookup = false
-  var _breakCmds
+  let _currentConstraintGetsRemoved = false
+  let _hadLookup = false
+  let _breakCmds
 
   this.parts.push(
     indent(l) + 'function ' + Compiler.getContinuationReference(name, arity, no) + ' (constraint, __n) {',
@@ -235,7 +235,7 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
   _sthAdded = false
   // start: remove_constraints
   if (ruleObj.r < ruleObj.head.length) {
-    for (var k = ruleObj.r + 1; k <= ruleObj.head.length; k++) {
+    for (let k = ruleObj.r + 1; k <= ruleObj.head.length; k++) {
       if ((k - 1) === headNo) {
         // do nothing here - this is handled
         //   by not adding the active constraint
@@ -286,15 +286,15 @@ Compiler.prototype.addHeadFunction = function (level, ruleObj, headNo) {
 }
 
 Compiler.prototype.addTell = function (level, body) {
-  var self = this
-  var l = level || 0
+  const self = this
+  const l = level || 0
 
   if (body.type === 'Constraint' && body.name === 'true' && body.arity === 0) {
     return
   }
 
   if (body.type === 'Constraint') {
-    var args = body.parameters.map(function (parameter) {
+    const args = body.parameters.map(function (parameter) {
       return Compiler.generateExpression(parameter)
     }).join(', ')
     this.parts.push(
@@ -308,8 +308,8 @@ Compiler.prototype.addTell = function (level, body) {
     return
   }
 
-  var params
-  var lastParamName
+  let params
+  let lastParamName
 
   if (body.type === 'Replacement' && typeof body.num !== 'undefined') {
     // get parameters via dependency injection
@@ -344,11 +344,11 @@ Compiler.prototype.addTell = function (level, body) {
 }
 
 Compiler.prototype.addLastHeadFunctions = function (level) {
-  var self = this
-  var l = level || 0
+  const self = this
+  const l = level || 0
 
-  for (var constraintName in self.constraints) {
-    for (var arity in self.constraints[constraintName]) {
+  for (const constraintName in self.constraints) {
+    for (const arity in self.constraints[constraintName]) {
       this.parts.push(
         indent(l) + 'function ' + Compiler.getContinuationReference(constraintName, arity, self.constraints[constraintName][arity]) + ' (constraint) {',
         indent(l) + '  constraint.cont = null',
@@ -361,8 +361,8 @@ Compiler.prototype.addLastHeadFunctions = function (level) {
 }
 
 Compiler.prototype.addConstraintProperties = function (level) {
-  var self = this
-  var l = level || 0
+  const self = this
+  const l = level || 0
 
   // bind callers to `chr` variable
   Object.keys(this.constraints).forEach(function (constraintName) {
@@ -377,8 +377,8 @@ Compiler.prototype.addConstraintProperties = function (level) {
 }
 
 Compiler.prototype.addConstraintCallers = function (level) {
-  var self = this
-  var l = level || 0
+  const self = this
+  const l = level || 0
 
   // create functions
   Object.keys(this.constraints).forEach(function (constraintName) {
@@ -403,12 +403,12 @@ Compiler.prototype.addConstraintCallers = function (level) {
 }
 
 Compiler.prototype.addConstraintContinuations = function (level, constraintName) {
-  var self = this
-  var l = level || 0
+  const self = this
+  const l = level || 0
 
-  var constraint = this.constraints[constraintName]
+  const constraint = this.constraints[constraintName]
 
-  var arities = Object.keys(constraint)
+  const arities = Object.keys(constraint)
   if (arities.length === 1) {
     self.parts.push(
       indent(l) + 'if (arity === ' + arities[0] + ') {',
@@ -439,10 +439,10 @@ Compiler.prototype.addConstraintContinuations = function (level, constraintName)
 }
 
 Compiler.prototype.addGuards = function (level, ruleObj, name, arity, no, _hadLookup) {
-  var l = level || 0
+  const l = level || 0
 
-  var expr = 'if (!('
-  var boolExprs = []
+  let expr = 'if (!('
+  const boolExprs = []
   ruleObj.guard.forEach(function (guard) {
     if (guard.type !== 'Replacement') {
       boolExprs.push(Compiler.generateGuard(guard))
@@ -474,7 +474,7 @@ Compiler.getContinuationReference = function (name, arity, no) {
 }
 
 Compiler.getJumper = function (name, arity, no, _hadLookup) {
-  var parts = []
+  const parts = []
 
   if (_hadLookup === true) {
     parts.push(
@@ -513,6 +513,7 @@ Compiler.generateBinaryExpression = function generateBinaryExpression (expr) {
     if (expr[part].type === 'BinaryExpression') {
       return '(' + generateBinaryExpression(expr[part]) + ')'
     }
+    return ''
   }).join(' ' + expr.operator + ' ')
 }
 

@@ -1,8 +1,8 @@
 module.exports = Rule
 
-var uuid = require('uuid').v1
+const uuid = require('uuid').v1
 
-var HeadCompiler = require('./compile/head')
+const HeadCompiler = require('./compile/head')
 
 function Rule (ruleObj, opts) {
   if (typeof ruleObj.name === 'undefined') {
@@ -29,17 +29,17 @@ function Rule (ruleObj, opts) {
 }
 
 Rule.prototype._compile = function compileRule (ruleObj) {
-  var self = this
+  const self = this
 
-  var head
-  var compiled
+  let head
+  let compiled
 
-  var headCompiler = new HeadCompiler(ruleObj, {
+  const headCompiler = new HeadCompiler(ruleObj, {
     replacements: self.Replacements,
     scope: self.Scope
   })
 
-  for (var headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
+  for (let headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {
     head = ruleObj.head[headNo]
 
     compiled = headCompiler.headNo(headNo).map(function (row) {
@@ -64,7 +64,7 @@ Rule.prototype._addConstraintCaller = function (functor, compiled, data) {
     throw e
   }
 
-  for (var key in data) {
+  for (const key in data) {
     compiledFunction[key] = data[key]
   }
 
@@ -76,7 +76,7 @@ Rule.prototype._addConstraintCaller = function (functor, compiled, data) {
 }
 
 Rule.prototype._setReplacements = function (globalReplacements) {
-  var self = this
+  const self = this
 
   ;['guard', 'body'].forEach(function (location) {
     self._source[location] = self._source[location].map(function (el) {
@@ -84,7 +84,7 @@ Rule.prototype._setReplacements = function (globalReplacements) {
         return el
       }
 
-      var replacementId
+      let replacementId
 
       if (typeof el.num !== 'undefined') {
         replacementId = el.num
@@ -98,14 +98,14 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 
       if (typeof el.expr !== 'undefined' && globalReplacements && globalReplacements.length > 0) {
         // attention: this mutates the globalReplacement parameter!
-        var replacement = globalReplacements.shift()
+        const replacement = globalReplacements.shift()
 
         // get free uuid
         replacementId = uuid()
         self.Replacements[replacementId] = replacement
 
         // adapt source object
-        var newElement = {
+        const newElement = {
           type: 'Replacement',
           num: replacementId
         }
@@ -119,9 +119,9 @@ Rule.prototype._setReplacements = function (globalReplacements) {
 }
 
 Rule.prototype.ForEach = function forEach (callback, thisArg) {
-  var self = this
+  const self = this
 
-  for (var functor in self) {
+  for (const functor in self) {
     if (!functor.match(/^[a-z]/)) {
       continue
     }
@@ -131,8 +131,8 @@ Rule.prototype.ForEach = function forEach (callback, thisArg) {
 }
 
 Rule.prototype.Fire = function fireConstraint (chr, constraint) {
-  var self = this
-  var replacements = this.Replacements
+  const self = this
+  const replacements = this.Replacements
 
   return Promise.resolve().then(callback2Promise({
     event: 'rule:try',
@@ -140,7 +140,7 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
     location: self._source.location,
     constraint: constraint
   }, this.Breakpoints.onTry)).then(function () {
-    var occurrences = self[constraint.functor].length - 1
+    const occurrences = self[constraint.functor].length - 1
 
     return self[constraint.functor].reduce(function (promise, occurrence, ix) {
       return promise.then(callback2Promise({
@@ -157,15 +157,15 @@ Rule.prototype.Fire = function fireConstraint (chr, constraint) {
 }
 
 function callback2Promise () {
-  var f = Array.prototype.slice.call(arguments, -1)[0]
+  const f = Array.prototype.slice.call(arguments, -1)[0]
   if (!f) {
     return function () {
       return Promise.resolve()
     }
   }
 
-  var self = this
-  var data = Array.prototype.slice.call(arguments, 0, -1)
+  const self = this
+  const data = Array.prototype.slice.call(arguments, 0, -1)
   return function () {
     return new Promise(function (resolve) {
       data.push(resolve)

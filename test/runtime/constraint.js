@@ -1,10 +1,10 @@
-var test = require('tape')
+const test = require('tape')
 
-var Constraint = require('../../src/constraint')
+const Constraint = require('../../src/constraint')
 
 test('Creation', function (t) {
   t.test('Arity: 2', function (t) {
-    var c = new Constraint('con', 2, ['a', 'b'])
+    const c = new Constraint('con', 2, ['a', 'b'])
 
     t.equal(c.name, 'con')
     t.equal(c.arity, 2)
@@ -14,7 +14,7 @@ test('Creation', function (t) {
   })
 
   t.test('Arity: 0', function (t) {
-    var c = new Constraint('a', 0)
+    const c = new Constraint('a', 0)
 
     t.equal(c.name, 'a')
     t.equal(c.arity, 0)
@@ -28,7 +28,7 @@ test('Creation', function (t) {
 
 test('Constraint.toString()', function (t) {
   t.test('Arity: 2', function (t) {
-    var c = new Constraint('con', 2, ['a', 'b'])
+    const c = new Constraint('con', 2, ['a', 'b'])
 
     t.equal(c.toString(), 'con("a","b")')
 
@@ -36,7 +36,7 @@ test('Constraint.toString()', function (t) {
   })
 
   t.test('Arity: 0', function (t) {
-    var c = new Constraint('con', 0)
+    const c = new Constraint('con', 0)
 
     t.equal(c.toString(), 'con')
 

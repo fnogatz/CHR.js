@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('String arguments (Issue #20)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr("a('p') ==> b")
 
   chr.a('q').then(function () {
@@ -18,7 +18,7 @@ test('String arguments (Issue #20)', function (t) {
 })
 
 test('String arguments (Issue #20), with Int value', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr("a('42') ==> b")
 
   chr.a(42).then(function () {
@@ -33,7 +33,7 @@ test('String arguments (Issue #20), with Int value', function (t) {
 })
 
 test('Int arguments', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(42) ==> b')
 
   chr.a('q').then(function () {
@@ -52,7 +52,7 @@ test('Int arguments', function (t) {
 })
 
 test('Check String argument in guard', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr("a(X) ==> X === 'p' | b")
 
   chr.a('q').then(function () {
@@ -67,7 +67,7 @@ test('Check String argument in guard', function (t) {
 })
 
 test('Check String argument in guard, with Int value', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr("a(X) ==> X === '42' | b")
 
   chr.a('q').then(function () {

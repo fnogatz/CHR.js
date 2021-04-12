@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var parse = require('../../parse').element('Program')
+const parse = require('../../parse').element('Program')
 
 test('Multiline program I', function (t) {
-  var res = parse([
+  const res = parse([
     'name  @ a ==> b',
     'name2 @ b <=> c'
   ].join('\n'))
@@ -16,7 +16,7 @@ test('Multiline program I', function (t) {
 })
 
 test('Multiline program II', function (t) {
-  var res = parse([
+  const res = parse([
     '',
     'name  @ a ==> b',
     'name2 @ b <=> c'
@@ -30,7 +30,7 @@ test('Multiline program II', function (t) {
 })
 
 test('Multiline program III', function (t) {
-  var res = parse([
+  const res = parse([
     '',
     'name  @ a ==> b',
     '',
@@ -45,7 +45,7 @@ test('Multiline program III', function (t) {
 })
 
 test('Multiline program IV', function (t) {
-  var res = parse([
+  const res = parse([
     '',
     'name  @ a ==> b',
     '',
@@ -61,7 +61,7 @@ test('Multiline program IV', function (t) {
 })
 
 test('Multiline program V', function (t) {
-  var res = parse([
+  const res = parse([
     'name  @ a ==> b;',
     'name2 @ b <=> c;'
   ].join('\n'))

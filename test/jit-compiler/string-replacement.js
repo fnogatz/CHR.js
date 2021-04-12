@@ -15,14 +15,14 @@
  * and AOT syntax checking.
  */
 
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('string replacement in body', function (t) {
   t.test('function reference', function (t) {
-    var scope = (function () {
-      var m
+    const scope = (function () {
+      let m
 
       function fire (N, cb) {
         m = N
@@ -37,7 +37,7 @@ test('string replacement in body', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -51,8 +51,8 @@ test('string replacement in body', function (t) {
   })
 
   t.test('indirection', function (t) {
-    var scope = (function () {
-      var m
+    const scope = (function () {
+      let m
 
       function fire (N, cb) {
         m = N
@@ -72,7 +72,7 @@ test('string replacement in body', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -86,8 +86,8 @@ test('string replacement in body', function (t) {
   })
 
   t.test('indirection via anonymous function', function (t) {
-    var scope = (function () {
-      var m
+    const scope = (function () {
+      let m
 
       function fire (N) {
         m = N
@@ -101,7 +101,7 @@ test('string replacement in body', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -115,8 +115,8 @@ test('string replacement in body', function (t) {
   })
 
   t.test('variable renaming', function (t) {
-    var scope = (function () {
-      var m
+    const scope = (function () {
+      let m
 
       function fire (N) {
         m = N
@@ -130,7 +130,7 @@ test('string replacement in body', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -144,8 +144,8 @@ test('string replacement in body', function (t) {
   })
 
   t.test('variable renaming with indirection', function (t) {
-    var scope = (function () {
-      var m
+    const scope = (function () {
+      let m
 
       function fire (N) {
         m = N
@@ -164,7 +164,7 @@ test('string replacement in body', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -182,7 +182,7 @@ test('string replacement in body', function (t) {
 
 test('string replacement in guard', function (t) {
   t.test('function reference, constant true', function (t) {
-    var scope = (function () {
+    const scope = (function () {
       function test (cb) {
         cb(null, true)
       }
@@ -192,7 +192,7 @@ test('string replacement in guard', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -206,7 +206,7 @@ test('string replacement in guard', function (t) {
   })
 
   t.test('function reference, constant false', function (t) {
-    var scope = (function () {
+    const scope = (function () {
       function test (cb) {
         cb(null, false)
       }
@@ -216,7 +216,7 @@ test('string replacement in guard', function (t) {
       }
     })()
 
-    var chr = new CHR({
+    const chr = new CHR({
       scope: scope
     })
 
@@ -230,7 +230,7 @@ test('string replacement in guard', function (t) {
   })
 
   t.test('string replacement', function (t) {
-    var chr = new CHR()
+    const chr = new CHR()
 
     // should be avoided; see note above
     chr('a(N) ==> ${ function(N, cb) { cb(null, N > 0) } } | a(N-1)') // eslint-disable-line no-template-curly-in-string
@@ -246,9 +246,9 @@ test('string replacement in guard', function (t) {
 
 test('string replacement specified via tag function', function (t) {
   t.test('function reference', function (t) {
-    var m
+    let m
 
-    var replacements = (function () {
+    const replacements = (function () {
       function fire (N, cb) { // eslint-disable-line no-unused-vars
         m = N
         cb()
@@ -261,7 +261,7 @@ test('string replacement specified via tag function', function (t) {
       })
     })()
 
-    var chr = new CHR()
+    const chr = new CHR()
 
     // should be avoided; see note above
     chr('a(N) ==> ${ fire }', replacements) // eslint-disable-line no-template-curly-in-string
@@ -273,9 +273,9 @@ test('string replacement specified via tag function', function (t) {
   })
 
   t.test('function', function (t) {
-    var m
+    let m
 
-    var replacements = (function () {
+    const replacements = (function () {
       return [
         'function(N, cb) { t.equal(N, 42); m = N; cb() }'
       ].map(function (repl) {
@@ -283,7 +283,7 @@ test('string replacement specified via tag function', function (t) {
       })
     })()
 
-    var chr = new CHR()
+    const chr = new CHR()
 
     // should be avoided; see note above
     chr('a(N) ==> ${ function(N, cb) { t.equal(N, 42); m = N; cb() } }', replacements) // eslint-disable-line no-template-curly-in-string

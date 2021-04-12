@@ -1,8 +1,8 @@
 module.exports = joinParts
 
 function joinParts (arr) {
-  var res = arr[0].trim()
-  var replacementNo = 0
+  let res = arr[0].trim()
+  let replacementNo = 0
 
   arr.forEach(function (el, ix) {
     if (ix === 0) {
@@ -11,7 +11,7 @@ function joinParts (arr) {
     }
 
     if (typeof el === 'string') {
-      var str = el.trim()
+      const str = el.trim()
       if (str.length === 0) {
         return
       }

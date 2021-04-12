@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
@@ -13,7 +13,7 @@ test('a ==> ${ () => 1 < 2 } | b', function (t) { // eslint-disable-line no-temp
 })
 
 test('a ==> ${ 1 < 2 } | b', function (t) { // eslint-disable-line no-template-curly-in-string
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, 1 < 2) }, '| b')
 
   chr.a().then(function () {
@@ -23,7 +23,7 @@ test('a ==> ${ 1 < 2 } | b', function (t) { // eslint-disable-line no-template-c
 })
 
 test('a ==> ${ () => false } | b', function (t) { // eslint-disable-line no-template-curly-in-string
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, false) }, '| b')
 
   chr.a().then(function () {
@@ -33,14 +33,14 @@ test('a ==> ${ () => false } | b', function (t) { // eslint-disable-line no-temp
 })
 
 test('a ==> ${ () => fire("Rule fired") }', function (t) { // eslint-disable-line no-template-curly-in-string
-  var fired = false
+  let fired = false
 
   function fire (string) {
     fired = true
     t.equal(string, 'Rule fired')
   }
 
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { fire('Rule fired'); cb() })
 
   chr.a().then(function () {
@@ -50,13 +50,13 @@ test('a ==> ${ () => fire("Rule fired") }', function (t) { // eslint-disable-lin
 })
 
 test('a ==> ${ fire }', function (t) { // eslint-disable-line no-template-curly-in-string
-  var fired = false
+  let fired = false
   function fire (cb) {
     fired = true
     cb()
   }
 
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', fire)
 
   chr.a().then(function () {
@@ -66,9 +66,9 @@ test('a ==> ${ fire }', function (t) { // eslint-disable-line no-template-curly-
 })
 
 test('Scope', function (t) {
-  var i = 0
+  let i = 0
 
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, i !== 0) }, '| b')
 
   chr.a().then(function () {
@@ -83,7 +83,7 @@ test('Scope', function (t) {
 })
 
 test('Replacement in String', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==>', function (cb) { cb(null, true) }, '| b')
 
   chr.a().then(function () {
@@ -98,7 +98,7 @@ test('Replacement with variable', function (t) {
       // noop
     }
 
-    var chr = new CHR()
+    const chr = new CHR()
     chr('a(N) ==>', function (N, cb) { p(N); cb() })
 
     chr.a(42).then(function () {
@@ -107,13 +107,13 @@ test('Replacement with variable', function (t) {
   })
 
   t.test('a(N) ==> ${ (N) => p(N) }', function (t) { // eslint-disable-line no-template-curly-in-string
-    var n
+    let n
 
     function p (k) {
       n = k
     }
 
-    var chr = new CHR()
+    const chr = new CHR()
     chr('a(N) ==>', function (N, cb) { p(N); cb() })
 
     chr.a(42).then(function () {
@@ -123,14 +123,14 @@ test('Replacement with variable', function (t) {
   })
 
   t.test('a(N) ==> ${ p }', function (t) { // eslint-disable-line no-template-curly-in-string
-    var m
+    let m
 
     function p (N, cb) {
       m = N
       cb()
     }
 
-    var chr = new CHR()
+    const chr = new CHR()
     chr('a(N) ==>', p)
 
     chr.a(42).then(function () {

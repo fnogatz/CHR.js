@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var parse = require('../../parse').element('SimplificationRule')
+const parse = require('../../parse').element('SimplificationRule')
 
 test('a <=> b', function (t) {
-  var res = parse('a <=> b')
+  const res = parse('a <=> b')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'SimplificationRule')
@@ -16,7 +16,7 @@ test('a <=> b', function (t) {
 })
 
 test('a<=>b', function (t) {
-  var res = parse('a<=>b')
+  const res = parse('a<=>b')
 
   t.equal(typeof res, 'object')
   t.equal(res.type, 'SimplificationRule')
@@ -29,7 +29,7 @@ test('a<=>b', function (t) {
 })
 
 test('a <=> b, c', function (t) {
-  var res = parse('a <=> b, c')
+  const res = parse('a <=> b, c')
 
   t.equal(res.kept.length, 0)
   t.equal(res.removed.length, 1)
@@ -39,7 +39,7 @@ test('a <=> b, c', function (t) {
 })
 
 test('a, b <=> c', function (t) {
-  var res = parse('a, b <=> c')
+  const res = parse('a, b <=> c')
 
   t.equal(res.kept.length, 0)
   t.equal(res.removed.length, 2)
@@ -49,7 +49,7 @@ test('a, b <=> c', function (t) {
 })
 
 test('a <=> X < 4 | c', function (t) {
-  var res = parse('a <=> X < 4 | c')
+  const res = parse('a <=> X < 4 | c')
 
   t.equal(res.kept.length, 0)
   t.equal(res.removed.length, 1)
@@ -61,7 +61,7 @@ test('a <=> X < 4 | c', function (t) {
 })
 
 test('a <=> X < 4, X > 0 | c', function (t) {
-  var res = parse('a <=> X < 4, X > 0 | c')
+  const res = parse('a <=> X < 4, X > 0 | c')
 
   t.equal(res.kept.length, 0)
   t.equal(res.removed.length, 1)

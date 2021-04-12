@@ -1,16 +1,16 @@
 ;(function () {
-  var root = this
-  var prevCHR
+  const root = this
+  let prevCHR
   if (root && root.CHR) {
     prevCHR = root.CHR
   }
 
-  var Runtime = require('../runtime')
-  var Rules = require('./rules')
-  var Rule = require('./rule')
-  var joinParts = require('./join-parts')
+  const Runtime = require('../runtime')
+  const Rules = require('./rules')
+  const Rule = require('./rule')
+  const joinParts = require('./join-parts')
 
-  var parse
+  let parse
   if (process.env.NODE_ENV === 'browserWithoutParser') {
     parse = root.parseCHR
   } else {
@@ -28,8 +28,8 @@
      * Adds a number of rules given.
      */
     function tag (chrSource) {
-      var program
-      var replacements
+      let program
+      let replacements
 
       // Examine caller format
       if (typeof chrSource === 'object' && chrSource.type && chrSource.type === 'Program') {
@@ -46,7 +46,7 @@
         // called as template tag
         // e.g. tag`a ==> b`
         // or   tag`a ==> ${ function() { console.log('Replacement test') } }`
-        var combined = [
+        const combined = [
           chrSource[0]
         ]
         Array.prototype.slice.call(arguments, 1).forEach(function (repl, ix) {
@@ -74,7 +74,7 @@
         program = parse(chrSource)
       }
 
-      var rules = program.body
+      const rules = program.body
       rules.forEach(function (rule) {
         tag.Rules.Add(rule, replacements)
       })

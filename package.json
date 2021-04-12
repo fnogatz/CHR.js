@@ -46,7 +46,7 @@
     "colors": "^1.0.3",
     "envify": "^4.0.0",
     "pegjs": "^0.10.0",
-    "standard": "^14.1.0",
+    "standard": "^16.0.3",
     "tape": "^5.0.1",
     "tconsole": "^1.0.0",
     "uglify-es": "^3.3.10",
@@ -63,8 +63,8 @@
     "ignore": [
       "src/parser.js",
       "src/compile/fake-scope.js",
-      "dist/**.js",
-      "test/cli/**.js"
+      "dist/*.js",
+      "test/cli/*.js"
     ]
   }
 }

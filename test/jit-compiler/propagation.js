@@ -1,9 +1,9 @@
-var test = require('tape')
+const test = require('tape')
 
-var CHR = require('../../src/index')
+const CHR = require('../../src/index')
 
 test('a ==> b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> b')
 
   chr.a().then(function () {
@@ -13,7 +13,7 @@ test('a ==> b', function (t) {
 })
 
 test('a ==> b, c', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> b, c')
 
   chr.a().then(function () {
@@ -23,7 +23,7 @@ test('a ==> b, c', function (t) {
 })
 
 test('a, b ==> c', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a, b ==> c')
 
   chr.a().then(function () {
@@ -41,7 +41,7 @@ test('a, b ==> c', function (t) {
 })
 
 test('a ==> b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a ==> b')
 
   Promise.all([
@@ -54,7 +54,7 @@ test('a ==> b', function (t) {
 })
 
 test('a(N) ==> b(N+1,N+2)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(N) ==> b(N+1,N+2)')
 
   Promise.all([
@@ -67,7 +67,7 @@ test('a(N) ==> b(N+1,N+2)', function (t) {
 })
 
 test('a(N) ==> N <= 4 | a(N+1)', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(N) ==> N <= 4 | a(N+1)')
 
   chr.a(1).then(function () {
@@ -77,7 +77,7 @@ test('a(N) ==> N <= 4 | a(N+1)', function (t) {
 })
 
 test('a, a ==> b', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a, a ==> b')
 
   chr.a().then(function () {
@@ -87,7 +87,7 @@ test('a, a ==> b', function (t) {
 })
 
 test('a(0), b ==> c', function (t) {
-  var chr = new CHR()
+  const chr = new CHR()
   chr('a(0), b ==> c')
 
   chr.b().then(function () {
