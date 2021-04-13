@@ -21,7 +21,7 @@ program
   .parse(process.argv)
 
 const file = program.args[0]
-const opts = program
+const opts = program.opts()
 
 if (file) {
   compile.fromFile(file, opts, onFinish)
