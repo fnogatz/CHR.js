@@ -11,58 +11,37 @@ module.exports = () => {
 };
 
 },{}],2:[function(require,module,exports){
-
-/**
- * Array#filter.
- *
- * @param {Array} arr
- * @param {Function} fn
- * @param {Object=} self
- * @return {Array}
- * @throw TypeError
- */
-
-module.exports = function (arr, fn, self) {
-  if (arr.filter) return arr.filter(fn, self);
-  if (void 0 === arr || null === arr) throw new TypeError;
-  if ('function' != typeof fn) throw new TypeError;
-  var ret = [];
-  for (var i = 0; i < arr.length; i++) {
-    if (!hasOwn.call(arr, i)) continue;
-    var val = arr[i];
-    if (fn.call(self, val, i, arr)) ret.push(val);
-  }
-  return ret;
-};
-
-var hasOwn = Object.prototype.hasOwnProperty;
-
-},{}],3:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
-var filter = require('array-filter');
+var possibleNames = [
+	'BigInt64Array',
+	'BigUint64Array',
+	'Float32Array',
+	'Float64Array',
+	'Int16Array',
+	'Int32Array',
+	'Int8Array',
+	'Uint16Array',
+	'Uint32Array',
+	'Uint8Array',
+	'Uint8ClampedArray'
+];
+
+var g = typeof globalThis === 'undefined' ? global : globalThis;
 
 module.exports = function availableTypedArrays() {
-	return filter([
-		'BigInt64Array',
-		'BigUint64Array',
-		'Float32Array',
-		'Float64Array',
-		'Int16Array',
-		'Int32Array',
-		'Int8Array',
-		'Uint16Array',
-		'Uint32Array',
-		'Uint8Array',
-		'Uint8ClampedArray'
-	], function (typedArray) {
-		return typeof global[typedArray] === 'function';
-	});
+	var out = [];
+	for (var i = 0; i < possibleNames.length; i++) {
+		if (typeof g[possibleNames[i]] === 'function') {
+			out[out.length] = possibleNames[i];
+		}
+	}
+	return out;
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"array-filter":2}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -214,7 +193,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -1995,7 +1974,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":4,"buffer":5,"ieee754":20}],6:[function(require,module,exports){
+},{"base64-js":3,"buffer":4,"ieee754":20}],5:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -2012,7 +1991,7 @@ module.exports = function callBoundIntrinsic(name, allowMissing) {
 	return intrinsic;
 };
 
-},{"./":7,"get-intrinsic":16}],7:[function(require,module,exports){
+},{"./":6,"get-intrinsic":15}],6:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
@@ -2061,7 +2040,7 @@ if ($defineProperty) {
 	module.exports.apply = applyBind;
 }
 
-},{"function-bind":15,"get-intrinsic":16}],8:[function(require,module,exports){
+},{"function-bind":14,"get-intrinsic":15}],7:[function(require,module,exports){
 (function (Buffer){(function (){
 var clone = (function() {
 'use strict';
@@ -2231,7 +2210,7 @@ if (typeof module === 'object' && module.exports) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":5}],9:[function(require,module,exports){
+},{"buffer":4}],8:[function(require,module,exports){
 var clone = require('clone');
 
 module.exports = function(options, defaults) {
@@ -2245,7 +2224,7 @@ module.exports = function(options, defaults) {
 
   return options;
 };
-},{"clone":8}],10:[function(require,module,exports){
+},{"clone":7}],9:[function(require,module,exports){
 var ansiRegex = require('ansi-regex')
 var wcwidth
 
@@ -2693,7 +2672,7 @@ Table.prototype.log = function() {
   console.log(this.toString())
 }
 
-},{"ansi-regex":1,"wcwidth":45}],11:[function(require,module,exports){
+},{"ansi-regex":1,"wcwidth":45}],10:[function(require,module,exports){
 'use strict';
 
 var GetIntrinsic = require('get-intrinsic');
@@ -2710,7 +2689,7 @@ if ($gOPD) {
 
 module.exports = $gOPD;
 
-},{"get-intrinsic":16}],12:[function(require,module,exports){
+},{"get-intrinsic":15}],11:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -3209,7 +3188,7 @@ function eventTargetAgnosticAddListener(emitter, name, listener, flags) {
   }
 }
 
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -3233,7 +3212,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 /* eslint no-invalid-this: 1 */
@@ -3287,14 +3266,14 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":14}],16:[function(require,module,exports){
+},{"./implementation":13}],15:[function(require,module,exports){
 'use strict';
 
 var undefined;
@@ -3626,7 +3605,7 @@ module.exports = function GetIntrinsic(name, allowMissing) {
 	return value;
 };
 
-},{"function-bind":15,"has":19,"has-symbols":17}],17:[function(require,module,exports){
+},{"function-bind":14,"has":19,"has-symbols":16}],16:[function(require,module,exports){
 'use strict';
 
 var origSymbol = typeof Symbol !== 'undefined' && Symbol;
@@ -3641,7 +3620,7 @@ module.exports = function hasNativeSymbols() {
 	return hasSymbolSham();
 };
 
-},{"./shams":18}],18:[function(require,module,exports){
+},{"./shams":17}],17:[function(require,module,exports){
 'use strict';
 
 /* eslint complexity: [2, 18], max-statements: [2, 33] */
@@ -3685,14 +3664,23 @@ module.exports = function hasSymbols() {
 	return true;
 };
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+'use strict';
+
+var hasSymbols = require('has-symbols/shams');
+
+module.exports = function hasToStringTagShams() {
+	return hasSymbols() && !!Symbol.toStringTag;
+};
+
+},{"has-symbols/shams":17}],19:[function(require,module,exports){
 'use strict';
 
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":15}],20:[function(require,module,exports){
+},{"function-bind":14}],20:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -3811,7 +3799,7 @@ if (typeof Object.create === 'function') {
 },{}],22:[function(require,module,exports){
 'use strict';
 
-var hasToStringTag = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';
+var hasToStringTag = require('has-tostringtag/shams')();
 var callBound = require('call-bind/callBound');
 
 var $toString = callBound('Object.prototype.toString');
@@ -3843,13 +3831,13 @@ isStandardArguments.isLegacyArguments = isLegacyArguments; // for tests
 
 module.exports = supportsStandardArguments ? isStandardArguments : isLegacyArguments;
 
-},{"call-bind/callBound":6}],23:[function(require,module,exports){
+},{"call-bind/callBound":5,"has-tostringtag/shams":18}],23:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
 var fnToStr = Function.prototype.toString;
 var isFnRegex = /^\s*(?:function)?\*/;
-var hasToStringTag = typeof Symbol === 'function' && typeof Symbol.toStringTag === 'symbol';
+var hasToStringTag = require('has-tostringtag/shams')();
 var getProto = Object.getPrototypeOf;
 var getGeneratorFunc = function () { // eslint-disable-line consistent-return
 	if (!hasToStringTag) {
@@ -3860,8 +3848,7 @@ var getGeneratorFunc = function () { // eslint-disable-line consistent-return
 	} catch (e) {
 	}
 };
-var generatorFunc = getGeneratorFunc();
-var GeneratorFunction = getProto && generatorFunc ? getProto(generatorFunc) : false;
+var GeneratorFunction;
 
 module.exports = function isGeneratorFunction(fn) {
 	if (typeof fn !== 'function') {
@@ -3874,10 +3861,17 @@ module.exports = function isGeneratorFunction(fn) {
 		var str = toStr.call(fn);
 		return str === '[object GeneratorFunction]';
 	}
-	return getProto && getProto(fn) === GeneratorFunction;
+	if (!getProto) {
+		return false;
+	}
+	if (typeof GeneratorFunction === 'undefined') {
+		var generatorFunc = getGeneratorFunc();
+		GeneratorFunction = generatorFunc ? getProto(generatorFunc) : false;
+	}
+	return getProto(fn) === GeneratorFunction;
 };
 
-},{}],24:[function(require,module,exports){
+},{"has-tostringtag/shams":18}],24:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -3886,9 +3880,9 @@ var availableTypedArrays = require('available-typed-arrays');
 var callBound = require('call-bind/callBound');
 
 var $toString = callBound('Object.prototype.toString');
-var hasSymbols = require('has-symbols')();
-var hasToStringTag = hasSymbols && typeof Symbol.toStringTag === 'symbol';
+var hasToStringTag = require('has-tostringtag/shams')();
 
+var g = typeof globalThis === 'undefined' ? global : globalThis;
 var typedArrays = availableTypedArrays();
 
 var $indexOf = callBound('Array.prototype.indexOf', true) || function indexOf(array, value) {
@@ -3905,17 +3899,16 @@ var gOPD = require('es-abstract/helpers/getOwnPropertyDescriptor');
 var getPrototypeOf = Object.getPrototypeOf; // require('getprototypeof');
 if (hasToStringTag && gOPD && getPrototypeOf) {
 	forEach(typedArrays, function (typedArray) {
-		var arr = new global[typedArray]();
-		if (!(Symbol.toStringTag in arr)) {
-			throw new EvalError('this engine has support for Symbol.toStringTag, but ' + typedArray + ' does not have the property! Please report this.');
+		var arr = new g[typedArray]();
+		if (Symbol.toStringTag in arr) {
+			var proto = getPrototypeOf(arr);
+			var descriptor = gOPD(proto, Symbol.toStringTag);
+			if (!descriptor) {
+				var superProto = getPrototypeOf(proto);
+				descriptor = gOPD(superProto, Symbol.toStringTag);
+			}
+			toStrTags[typedArray] = descriptor.get;
 		}
-		var proto = getPrototypeOf(arr);
-		var descriptor = gOPD(proto, Symbol.toStringTag);
-		if (!descriptor) {
-			var superProto = getPrototypeOf(proto);
-			descriptor = gOPD(superProto, Symbol.toStringTag);
-		}
-		toStrTags[typedArray] = descriptor.get;
 	});
 }
 
@@ -3933,7 +3926,7 @@ var tryTypedArrays = function tryAllTypedArrays(value) {
 
 module.exports = function isTypedArray(value) {
 	if (!value || typeof value !== 'object') { return false; }
-	if (!hasToStringTag) {
+	if (!hasToStringTag || !(Symbol.toStringTag in value)) {
 		var tag = $slice($toString(value), 8, -1);
 		return $indexOf(typedArrays, tag) > -1;
 	}
@@ -3942,7 +3935,7 @@ module.exports = function isTypedArray(value) {
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":3,"call-bind/callBound":6,"es-abstract/helpers/getOwnPropertyDescriptor":11,"foreach":13,"has-symbols":17}],25:[function(require,module,exports){
+},{"available-typed-arrays":2,"call-bind/callBound":5,"es-abstract/helpers/getOwnPropertyDescriptor":10,"foreach":12,"has-tostringtag/shams":18}],25:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4373,21 +4366,23 @@ function isDataView(value) {
 }
 exports.isDataView = isDataView;
 
+// Store a copy of SharedArrayBuffer in case it's deleted elsewhere
+var SharedArrayBufferCopy = typeof SharedArrayBuffer !== 'undefined' ? SharedArrayBuffer : undefined;
 function isSharedArrayBufferToString(value) {
   return ObjectToString(value) === '[object SharedArrayBuffer]';
 }
-isSharedArrayBufferToString.working = (
-  typeof SharedArrayBuffer !== 'undefined' &&
-  isSharedArrayBufferToString(new SharedArrayBuffer())
-);
 function isSharedArrayBuffer(value) {
-  if (typeof SharedArrayBuffer === 'undefined') {
+  if (typeof SharedArrayBufferCopy === 'undefined') {
     return false;
+  }
+
+  if (typeof isSharedArrayBufferToString.working === 'undefined') {
+    isSharedArrayBufferToString.working = isSharedArrayBufferToString(new SharedArrayBufferCopy());
   }
 
   return isSharedArrayBufferToString.working
     ? isSharedArrayBufferToString(value)
-    : value instanceof SharedArrayBuffer;
+    : value instanceof SharedArrayBufferCopy;
 }
 exports.isSharedArrayBuffer = isSharedArrayBuffer;
 
@@ -6180,7 +6175,7 @@ function bisearch(ucs) {
   return false
 }
 
-},{"./combining":44,"defaults":9}],46:[function(require,module,exports){
+},{"./combining":44,"defaults":8}],46:[function(require,module,exports){
 (function (global){(function (){
 'use strict';
 
@@ -6189,9 +6184,9 @@ var availableTypedArrays = require('available-typed-arrays');
 var callBound = require('call-bind/callBound');
 
 var $toString = callBound('Object.prototype.toString');
-var hasSymbols = require('has-symbols')();
-var hasToStringTag = hasSymbols && typeof Symbol.toStringTag === 'symbol';
+var hasToStringTag = require('has-tostringtag/shams')();
 
+var g = typeof globalThis === 'undefined' ? global : globalThis;
 var typedArrays = availableTypedArrays();
 
 var $slice = callBound('String.prototype.slice');
@@ -6200,18 +6195,17 @@ var gOPD = require('es-abstract/helpers/getOwnPropertyDescriptor');
 var getPrototypeOf = Object.getPrototypeOf; // require('getprototypeof');
 if (hasToStringTag && gOPD && getPrototypeOf) {
 	forEach(typedArrays, function (typedArray) {
-		if (typeof global[typedArray] === 'function') {
-			var arr = new global[typedArray]();
-			if (!(Symbol.toStringTag in arr)) {
-				throw new EvalError('this engine has support for Symbol.toStringTag, but ' + typedArray + ' does not have the property! Please report this.');
+		if (typeof g[typedArray] === 'function') {
+			var arr = new g[typedArray]();
+			if (Symbol.toStringTag in arr) {
+				var proto = getPrototypeOf(arr);
+				var descriptor = gOPD(proto, Symbol.toStringTag);
+				if (!descriptor) {
+					var superProto = getPrototypeOf(proto);
+					descriptor = gOPD(superProto, Symbol.toStringTag);
+				}
+				toStrTags[typedArray] = descriptor.get;
 			}
-			var proto = getPrototypeOf(arr);
-			var descriptor = gOPD(proto, Symbol.toStringTag);
-			if (!descriptor) {
-				var superProto = getPrototypeOf(proto);
-				descriptor = gOPD(superProto, Symbol.toStringTag);
-			}
-			toStrTags[typedArray] = descriptor.get;
 		}
 	});
 }
@@ -6235,12 +6229,12 @@ var isTypedArray = require('is-typed-array');
 
 module.exports = function whichTypedArray(value) {
 	if (!isTypedArray(value)) { return false; }
-	if (!hasToStringTag) { return $slice($toString(value), 8, -1); }
+	if (!hasToStringTag || !(Symbol.toStringTag in value)) { return $slice($toString(value), 8, -1); }
 	return tryTypedArrays(value);
 };
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"available-typed-arrays":3,"call-bind/callBound":6,"es-abstract/helpers/getOwnPropertyDescriptor":11,"foreach":13,"has-symbols":17,"is-typed-array":24}],47:[function(require,module,exports){
+},{"available-typed-arrays":2,"call-bind/callBound":5,"es-abstract/helpers/getOwnPropertyDescriptor":10,"foreach":12,"has-tostringtag/shams":18,"is-typed-array":24}],47:[function(require,module,exports){
 const History = require('./src/history')
 const Store = require('./src/store')
 const Constraint = require('./src/constraint')
@@ -7095,7 +7089,7 @@ function hash (ids) {
   CHR.History = Runtime.History
   CHR.Rule = Rule
 
-  CHR.version = '3.3.20'
+  CHR.version = '3.3.21'
 
   CHR.noConflict = function () {
     root.CHR = prevCHR
@@ -9524,5 +9518,5 @@ Store.prototype.toString = function () {
   return t.toString()
 }
 
-},{"easy-table":10,"events":12,"util":28}]},{},[54])(54)
+},{"easy-table":9,"events":11,"util":28}]},{},[54])(54)
 });
