@@ -46,7 +46,7 @@
     "colors": "^1.0.3",
     "envify": "^4.0.0",
     "pegjs": "^0.10.0",
-    "standard": "^16.0.3",
+    "standard": "^17.0.0",
     "tape": "^5.0.1",
     "tconsole": "^1.0.0",
     "uglify-js": "^3.13.4",
