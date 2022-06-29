@@ -73,7 +73,7 @@ function transform (program, opts) {
     })
 
     const headCompiler = new HeadCompiler(ruleObj, {
-      replacements: replacements
+      replacements
     })
 
     for (let headNo = ruleObj.head.length - 1; headNo >= 0; headNo--) {

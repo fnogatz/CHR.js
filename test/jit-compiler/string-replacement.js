@@ -30,7 +30,7 @@ test('string replacement in body', function (t) {
       }
 
       return {
-        fire: fire,
+        fire,
         getM: function () {
           return m
         }
@@ -38,7 +38,7 @@ test('string replacement in body', function (t) {
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -64,8 +64,8 @@ test('string replacement in body', function (t) {
       }
 
       return {
-        fire: fire,
-        getFire: getFire,
+        fire,
+        getFire,
         getM: function () {
           return m
         }
@@ -73,7 +73,7 @@ test('string replacement in body', function (t) {
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -94,7 +94,7 @@ test('string replacement in body', function (t) {
       }
 
       return {
-        fire: fire,
+        fire,
         getM: function () {
           return m
         }
@@ -102,7 +102,7 @@ test('string replacement in body', function (t) {
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -123,7 +123,7 @@ test('string replacement in body', function (t) {
       }
 
       return {
-        fire: fire,
+        fire,
         getM: function () {
           return m
         }
@@ -131,7 +131,7 @@ test('string replacement in body', function (t) {
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -156,8 +156,8 @@ test('string replacement in body', function (t) {
       }
 
       return {
-        fire: fire,
-        getFire: getFire,
+        fire,
+        getFire,
         getM: function () {
           return m
         }
@@ -165,7 +165,7 @@ test('string replacement in body', function (t) {
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -188,12 +188,12 @@ test('string replacement in guard', function (t) {
       }
 
       return {
-        test: test
+        test
       }
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above
@@ -212,12 +212,12 @@ test('string replacement in guard', function (t) {
       }
 
       return {
-        test: test
+        test
       }
     })()
 
     const chr = new CHR({
-      scope: scope
+      scope
     })
 
     // should be avoided; see note above

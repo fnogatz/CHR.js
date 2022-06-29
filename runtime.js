@@ -4,13 +4,13 @@ const Constraint = require('./src/constraint')
 const dynamicCaller = require('./src/dynamic-caller')
 
 module.exports = {
-  History: History,
-  Store: Store,
-  Constraint: Constraint,
+  History,
+  Store,
+  Constraint,
   Helper: {
-    allDifferent: allDifferent,
-    dynamicCaller: dynamicCaller,
-    forEach: forEach
+    allDifferent,
+    dynamicCaller,
+    forEach
   }
 }
 

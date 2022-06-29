@@ -115,8 +115,8 @@ Store.prototype.lookupResume = function (rule, patterns, constraint, startFrom) 
     }
 */
     return {
-      n: n,
-      res: res
+      n,
+      res
     }
   }
 
